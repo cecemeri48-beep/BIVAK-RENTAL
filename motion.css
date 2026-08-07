@@ -1,0 +1,282 @@
+/* ==========================================================================
+   BIVAK - Motion Layer
+   Spring-based motion system (pendekatan Framer Motion, tanpa React)
+   + Interactive 3D & Shader Animation (pendekatan 21st.dev)
+   Dimuat SETELAH styles.css. Tidak mengubah token desain yang sudah ada.
+   ========================================================================== */
+
+:root {
+  --m-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --m-ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* --------------------------------------------------------------------------
+   1. Reveal on scroll — initial state hanya aktif jika JS hidup,
+      supaya konten tetap terbaca kalau JS gagal / SEO crawler.
+   -------------------------------------------------------------------------- */
+html.m-js [data-m-reveal]:not(.m-revealed) {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* --------------------------------------------------------------------------
+   2. Scroll progress bar
+   -------------------------------------------------------------------------- */
+.m-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  z-index: 2000;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--primary-emerald), var(--accent-sky), var(--accent-amber));
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. Navbar condense saat scroll
+   -------------------------------------------------------------------------- */
+.navbar {
+  transition: background-color 0.4s var(--m-ease-soft),
+              backdrop-filter 0.4s var(--m-ease-soft),
+              border-color 0.4s var(--m-ease-soft),
+              box-shadow 0.4s var(--m-ease-soft);
+}
+
+.navbar.m-scrolled {
+  background: rgba(7, 12, 11, 0.82);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-bottom-color: rgba(16, 185, 129, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* --------------------------------------------------------------------------
+   4. Shader Animation — canvas hero background
+   -------------------------------------------------------------------------- */
+.hero {
+  isolation: isolate;
+}
+
+.m-shader-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.2s var(--m-ease-out);
+  pointer-events: none;
+}
+
+.m-shader-canvas.m-shader-ready {
+  opacity: 1;
+}
+
+/* Fallback animated gradient bila WebGL tidak tersedia */
+.m-shader-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 70% at 20% 30%, rgba(16, 185, 129, 0.22), transparent 60%),
+    radial-gradient(50% 60% at 80% 25%, rgba(6, 182, 212, 0.18), transparent 60%),
+    radial-gradient(70% 60% at 50% 90%, rgba(245, 158, 11, 0.12), transparent 65%);
+  animation: m-aurora-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes m-aurora-drift {
+  0%   { transform: translate3d(-2%, 0, 0) scale(1.05); }
+  100% { transform: translate3d(2%, -2%, 0) scale(1.12); }
+}
+
+/* Pastikan konten hero tetap di atas canvas */
+.hero-overlay { z-index: 1; }
+.hero-content { position: relative; z-index: 2; }
+
+/* --------------------------------------------------------------------------
+   5. Interactive 3D tilt card
+   -------------------------------------------------------------------------- */
+.m-tilt {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Matikan hover translateY bawaan saat tilt aktif agar tidak bertabrakan */
+html.m-js .vendor-card.m-tilt:hover,
+html.m-js .auction-card.m-tilt:hover {
+  transform: none;
+}
+
+.m-tilt-inner {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.m-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0) 55%
+  );
+  transition: opacity 0.35s var(--m-ease-out);
+}
+
+.m-tilt:hover .m-glare { opacity: 0.55; }
+
+/* Garis tepi yang menyala mengikuti kursor */
+.m-spotlight-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  padding: 1px;
+  background: radial-gradient(
+    240px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(16, 185, 129, 0.65),
+    transparent 65%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: opacity 0.35s var(--m-ease-out);
+}
+
+.m-tilt:hover .m-spotlight-border { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   6. Magnetic button + press feedback
+   -------------------------------------------------------------------------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.m-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn > * { position: relative; z-index: 1; }
+
+/* --------------------------------------------------------------------------
+   7. Modal — spring transition
+   -------------------------------------------------------------------------- */
+html.m-js .modal-overlay {
+  transition: opacity 0.28s var(--m-ease-soft);
+}
+
+html.m-js .modal-overlay.m-anim-open {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   8. Skeleton shimmer untuk grid saat filtering
+   -------------------------------------------------------------------------- */
+.m-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  min-height: 380px;
+}
+
+.m-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  animation: m-shimmer 1.4s infinite;
+}
+
+@keyframes m-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* --------------------------------------------------------------------------
+   9. Live indicator untuk lelang (detak halus, bukan blink kasar)
+   -------------------------------------------------------------------------- */
+.m-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-rose);
+  margin-right: 0.4rem;
+  vertical-align: middle;
+  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  animation: m-pulse 2.4s var(--m-ease-out) infinite;
+}
+
+@keyframes m-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.55); }
+  70%  { box-shadow: 0 0 0 9px rgba(244, 63, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   10. Aksesibilitas — focus ring yang jelas (UI/UX polish)
+   -------------------------------------------------------------------------- */
+.btn:focus-visible,
+.form-control:focus-visible,
+.nav-link:focus-visible,
+.tab-btn:focus-visible,
+.modal-close:focus-visible {
+  outline: 2px solid var(--primary-emerald);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   11. Reduced motion — wajib. Semua gerakan dimatikan.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.m-js [data-m-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .m-shader-canvas,
+  .m-shader-fallback,
+  .m-glare,
+  .m-spotlight-border,
+  .m-progress {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .m-shader-fallback { animation: none !important; }
+  .m-live-dot { animation: none !important; }
+  .m-skeleton::after { animation: none !important; }
+
+  html { scroll-behavior: auto; }
+}

@@ -1,0 +1,605 @@
+/* ==========================================================================
+   BIVAK - Lapisan Data Supabase
+   --------------------------------------------------------------------------
+   File ini TIDAK mengubah app.js sama sekali. Polanya sama seperti
+   motion.js: dimuat paling akhir, lalu membungkus ulang fungsi-fungsi
+   global milik app.js dengan versi yang berbicara ke database.
+
+   Kalau supabase-config.js masih kosong, file ini tidak melakukan apa pun
+   dan situs tetap berjalan dalam mode demo memakai data contoh app.js.
+   ========================================================================== */
+
+;(function () {
+	"use strict"
+
+	/* ----------------------------------------------------------------------
+	   0. TOAST -- pengganti alert() untuk umpan balik dari database
+	   ---------------------------------------------------------------------- */
+	var toastWrap = null
+
+	function ensureToastStyles() {
+		if (document.getElementById("bivak-toast-styles")) return
+		var css = document.createElement("style")
+		css.id = "bivak-toast-styles"
+		css.textContent = [
+			".bv-toast-wrap{position:fixed;z-index:3000;right:1.25rem;bottom:1.25rem;",
+			"display:flex;flex-direction:column;gap:.6rem;max-width:min(380px,calc(100vw - 2.5rem));pointer-events:none}",
+			".bv-toast{pointer-events:auto;display:flex;gap:.7rem;align-items:flex-start;",
+			"padding:.85rem 1rem;border-radius:var(--radius-md,14px);",
+			"background:rgba(16,26,23,.96);border:1px solid var(--border-glass,rgba(255,255,255,.08));",
+			"box-shadow:0 18px 40px rgba(0,0,0,.45);color:var(--text-main,#f3f4f6);",
+			"font-size:.88rem;line-height:1.45;backdrop-filter:blur(14px);",
+			"opacity:0;transform:translateY(14px) scale(.97);",
+			"transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1)}",
+			".bv-toast.bv-in{opacity:1;transform:translateY(0) scale(1)}",
+			".bv-toast-ic{flex:0 0 auto;width:1.15rem;text-align:center;margin-top:.1rem}",
+			".bv-toast-success{border-color:rgba(16,185,129,.4)}",
+			".bv-toast-success .bv-toast-ic{color:#10b981}",
+			".bv-toast-error{border-color:rgba(244,63,94,.45)}",
+			".bv-toast-error .bv-toast-ic{color:#f43f5e}",
+			".bv-toast-info .bv-toast-ic{color:#06b6d4}",
+			".bv-toast b{color:#fff;display:block;margin-bottom:.15rem}",
+			"@media (prefers-reduced-motion: reduce){.bv-toast{transition:none;opacity:1;transform:none}}",
+		].join("")
+		document.head.appendChild(css)
+	}
+
+	function toast(kind, title, message, ms) {
+		ensureToastStyles()
+		if (!toastWrap) {
+			toastWrap = document.createElement("div")
+			toastWrap.className = "bv-toast-wrap"
+			document.body.appendChild(toastWrap)
+		}
+		var icons = { success: "\u2713", error: "\u2715", info: "\u2139" }
+		var el = document.createElement("div")
+		el.className = "bv-toast bv-toast-" + kind
+		el.setAttribute("role", kind === "error" ? "alert" : "status")
+
+		var ic = document.createElement("span")
+		ic.className = "bv-toast-ic"
+		ic.textContent = icons[kind] || icons.info
+
+		var body = document.createElement("div")
+		var b = document.createElement("b")
+		b.textContent = title
+		body.appendChild(b)
+		if (message) body.appendChild(document.createTextNode(message))
+
+		el.appendChild(ic)
+		el.appendChild(body)
+		toastWrap.appendChild(el)
+		requestAnimationFrame(function () {
+			el.classList.add("bv-in")
+		})
+
+		setTimeout(function () {
+			el.classList.remove("bv-in")
+			setTimeout(function () {
+				if (el.parentNode) el.parentNode.removeChild(el)
+			}, 320)
+		}, ms || (kind === "error" ? 6500 : 4800))
+	}
+
+	window.bivakToast = toast
+
+	/* ----------------------------------------------------------------------
+	   1. Cek konfigurasi -- kalau kosong, berhenti di sini (mode demo)
+	   ---------------------------------------------------------------------- */
+	var cfg = window.BIVAK_SUPABASE || {}
+	var configured = !!(cfg.url && cfg.anonKey)
+
+	if (!configured) {
+		console.info(
+			"[BIVAK] Mode demo aktif. Isi supabase-config.js untuk menyambung ke database.",
+		)
+		return
+	}
+
+	if (!window.supabase || typeof window.supabase.createClient !== "function") {
+		console.error(
+			"[BIVAK] Library supabase-js belum termuat. Cek tag <script> di index.html.",
+		)
+		toast(
+			"error",
+			"Gagal memuat database",
+			"Library Supabase tidak termuat. Situs berjalan dalam mode demo.",
+		)
+		return
+	}
+
+	var sb = window.supabase.createClient(cfg.url, cfg.anonKey)
+	window.bivakDb = sb
+
+	/* ----------------------------------------------------------------------
+	   2. ID surrogate
+	   --------------------------------------------------------------------
+	   app.js merender tombol dengan onclick="openVendorDetail(${v.id})"
+	   -- tanpa tanda kutip. Kalau id-nya UUID, hasilnya JavaScript rusak.
+	   Jadi setiap baris database diberi id angka berurutan untuk dipakai
+	   di DOM, sementara UUID aslinya disimpan di properti dbId.
+	   Dengan begitu app.js sama sekali tidak perlu diubah.
+	   ---------------------------------------------------------------------- */
+	var seq = 1
+	function nextId() {
+		return seq++
+	}
+
+	function mapVendor(row) {
+		return {
+			id: nextId(),
+			dbId: row.id,
+			name: row.name,
+			city: row.city,
+			address: row.address,
+			phone: row.phone,
+			rating: row.rating != null ? Number(row.rating) : 4.8,
+			reviews: row.reviews_count != null ? row.reviews_count : 1,
+			minPrice: Number(row.min_price) || 15000,
+			gears: Array.isArray(row.gears) ? row.gears : [],
+			image: row.image_url || "assets/gear-tent.png",
+			status: row.status,
+			isVerified: !!row.is_verified,
+		}
+	}
+
+	function mapAuction(row) {
+		var msLeft = new Date(row.end_time).getTime() - Date.now()
+		if (!isFinite(msLeft) || msLeft < 0) msLeft = 0
+		var totalMin = Math.floor(msLeft / 60000)
+		return {
+			id: nextId(),
+			dbId: row.id,
+			title: row.title,
+			donor: row.donor_name,
+			phone: row.donor_phone,
+			cause: row.cause_category,
+			startingBid: Number(row.starting_bid) || 0,
+			currentBid: Number(row.current_bid) || 0,
+			highestBidder: row.highest_bidder || "Belum ada",
+			bidCount: row.bids_count || 0,
+			hoursLeft: Math.floor(totalMin / 60),
+			minutesLeft: totalMin % 60,
+			endTime: row.end_time,
+			image: row.image_url || "assets/auction-jacket.png",
+			description: row.description || "",
+		}
+	}
+
+	function findVendor(id) {
+		var all = (vendorsData || []).concat(pendingVendorsData || [])
+		for (var i = 0; i < all.length; i++) {
+			if (all[i].id === id) return all[i]
+		}
+		return null
+	}
+
+	function findAuction(id) {
+		for (var i = 0; i < (auctionsData || []).length; i++) {
+			if (auctionsData[i].id === id) return auctionsData[i]
+		}
+		return null
+	}
+
+	/* ----------------------------------------------------------------------
+	   3. Status admin
+	   ---------------------------------------------------------------------- */
+	var isAdmin = false
+
+	async function refreshAdminFlag() {
+		var sess = await sb.auth.getSession()
+		if (!sess.data.session) {
+			isAdmin = false
+			return false
+		}
+		var res = await sb.rpc("is_admin")
+		isAdmin = res.data === true
+		return isAdmin
+	}
+
+	/* ----------------------------------------------------------------------
+	   4. Memuat data dari database
+	   ---------------------------------------------------------------------- */
+	async function loadPublicData(options) {
+		options = options || {}
+		seq = 1
+
+		var results = await Promise.all([
+			sb
+				.from("vendors")
+				.select("*")
+				.eq("status", "approved")
+				.order("created_at", { ascending: false }),
+			sb
+				.from("auction_items")
+				.select("*")
+				.eq("status", "active")
+				.order("end_time", { ascending: true }),
+			sb.rpc("total_donation_raised"),
+			isAdmin
+				? sb
+						.from("vendors")
+						.select("*")
+						.eq("status", "pending")
+						.order("created_at", { ascending: true })
+				: Promise.resolve({ data: [], error: null }),
+		])
+
+		var vRes = results[0]
+		var aRes = results[1]
+		var dRes = results[2]
+		var pRes = results[3]
+
+		if (vRes.error) throw vRes.error
+		if (aRes.error) throw aRes.error
+
+		vendorsData = (vRes.data || []).map(mapVendor)
+		auctionsData = (aRes.data || []).map(mapAuction)
+		pendingVendorsData = (pRes && pRes.data ? pRes.data : []).map(mapVendor)
+
+		if (!dRes.error && dRes.data != null) {
+			totalDonationRaised = Number(dRes.data) || 0
+		}
+
+		renderVendors(vendorsData)
+		renderAuctions()
+		updateBadgesAndStats()
+
+		if (options.alsoAdminTables && document.getElementById("tablePendingVendorsBody")) {
+			renderAdminTables()
+		}
+	}
+
+	function dbErr(err, fallbackTitle) {
+		console.error("[BIVAK]", err)
+		var msg =
+			(err && (err.message || err.error_description || err.hint)) ||
+			"Terjadi kesalahan tak terduga."
+		toast("error", fallbackTitle, msg)
+	}
+
+	/* ----------------------------------------------------------------------
+	   5. Form publik
+	   ---------------------------------------------------------------------- */
+	function val(id) {
+		var el = document.getElementById(id)
+		return el ? el.value.trim() : ""
+	}
+
+	function busy(form, on, labelWhenBusy) {
+		if (!form) return
+		var btn = form.querySelector('button[type="submit"]')
+		if (!btn) return
+		if (on) {
+			btn.dataset.bvLabel = btn.innerHTML
+			btn.disabled = true
+			btn.style.opacity = "0.65"
+			btn.style.cursor = "wait"
+			btn.innerHTML = labelWhenBusy || "Menyimpan..."
+		} else {
+			btn.disabled = false
+			btn.style.opacity = ""
+			btn.style.cursor = ""
+			if (btn.dataset.bvLabel) btn.innerHTML = btn.dataset.bvLabel
+		}
+	}
+
+	window.handleVendorSubmit = async function (e) {
+		e.preventDefault()
+		var form = document.getElementById("formAddVendor")
+		var gears = val("inputVendorGears")
+			.split(",")
+			.map(function (s) {
+				return s.trim()
+			})
+			.filter(Boolean)
+
+		busy(form, true, "Mengirim...")
+		try {
+			var res = await sb.from("vendors").insert({
+				name: val("inputVendorName"),
+				city: val("inputVendorCity"),
+				phone: val("inputVendorPhone"),
+				address: val("inputVendorAddress"),
+				gears: gears,
+				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
+				image_url: val("inputVendorImage") || "assets/gear-tent.png",
+				status: "pending",
+				is_verified: false,
+			})
+			if (res.error) throw res.error
+
+			closeModal("modalVendor")
+			if (form) form.reset()
+			toast(
+				"success",
+				"Pengajuan iklan terkirim",
+				"Iklan Anda masuk antrean approval Admin BIVAK dan akan tayang setelah ditinjau.",
+				7000,
+			)
+			if (isAdmin) await loadPublicData({ alsoAdminTables: true })
+		} catch (err) {
+			dbErr(err, "Pengajuan gagal dikirim")
+		} finally {
+			busy(form, false)
+		}
+	}
+
+	window.handleAuctionSubmit = async function (e) {
+		e.preventDefault()
+		var form = document.getElementById("formAddAuction")
+		var startBid = parseInt(val("inputStartingBid"), 10) || 100000
+		var endTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+		busy(form, true, "Mengirim...")
+		try {
+			var res = await sb.from("auction_items").insert({
+				title: val("inputAuctionItem"),
+				donor_name: val("inputDonorName"),
+				donor_phone: val("inputDonorPhone"),
+				cause_category: val("inputAuctionCause"),
+				starting_bid: startBid,
+				current_bid: startBid,
+				highest_bidder: "Belum ada",
+				bids_count: 0,
+				end_time: endTime,
+				image_url: "assets/auction-jacket.png",
+				description: val("inputAuctionDesc"),
+				status: "active",
+			})
+			if (res.error) throw res.error
+
+			closeModal("modalLelang")
+			if (form) form.reset()
+			toast(
+				"success",
+				"Terima kasih atas donasi Anda",
+				"Barang donasi Anda sudah tayang di halaman Lelang Konservasi Alam.",
+			)
+			await loadPublicData({ alsoAdminTables: isAdmin })
+		} catch (err) {
+			dbErr(err, "Donasi gagal dikirim")
+		} finally {
+			busy(form, false)
+		}
+	}
+
+	window.handleBidSubmit = async function (e) {
+		e.preventDefault()
+		var form = document.getElementById("formSubmitBid")
+		var itemId = parseInt(val("bidItemId"), 10)
+		var item = findAuction(itemId)
+		if (!item) {
+			toast("error", "Item tidak ditemukan", "Coba muat ulang halaman.")
+			return
+		}
+
+		var amount = parseInt(val("inputBidAmount"), 10)
+		if (!(amount > item.currentBid)) {
+			toast(
+				"error",
+				"Penawaran terlalu rendah",
+				"Harus lebih tinggi dari Rp " + item.currentBid.toLocaleString("id-ID") + ".",
+			)
+			return
+		}
+
+		busy(form, true, "Mengirim tawaran...")
+		try {
+			// Validasi sebenarnya terjadi di server (fungsi place_bid),
+			// pengecekan di atas hanya supaya responsnya terasa cepat.
+			var res = await sb.rpc("place_bid", {
+				p_auction_id: item.dbId,
+				p_bidder_name: val("inputBidderName"),
+				p_bidder_phone: val("inputBidderPhone"),
+				p_bid_amount: amount,
+			})
+			if (res.error) throw res.error
+
+			closeModal("modalBid")
+			if (form) form.reset()
+			toast(
+				"success",
+				"Penawaran berhasil",
+				"Anda memegang bid tertinggi Rp " +
+					amount.toLocaleString("id-ID") +
+					" untuk " +
+					item.title +
+					".",
+				7000,
+			)
+			await loadPublicData({ alsoAdminTables: isAdmin })
+		} catch (err) {
+			dbErr(err, "Penawaran ditolak")
+			await loadPublicData({ alsoAdminTables: isAdmin })
+		} finally {
+			busy(form, false)
+		}
+	}
+
+	/* ----------------------------------------------------------------------
+	   6. Login admin
+	   ---------------------------------------------------------------------- */
+	function buildLoginModal() {
+		if (document.getElementById("modalAdminLogin")) return
+		var wrap = document.createElement("div")
+		wrap.className = "modal-overlay"
+		wrap.id = "modalAdminLogin"
+		wrap.innerHTML = [
+			'<div class="modal-container" style="max-width:420px;">',
+			'<div class="modal-header">',
+			"<div>",
+			'<h3 style="color:#fff;font-size:1.15rem;">Masuk sebagai Admin</h3>',
+			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;">Panel approval vendor BIVAK</p>',
+			"</div>",
+			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
+			"</div>",
+			'<div class="modal-body">',
+			'<form id="formAdminLogin">',
+			'<div class="input-group">',
+			"<label>Email Admin</label>",
+			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id">',
+			"</div>",
+			'<div class="input-group">',
+			"<label>Password</label>",
+			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022">',
+			"</div>",
+			'<button class="btn btn-primary" type="submit" style="width:100%;margin-top:.5rem;">Masuk</button>',
+			"</form>",
+			"</div>",
+			"</div>",
+		].join("")
+		document.body.appendChild(wrap)
+
+		document
+			.getElementById("formAdminLogin")
+			.addEventListener("submit", async function (e) {
+				e.preventDefault()
+				var form = e.currentTarget
+				busy(form, true, "Memeriksa...")
+				try {
+					var res = await sb.auth.signInWithPassword({
+						email: val("inputAdminEmail"),
+						password: document.getElementById("inputAdminPassword").value,
+					})
+					if (res.error) throw res.error
+
+					var ok = await refreshAdminFlag()
+					if (!ok) {
+						await sb.auth.signOut()
+						toast(
+							"error",
+							"Akun ini bukan admin",
+							"Login berhasil, tetapi akun Anda belum terdaftar di tabel admins.",
+							7000,
+						)
+						return
+					}
+
+					form.reset()
+					closeModal("modalAdminLogin")
+					await loadPublicData()
+					renderAdminTables()
+					decorateAdminPanel()
+					openModal("modalAdmin")
+					toast("success", "Selamat datang, Admin", "Panel approval siap digunakan.")
+				} catch (err) {
+					dbErr(err, "Gagal masuk")
+				} finally {
+					busy(form, false)
+				}
+			})
+	}
+
+	function decorateAdminPanel() {
+		var header = document.querySelector("#modalAdmin .modal-header")
+		if (!header || document.getElementById("btnAdminLogout")) return
+		var btn = document.createElement("button")
+		btn.id = "btnAdminLogout"
+		btn.type = "button"
+		btn.className = "btn btn-outline"
+		btn.style.cssText = "padding:.35rem .7rem;font-size:.78rem;margin-left:auto;margin-right:.6rem;"
+		btn.textContent = "Keluar"
+		btn.addEventListener("click", async function () {
+			await sb.auth.signOut()
+			isAdmin = false
+			closeModal("modalAdmin")
+			await loadPublicData()
+			toast("info", "Anda telah keluar", "Sesi admin diakhiri.")
+		})
+		var closeBtn = header.querySelector(".modal-close")
+		header.insertBefore(btn, closeBtn)
+	}
+
+	window.openAdminPanel = async function () {
+		buildLoginModal()
+		var ok = await refreshAdminFlag()
+		if (!ok) {
+			openModal("modalAdminLogin")
+			return
+		}
+		await loadPublicData()
+		renderAdminTables()
+		decorateAdminPanel()
+		openModal("modalAdmin")
+	}
+
+	/* ----------------------------------------------------------------------
+	   7. Aksi admin
+	   ---------------------------------------------------------------------- */
+	async function adminUpdateVendor(id, patch, successTitle, successMsg) {
+		var v = findVendor(id)
+		if (!v) return
+		try {
+			var res = await sb.from("vendors").update(patch).eq("id", v.dbId)
+			if (res.error) throw res.error
+			await loadPublicData({ alsoAdminTables: true })
+			toast("success", successTitle, successMsg.replace("%s", v.name))
+		} catch (err) {
+			dbErr(err, "Aksi admin gagal")
+		}
+	}
+
+	window.approveVendor = function (id) {
+		return adminUpdateVendor(
+			id,
+			{
+				status: "approved",
+				is_verified: true,
+				updated_at: new Date().toISOString(),
+			},
+			"Iklan disetujui",
+			'"%s" kini tayang publik di marketplace BIVAK.',
+		)
+	}
+
+	window.rejectVendor = function (id) {
+		return adminUpdateVendor(
+			id,
+			{ status: "rejected", updated_at: new Date().toISOString() },
+			"Iklan ditolak",
+			'Pengajuan "%s" telah ditolak.',
+		)
+	}
+
+	window.removeActiveVendor = function (id) {
+		var v = findVendor(id)
+		if (!v) return
+		if (
+			!confirm(
+				'Turunkan "' +
+					v.name +
+					'" dari katalog publik?\n\nData vendor tetap tersimpan dan bisa ditayangkan lagi nanti.',
+			)
+		)
+			return
+		return adminUpdateVendor(
+			id,
+			{ status: "rejected", updated_at: new Date().toISOString() },
+			"Vendor diturunkan",
+			'"%s" tidak lagi tampil di katalog publik.',
+		)
+	}
+
+	/* ----------------------------------------------------------------------
+	   8. Jalan
+	   ---------------------------------------------------------------------- */
+	async function boot() {
+		try {
+			await refreshAdminFlag()
+			await loadPublicData()
+			console.info("[BIVAK] Terhubung ke Supabase.")
+		} catch (err) {
+			dbErr(
+				err,
+				"Gagal memuat data dari database",
+			)
+		}
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", boot)
+	} else {
+		boot()
+	}
+})()

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RCS.CBS - BIVAK (Bursa Interaktif Vendor Alam & Komunitas)</title>
+  <meta name="description" content="Platform Marketplace Vendor Rental Alat Outdoor & Tempat Lelang Donasi Pelestarian Alam serta Kemanusiaan - RCS.CBS BIVAK.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="motion.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#" class="nav-brand">
+        <div class="brand-logos">
+          <img src="assets/logo.png" alt="BIVAK Logo" class="brand-logo">
+          <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Medallion" class="brand-logo coin-logo" title="RCS.CBS">
+        </div>
+        <div class="brand-text">
+          <h1>RCS.CBS - BIVAK</h1>
+          <div class="brand-subtitle">Bursa Interaktif Vendor Alam & Komunitas</div>
+        </div>
+      </a>
+
+      <!-- Desktop & Mobile Drawer Menu Links -->
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#katalog" class="nav-link active" onclick="closeMobileMenu()">Katalog Vendor</a></li>
+        <li><a href="#lelang" class="nav-link" onclick="closeMobileMenu()">Lelang Donasi <i class="fa-solid fa-fire text-amber" style="color: #f59e0b;"></i></a></li>
+        <li><a href="#dampak" class="nav-link" onclick="closeMobileMenu()">Dampak Konservasi</a></li>
+        <li><a href="#panduan" class="nav-link" onclick="closeMobileMenu()">Panduan</a></li>
+        
+        <!-- Mobile Drawer Action Buttons (Visible only on mobile inside drawer) -->
+        <li class="mobile-drawer-actions">
+          <button class="btn btn-primary btn-block" onclick="closeMobileMenu(); openAdminPanel()">
+            <i class="fa-solid fa-user-shield"></i> <span>Panel Admin Approval</span>
+            <span class="notification-badge pendingCountBadge">2</span>
+          </button>
+          <button class="btn btn-outline btn-block" onclick="closeMobileMenu(); openModal('modalVendor')">
+            <i class="fa-solid fa-plus"></i> <span>Pasang Iklan Vendor</span>
+          </button>
+          <button class="btn btn-amber btn-block" onclick="closeMobileMenu(); openModal('modalLelang')">
+            <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi Lelang</span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- Navbar Action Buttons -->
+      <div class="nav-actions">
+        <button class="btn btn-outline desktop-only-action" onclick="openModal('modalVendor')">
+          <i class="fa-solid fa-plus"></i> <span>Pasang Iklan</span>
+        </button>
+        <button class="btn btn-amber desktop-only-action" onclick="openModal('modalLelang')">
+          <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi Lelang</span>
+        </button>
+        <button class="btn btn-primary btn-admin" onclick="openAdminPanel()" title="Panel Admin Approval">
+          <i class="fa-solid fa-user-shield"></i> <span class="admin-text">Admin</span>
+          <span class="notification-badge pendingCountBadge">2</span>
+        </button>
+
+        <!-- Mobile Menu Hamburger Button -->
+        <button class="mobile-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
+          <i class="fa-solid fa-bars" id="mobileToggleIcon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+      <div class="hero-tag">
+        <i class="fa-solid fa-mountain-sun"></i> RCS.CBS - BIVAK (Bursa Interaktif Vendor Alam & Komunitas)
+      </div>
+      <h1 class="hero-title">
+        Sewa Alat Outdoor Mudah, <br><span>Dukung Pelestarian Alam & Kemanusiaan</span>
+      </h1>
+      <p class="hero-description">
+        Temukan ratusan vendor rental tenda, carrier, & perlengkapan pendakian terverifikasi di Makassar, Gowa, Maros, Malino, Toraja, Palopo hingga Bulukumba. Ikuti lelang donasi untuk gerakan reboisasi dan aksi kemanusiaan.
+      </p>
+
+      <!-- Interactive Search & Filter Card -->
+      <div class="search-filter-card">
+        <div class="input-group">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" class="form-control" placeholder="Cari nama vendor atau alat (contoh: Tenda Dome, Carrier 75L)..." onkeyup="filterVendors()">
+        </div>
+
+        <div class="input-group">
+          <i class="fa-solid fa-location-dot"></i>
+          <select id="cityFilter" class="form-control" onchange="filterVendors()">
+            <option value="">Semua Lokasi Vendor</option>
+            <option value="Makassar">Kota Makassar</option>
+            <option value="Gowa">Kab. Gowa</option>
+            <option value="Malino">Highland Malino</option>
+            <option value="Maros">Kab. Maros</option>
+            <option value="Toraja">Tana Toraja & Toraja Utara</option>
+            <option value="Palopo">Kota Palopo</option>
+            <option value="Bone">Kab. Bone</option>
+            <option value="Bulukumba">Kab. Bulukumba</option>
+            <option value="Bantaeng">Kab. Bantaeng</option>
+            <option value="Enrekang">Kab. Enrekang (Latimojong)</option>
+            <option value="Sinjai">Kab. Sinjai</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <i class="fa-solid fa-campground"></i>
+          <select id="categoryFilter" class="form-control" onchange="filterVendors()">
+            <option value="">Semua Kategori Gear</option>
+            <option value="Tenda Camping">Tenda Camping / Dome</option>
+            <option value="Carrier & Backpack">Carrier & Backpack</option>
+            <option value="Cooking & Nesting">Alat Masak & Kompor</option>
+            <option value="Sleeping Gear">Sleeping Bag & Matras</option>
+            <option value="Lighting & Navigation">Lampu & Headlamp</option>
+            <option value="Sepatu & Tracking">Sepatu & Tracking Pole</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="filterVendors()">
+          <i class="fa-solid fa-filter"></i> Cari
+        </button>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number"><i class="fa-solid fa-store"></i> <span id="statVendorsCount">48</span>+</div>
+          <div class="stat-label">Vendor Terverifikasi</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"><i class="fa-solid fa-coins"></i> Rp <span id="statDonationTotal">45.800.000</span></div>
+          <div class="stat-label">Donasi Konservasi Terkumpul</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"><i class="fa-solid fa-tree"></i> 12</div>
+          <div class="stat-label">Aksi Reboisasi & Clean-Up</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section 1: Marketplace Vendor Rental Outdoor -->
+  <section id="katalog" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle"><i class="fa-solid fa-compass"></i> Rental Outdoor Terverifikasi</div>
+        <h2 class="section-title">Vendor Rental Outdoor Terpercaya</h2>
+        <p class="section-description">Pilih vendor terdekat di daerah Anda, cek ketersediaan perlengkapan, dan pesan langsung melalui WhatsApp tanpa perantara.</p>
+      </div>
+
+      <!-- Vendor Cards Grid Container -->
+      <div class="grid-3" id="vendorGridContainer">
+        <!-- Dynamic vendor cards populated by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Lelang Barang Donasi Pelestarian Alam & Kemanusiaan -->
+  <section id="lelang" class="section auction-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b;">
+          <i class="fa-solid fa-gavel"></i> Lelang Donasi Komunitas
+        </div>
+        <h2 class="section-title">Barang Lelang Donasi Alam & Kemanusiaan</h2>
+        <p class="section-description">
+          100% hasil penawaran tertinggi dialokasikan langsung untuk aksi penanaman pohon di Gunung Bawakaraeng, pembersihan sampah Jalur Pendakian Latimojong, dan tanggap bencana.
+        </p>
+      </div>
+
+      <!-- Auction Cards Grid Container -->
+      <div class="grid-3" id="auctionGridContainer">
+        <!-- Dynamic auction items populated by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Dampak Pelestarian Alam & Komunitas -->
+  <section id="dampak" class="section">
+    <div class="container">
+      <div class="impact-banner">
+        <div>
+          <div class="section-subtitle"><i class="fa-solid fa-seedling"></i> Misi Sosial RCS.CBS - BIVAK</div>
+          <h2 style="font-size: 2rem; color: #fff; margin-bottom: 1rem;">Membangun Ekosistem Kamping Berkelanjutan</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            RCS.CBS - BIVAK (Bursa Interaktif Vendor Alam & Komunitas) hadir tidak hanya sebagai bursa rental outdoor, tetapi juga jembatan kolaborasi antara vendor, pegiat alam bebas, dan komunitas pecinta alam untuk melestarikan keasrian alam.
+          </p>
+
+          <ul class="impact-list">
+            <li class="impact-item">
+              <div class="impact-icon"><i class="fa-solid fa-tree"></i></div>
+              <div>
+                <h4 style="color: #fff;">Program Reboisasi Hutan Bawakaraeng</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Pendanaan dari lelang donasi disalurkan untuk bibit pohon endemik dan penanaman rutin bersama KPA.</p>
+              </div>
+            </li>
+            <li class="impact-item">
+              <div class="impact-icon"><i class="fa-solid fa-trash-can-arrow-up"></i></div>
+              <div>
+                <h4 style="color: #fff;">Zero-Waste Trail Clean-Up</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Aksi pembersihan sampah plastik terjadwal di pos-pos pendakian Bawakaraeng, Lompobattang, & Gunung Latimojong.</p>
+              </div>
+            </li>
+            <li class="impact-item">
+              <div class="impact-icon"><i class="fa-solid fa-hand-holding-medical"></i></div>
+              <div>
+                <h4 style="color: #fff;">Tanggap Bencana Alam & Kemanusiaan</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Dana darurat bencana kemanusiaan untuk bantuan banjir, tanah longsor, & tim pencarian SAR di daerah pelosok.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <img src="assets/hero-bg.png" alt="Aksi Konservasi" style="width: 100%; border-radius: var(--radius-lg); border: 1px solid var(--border-emerald); box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Panduan Pasang Iklan Vendor -->
+  <section id="panduan" class="section" style="background: rgba(16, 26, 23, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle"><i class="fa-solid fa-circle-info"></i> Alur Kerja Platform</div>
+        <h2 class="section-title">Cara Bergabung Sebagai Vendor BIVAK</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
+          <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.2); color: var(--primary-emerald); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">1</div>
+          <h3 style="color: #fff; margin-bottom: 0.5rem;">Isi Form Vendor</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Daftarkan nama tempat rental, lokasi Kabupaten/Kota, nomor WA bisnis, dan katalog alat outdoor Anda.</p>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
+          <div style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">2</div>
+          <h3 style="color: #fff; margin-bottom: 0.5rem;">Verifikasi Tim Admin</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Tim Admin BIVAK akan meninjau keabsahan kontak dan kelengkapan profil vendor Anda di Admin Panel.</p>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
+          <div style="width: 50px; height: 50px; background: rgba(6, 182, 212, 0.2); color: var(--accent-sky); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">3</div>
+          <h3 style="color: #fff; margin-bottom: 0.5rem;">Iklan Tayang & Terima Order</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Iklan Anda langsung tampil di katalog publik dan pendaki bisa langsung menghubungi WhatsApp Anda tanpa komisi perantara!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal 1: Form Pasang Iklan Vendor Baru -->
+  <div class="modal-overlay" id="modalVendor">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-store text-emerald" style="color: #10b981;"></i> Pasang Iklan Rental Outdoor</h3>
+        <button class="modal-close" onclick="closeModal('modalVendor')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAddVendor" onsubmit="handleVendorSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group-full">
+              <label class="form-label">Nama Tempat Rental / Vendor *</label>
+              <input type="text" id="inputVendorName" class="form-control" placeholder="Contoh: Celebes Outdoor Rental Makassar" required>
+            </div>
+
+            <div>
+              <label class="form-label">Kabupaten / Kota *</label>
+              <select id="inputVendorCity" class="form-control" required>
+                <option value="">Pilih Kota/Kabupaten</option>
+                <option value="Makassar">Kota Makassar</option>
+                <option value="Gowa">Kab. Gowa</option>
+                <option value="Malino">Highland Malino</option>
+                <option value="Maros">Kab. Maros</option>
+                <option value="Toraja">Tana Toraja & Toraja Utara</option>
+                <option value="Palopo">Kota Palopo</option>
+                <option value="Bone">Kab. Bone</option>
+                <option value="Bulukumba">Kab. Bulukumba</option>
+                <option value="Bantaeng">Kab. Bantaeng</option>
+                <option value="Enrekang">Kab. Enrekang</option>
+                <option value="Sinjai">Kab. Sinjai</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Nomor WhatsApp Aktif *</label>
+              <input type="text" id="inputVendorPhone" class="form-control" placeholder="Contoh: 628123456789" required>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label">Alamat Lengkap Tempat Rental *</label>
+              <input type="text" id="inputVendorAddress" class="form-control" placeholder="Contoh: Jl. Alauddin No. 45, Rappocini, Makassar" required>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label">Item Tersedia & Kisaran Harga (Pisahkan koma) *</label>
+              <input type="text" id="inputVendorGears" class="form-control" placeholder="Contoh: Tenda Dome 4P, Carrier 75L, Kompor Portable, Sleeping Bag" required>
+            </div>
+
+            <div>
+              <label class="form-label">Harga Sewa Terendah (Mulai Dari) *</label>
+              <input type="number" id="inputVendorMinPrice" class="form-control" placeholder="Contoh: 15000" required>
+            </div>
+
+            <div>
+              <label class="form-label">URL Foto Banner / Gambar Tempat (Opsional)</label>
+              <input type="url" id="inputVendorImage" class="form-control" placeholder="https://example.com/foto.jpg">
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('modalVendor')">Batal</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Kirim Untuk Di-Approve</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Form Donasi Barang Lelang -->
+  <div class="modal-overlay" id="modalLelang">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-hand-holding-heart text-amber" style="color: #f59e0b;"></i> Donasi Barang Untuk Lelang</h3>
+        <button class="modal-close" onclick="closeModal('modalLelang')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="formAddAuction" onsubmit="handleAuctionSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group-full">
+              <label class="form-label">Nama Barang Outdoor Yang Didonasikan *</label>
+              <input type="text" id="inputAuctionItem" class="form-control" placeholder="Contoh: Jaket Gore-Tex Limited Edition Arc'teryx" required>
+            </div>
+
+            <div>
+              <label class="form-label">Nama Donatur / Komunitas *</label>
+              <input type="text" id="inputDonorName" class="form-control" placeholder="Contoh: Pendaki Gunung Celebes" required>
+            </div>
+
+            <div>
+              <label class="form-label">No. WhatsApp Donatur *</label>
+              <input type="text" id="inputDonorPhone" class="form-control" placeholder="628xxx" required>
+            </div>
+
+            <div>
+              <label class="form-label">Nilai Open Bid Awal (Rp) *</label>
+              <input type="number" id="inputStartingBid" class="form-control" placeholder="100000" required>
+            </div>
+
+            <div>
+              <label class="form-label">Target Program Konservasi *</label>
+              <select id="inputAuctionCause" class="form-control" required>
+                <option value="🌱 Reboisasi Bawakaraeng">🌱 Reboisasi Bawakaraeng</option>
+                <option value="🧹 Clean-Up Latimojong">🧹 Clean-Up Latimojong</option>
+                <option value="🆘 Tanggap Bencana & Kemanusiaan">🆘 Tanggap Bencana & Kemanusiaan</option>
+              </select>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label">Deskripsi Barang & Kondisi *</label>
+              <textarea id="inputAuctionDesc" class="form-control" rows="3" placeholder="Kondisi 95% pemakaian wajar, barang mulus tanpa minus..." required style="padding-left: 1rem;"></textarea>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('modalLelang')">Batal</button>
+            <button type="submit" class="btn btn-amber"><i class="fa-solid fa-paper-plane"></i> Sumbangkan Barang</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Bid Lelang Interaktif -->
+  <div class="modal-overlay" id="modalBid">
+    <div class="modal-container" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-gavel text-amber" style="color: #f59e0b;"></i> Ajukan Penawaran (Bid)</h3>
+        <button class="modal-close" onclick="closeModal('modalBid')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <h4 id="bidItemName" style="color: #fff;">Nama Barang</h4>
+          <p id="bidItemCause" style="color: var(--accent-amber); font-size: 0.85rem; font-weight: 600;"></p>
+          <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">
+            Penawaran Tertinggi Saat Ini: <strong id="bidCurrentAmount" style="color: #fff; font-size: 1.1rem;">Rp 0</strong>
+          </div>
+        </div>
+
+        <form id="formSubmitBid" onsubmit="handleBidSubmit(event)">
+          <input type="hidden" id="bidItemId">
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+              <label class="form-label">Nama Lengkap Penawar *</label>
+              <input type="text" id="inputBidderName" class="form-control" style="padding-left: 1rem;" placeholder="Nama Anda" required>
+            </div>
+            <div>
+              <label class="form-label">No. WhatsApp *</label>
+              <input type="text" id="inputBidderPhone" class="form-control" style="padding-left: 1rem;" placeholder="08xxxxxxxxxx" required>
+            </div>
+            <div>
+              <label class="form-label">Jumlah Penawaran Anda (Minimal Kelipatan Rp 25.000) *</label>
+              <input type="number" id="inputBidAmount" class="form-control" style="padding-left: 1rem;" placeholder="Nilai bid lebih tinggi" required>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('modalBid')">Batal</button>
+            <button type="submit" class="btn btn-amber"><i class="fa-solid fa-gavel"></i> Kirim Penawaran</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Detail Vendor & Katalog -->
+  <div class="modal-overlay" id="modalVendorDetail">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailVendorTitle">Detail Vendor</h3>
+        <button class="modal-close" onclick="closeModal('modalVendorDetail')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="detailVendorBody">
+        <!-- Content inserted dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Admin Panel Dashboard -->
+  <div class="modal-overlay" id="modalAdmin">
+    <div class="modal-container" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-user-shield text-rose" style="color: #f43f5e;"></i> Panel Admin Approval BIVAK <span class="admin-badge">ADMIN PANEL</span></h3>
+        <button class="modal-close" onclick="closeModal('modalAdmin')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-tabs">
+          <button class="tab-btn active" onclick="switchAdminTab('pendingVendors')">
+            Antrean Approval Iklan Vendor (<span id="pendingTabBadge">0</span>)
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('activeVendors')">
+            Vendor Terdaftar (<span id="activeTabBadge">0</span>)
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('auctions')">
+            Lelang Donasi (<span id="auctionTabBadge">0</span>)
+          </button>
+        </div>
+
+        <!-- Tab 1: Pending Vendor Approvals -->
+        <div id="tabPendingVendors" class="admin-tab-content">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Berikut adalah daftar pengajuan iklan rental baru dari vendor outdoor. Tinjau kelayakan profil sebelum dipublikasikan ke marketplace.
+          </p>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vendor & Lokasi</th>
+                  <th>WhatsApp</th>
+                  <th>Katalog Peralatan</th>
+                  <th>Harga Sewa</th>
+                  <th>Aksi Approval</th>
+                </tr>
+              </thead>
+              <tbody id="tablePendingVendorsBody">
+                <!-- Dynamic pending entries -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Active Approved Vendors -->
+        <div id="tabActiveVendors" class="admin-tab-content" style="display: none;">
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nama Vendor</th>
+                  <th>Lokasi</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableActiveVendorsBody">
+                <!-- Dynamic active entries -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Auctions Management -->
+        <div id="tabAuctions" class="admin-tab-content" style="display: none;">
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Barang Donasi</th>
+                  <th>Donatur</th>
+                  <th>Target Program</th>
+                  <th>Bid Highest</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tableAuctionsBody">
+                <!-- Dynamic auction entries -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="nav-brand" style="margin-bottom: 1rem;">
+            <div class="brand-logos">
+              <img src="assets/logo.png" alt="BIVAK Logo" class="brand-logo">
+              <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Coin" class="brand-logo coin-logo">
+            </div>
+            <div class="brand-text">
+              <h1>RCS.CBS - BIVAK</h1>
+              <div class="brand-subtitle">Bursa Interaktif Vendor Alam & Komunitas</div>
+            </div>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px;">
+            Platform direktori rental alat outdoor dan lelang donasi konservasi alam serta kemanusiaan pertama dari RCS.CBS. Menghubungkan ribuan pendaki dan petualang dengan vendor rental terpercaya.
+          </p>
+        </div>
+
+        <div>
+          <h4>Cakupan Daerah</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="filterByCity('Makassar')">Rental Outdoor Makassar</a></li>
+            <li><a href="#" onclick="filterByCity('Gowa')">Rental Alat Camping Gowa</a></li>
+            <li><a href="#" onclick="filterByCity('Malino')">Vendor Rental Malino</a></li>
+            <li><a href="#" onclick="filterByCity('Maros')">Rental Tenda Maros</a></li>
+            <li><a href="#" onclick="filterByCity('Toraja')">Outdoor Gear Toraja</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Kategori Peralatan</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="filterByCategory('Tenda Camping')">Tenda Camping Dome</a></li>
+            <li><a href="#" onclick="filterByCategory('Carrier & Backpack')">Carrier & Backpack Expedition</a></li>
+            <li><a href="#" onclick="filterByCategory('Cooking & Nesting')">Kompor & Nesting Titanium</a></li>
+            <li><a href="#" onclick="filterByCategory('Sleeping Gear')">Sleeping Bag & Matras Thermal</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Komunitas & Donasi</h4>
+          <ul class="footer-links">
+            <li><a href="#lelang">Lelang Donasi Alam</a></li>
+            <li><a href="#dampak">Aksi Reboisasi & Kemanusiaan</a></li>
+            <li><a href="#" onclick="openModal('modalVendor')">Pasang Iklan Vendor Baru</a></li>
+            <li><a href="#" onclick="openAdminPanel()">Dashboard Admin</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="copyright">
+        &copy; 2026 RCS.CBS - BIVAK (Bursa Interaktif Vendor Alam & Komunitas). All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Script -->
+  <!-- Supabase: library resmi + konfigurasi project Anda -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+
+  <script src="app.js"></script>
+
+  <!-- Motion Layer: Shader Animation + Spring Motion Engine -->
+  <script src="shader-hero.js"></script>
+  <script src="motion.js"></script>
+
+  <!-- Lapisan data: dimuat paling akhir agar bisa membungkus fungsi app.js -->
+  <script src="supabase-data.js"></script>
+</body>
+</html>
