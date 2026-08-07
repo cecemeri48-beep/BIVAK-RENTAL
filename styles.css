@@ -1142,7 +1142,8 @@ footer {
 }
 
 @media (max-width: 440px) {
-  .brand-logo.coin-logo { display: none; } /* Hide 2nd coin logo on extra narrow screens */
+  .brand-logo { width: 28px; height: 28px; border-width: 1.5px; } /* Kedua logo tetap tampil, hanya diperkecil */
+  .brand-logos { gap: 0.3rem; }
   .brand-text h1 { font-size: 0.95rem; }
   .btn-admin .admin-text { display: none; } /* On screens < 440px, show Admin Icon + Badge count */
   .btn-admin { padding: 0.45rem 0.6rem; }
