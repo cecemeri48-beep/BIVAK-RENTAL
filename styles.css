@@ -1149,3 +1149,41 @@ footer {
   
   .hero-stats { grid-template-columns: 1fr; gap: 0.85rem; }
 }
+
+
+/* ==========================================================================
+   Visual Polish
+   ========================================================================== */
+
+/* Offset jangkar: judul section tidak lagi tertutup navbar saat lompat
+   lewat menu navigasi (Katalog Vendor, Lelang Donasi, dst.) */
+html {
+  scroll-padding-top: 92px;
+}
+
+@media (max-width: 640px) {
+  html { scroll-padding-top: 76px; }
+}
+
+/* Warna seleksi teks mengikuti identitas brand */
+::selection {
+  background: rgba(16, 185, 129, 0.35);
+  color: #fff;
+}
+
+/* Indikator fokus keyboard yang jelas (aksesibilitas) */
+:focus-visible {
+  outline: 2px solid var(--primary-emerald);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Badge rating vendor tetap satu baris (4.9 (128) tidak lagi turun baris) */
+.vendor-rating {
+  white-space: nowrap;
+}
+
+/* Hilangkan sisa ruang beberapa piksel di bawah gambar cover vendor */
+.vendor-cover img {
+  display: block;
+}

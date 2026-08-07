@@ -22,6 +22,6 @@
    ========================================================================== */
 
 window.BIVAK_SUPABASE = {
-	url: "https://sqxwhfdarnzypicoamzl.supabase.co",
-	anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxeHdoZmRhcm56eXBpY29hbXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMTA0NzgsImV4cCI6MjEwMTY4NjQ3OH0.1TQQsc_N3GznyDB7mlJVXToZvRiuKQV1RaZ0zKmO0jI",
+	url: "",
+	anonKey: "",
 }

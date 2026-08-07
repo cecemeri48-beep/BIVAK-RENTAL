@@ -276,8 +276,8 @@ function renderAuctions() {
           <i class="fa-solid fa-user-heart" style="color: var(--accent-amber);"></i> Didonasikan oleh: <strong>${a.donor}</strong>
         </p>
 
-        <div class="timer-box">
-          <i class="fa-solid fa-clock"></i> Sisa Waktu: ${String(a.hoursLeft).padStart(2, '0')}j ${String(a.minutesLeft).padStart(2, '0')}m 15s
+        <div class="timer-box" data-remain="${a.hoursLeft * 3600 + a.minutesLeft * 60 + 15}">
+          <i class="fa-solid fa-clock"></i> Sisa Waktu: <span class="tick">${String(a.hoursLeft).padStart(2, '0')}j ${String(a.minutesLeft).padStart(2, '0')}m 15s</span>
         </div>
 
         <div class="bid-status">
@@ -616,3 +616,25 @@ function updateBadgesAndStats() {
   const statDonationTotal = document.getElementById("statDonationTotal");
   if (statDonationTotal) statDonationTotal.innerText = totalDonationRaised.toLocaleString('id-ID');
 }
+
+/* ==========================================================================
+   Countdown lelang berdetak
+   Setiap kartu lelang menyimpan sisa detik di atribut data-remain.
+   Interval ini menguranginya tiap detik dan menulis ulang teksnya,
+   sehingga timer terasa hidup tanpa perlu reload halaman.
+   ========================================================================== */
+setInterval(() => {
+  document.querySelectorAll('.timer-box[data-remain]').forEach((box) => {
+    let t = parseInt(box.dataset.remain, 10);
+    if (isNaN(t) || t <= 0) return;
+    t -= 1;
+    box.dataset.remain = t;
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    const tick = box.querySelector('.tick');
+    if (tick) {
+      tick.textContent = `${String(h).padStart(2, '0')}j ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+    }
+  });
+}, 1000);
