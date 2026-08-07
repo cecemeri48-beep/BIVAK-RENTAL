@@ -418,6 +418,28 @@
 	}
 
 	/* ----------------------------------------------------------------------
+	   5b. Badge antrean di logo koin: hanya admin yang boleh melihat.
+	   app.js menampilkannya bebas (mode demo); di mode live, wrapper ini
+	   memaksa badge tersembunyi kecuali isAdmin = true. updateBadgesAndStats
+	   adalah fungsi global dari app.js, jadi aman dibungkus di sini.
+	   ---------------------------------------------------------------------- */
+	function syncCoinBadge() {
+		var badge = document.getElementById("coinAdminBadge")
+		if (!badge) return
+		badge.innerText = pendingVendorsData.length
+		badge.style.display =
+			isAdmin && pendingVendorsData.length > 0 ? "inline-flex" : "none"
+	}
+
+	var origUpdateBadgesAndStats = window.updateBadgesAndStats
+	if (typeof origUpdateBadgesAndStats === "function") {
+		window.updateBadgesAndStats = function () {
+			origUpdateBadgesAndStats()
+			syncCoinBadge()
+		}
+	}
+
+	/* ----------------------------------------------------------------------
 	   6. Login admin
 	   ---------------------------------------------------------------------- */
 	function buildLoginModal() {

@@ -34,7 +34,10 @@
       <a href="#" class="nav-brand">
         <div class="brand-logos">
           <img src="assets/logo.png" alt="BIVAK Logo" class="brand-logo">
-          <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Medallion" class="brand-logo coin-logo" title="RCS.CBS">
+          <span class="coin-trigger" onclick="openAdminPanel()" title="Panel Admin" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAdminPanel();}">
+            <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Medallion" class="brand-logo coin-logo">
+            <span class="notification-badge coin-admin-badge" id="coinAdminBadge">0</span>
+          </span>
         </div>
         <div class="brand-text">
           <h1>RCS.CBS - BIVAK</h1>
@@ -51,10 +54,6 @@
         
         <!-- Mobile Drawer Action Buttons (Visible only on mobile inside drawer) -->
         <li class="mobile-drawer-actions">
-          <button class="btn btn-primary btn-block" onclick="closeMobileMenu(); openAdminPanel()">
-            <i class="fa-solid fa-user-shield"></i> <span>Panel Admin Approval</span>
-            <span class="notification-badge pendingCountBadge">2</span>
-          </button>
           <button class="btn btn-outline btn-block" onclick="closeMobileMenu(); openModal('modalVendor')">
             <i class="fa-solid fa-plus"></i> <span>Pasang Iklan Vendor</span>
           </button>
@@ -72,11 +71,6 @@
         <button class="btn btn-amber desktop-only-action" onclick="openModal('modalLelang')">
           <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi Lelang</span>
         </button>
-        <button class="btn btn-primary btn-admin" onclick="openAdminPanel()" title="Panel Admin Approval">
-          <i class="fa-solid fa-user-shield"></i> <span class="admin-text">Admin</span>
-          <span class="notification-badge pendingCountBadge">2</span>
-        </button>
-
         <!-- Mobile Menu Hamburger Button -->
         <button class="mobile-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
           <i class="fa-solid fa-bars" id="mobileToggleIcon"></i>

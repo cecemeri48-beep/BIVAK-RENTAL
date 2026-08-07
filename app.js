@@ -598,6 +598,12 @@ function removeActiveVendor(id) {
 function updateBadgesAndStats() {
   const pendingCount = pendingVendorsData.length;
   document.querySelectorAll(".pendingCountBadge").forEach(el => el.innerText = pendingCount);
+
+  const coinBadge = document.getElementById("coinAdminBadge");
+  if (coinBadge) {
+    coinBadge.innerText = pendingCount;
+    coinBadge.style.display = pendingCount > 0 ? "inline-flex" : "none";
+  }
   const pendingCountBadge = document.getElementById("pendingCountBadge");
   if (pendingCountBadge) pendingCountBadge.innerText = pendingCount;
   
