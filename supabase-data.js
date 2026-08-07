@@ -491,14 +491,100 @@
 			})
 	}
 
+	function buildChangePasswordModal() {
+		if (document.getElementById("modalChangePassword")) return
+		var wrap = document.createElement("div")
+		wrap.className = "modal-overlay"
+		wrap.id = "modalChangePassword"
+		wrap.innerHTML = [
+			'<div class="modal-container" style="max-width:420px;">',
+			'<div class="modal-header">',
+			"<div>",
+			'<h3 style="color:#fff;font-size:1.15rem;">Ganti Password Admin</h3>',
+			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;">Berlaku untuk akun yang sedang login</p>',
+			"</div>",
+			'<button class="modal-close" type="button" onclick="closeModal(\'modalChangePassword\')">&times;</button>',
+			"</div>",
+			'<div class="modal-body">',
+			'<form id="formChangePassword">',
+			'<div class="input-group">',
+			"<label>Password Baru</label>",
+			'<input class="form-control" type="password" id="inputNewPassword" autocomplete="new-password" required minlength="6" placeholder="Minimal 6 karakter">',
+			"</div>",
+			'<div class="input-group">',
+			"<label>Ulangi Password Baru</label>",
+			'<input class="form-control" type="password" id="inputNewPasswordConfirm" autocomplete="new-password" required minlength="6" placeholder="Ketik ulang password baru">',
+			"</div>",
+			'<button class="btn btn-primary" type="submit" style="width:100%;margin-top:.5rem;">Simpan Password</button>',
+			"</form>",
+			"</div>",
+			"</div>",
+		].join("")
+		document.body.appendChild(wrap)
+
+		document
+			.getElementById("formChangePassword")
+			.addEventListener("submit", async function (e) {
+				e.preventDefault()
+				var form = e.currentTarget
+				var p1 = document.getElementById("inputNewPassword").value
+				var p2 = document.getElementById("inputNewPasswordConfirm").value
+
+				if (p1.length < 6) {
+					toast("error", "Password terlalu pendek", "Gunakan minimal 6 karakter.")
+					return
+				}
+				if (p1 !== p2) {
+					toast(
+						"error",
+						"Password tidak sama",
+						"Kolom konfirmasi harus sama persis dengan password baru.",
+					)
+					return
+				}
+
+				busy(form, true, "Menyimpan...")
+				try {
+					var res = await sb.auth.updateUser({ password: p1 })
+					if (res.error) throw res.error
+					form.reset()
+					closeModal("modalChangePassword")
+					toast(
+						"success",
+						"Password berhasil diganti",
+						"Gunakan password baru saat login berikutnya.",
+					)
+				} catch (err) {
+					dbErr(err, "Gagal mengganti password")
+				} finally {
+					busy(form, false)
+				}
+			})
+	}
+
 	function decorateAdminPanel() {
 		var header = document.querySelector("#modalAdmin .modal-header")
 		if (!header || document.getElementById("btnAdminLogout")) return
+
+		buildChangePasswordModal()
+
+		var btnPw = document.createElement("button")
+		btnPw.id = "btnChangePassword"
+		btnPw.type = "button"
+		btnPw.className = "btn btn-outline"
+		btnPw.style.cssText =
+			"padding:.35rem .7rem;font-size:.78rem;margin-left:auto;margin-right:.4rem;"
+		btnPw.textContent = "Ganti Password"
+		btnPw.addEventListener("click", function () {
+			openModal("modalChangePassword")
+		})
+
 		var btn = document.createElement("button")
 		btn.id = "btnAdminLogout"
 		btn.type = "button"
 		btn.className = "btn btn-outline"
-		btn.style.cssText = "padding:.35rem .7rem;font-size:.78rem;margin-left:auto;margin-right:.6rem;"
+		btn.style.cssText =
+			"padding:.35rem .7rem;font-size:.78rem;margin-right:.6rem;"
 		btn.textContent = "Keluar"
 		btn.addEventListener("click", async function () {
 			await sb.auth.signOut()
@@ -507,8 +593,10 @@
 			await loadPublicData()
 			toast("info", "Anda telah keluar", "Sesi admin diakhiri.")
 		})
+
 		var closeBtn = header.querySelector(".modal-close")
 		header.insertBefore(btn, closeBtn)
+		header.insertBefore(btnPw, btn)
 	}
 
 	window.openAdminPanel = async function () {
