@@ -472,7 +472,7 @@ function renderAdminTables() {
       donasiBody.innerHTML = donasiRows.map(function(r,i) {
         var nm = escapeHtml(r.nama||'Donatur');
         var amt = _rupiah(r.amt||0);
-        var when = r.created_at || r.ts;
+         var when = r.created_at || r.ts;
         var st = r.astatus || 'baru';
         var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
@@ -480,7 +480,6 @@ function renderAdminTables() {
         return '<tr><td>'+nm+'</td><td>'+amt+'</td><td>'+((when)?new Date(when).toLocaleDateString('id-ID'):'-')+'</td><td>'+stBadge+'</td><td><button class="btn btn-primary" onclick="donasiApprove('+i+',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button><button class="btn btn-outline" onclick="donasiApprove('+i+',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button></td></tr>';
       }).join('');
     }
-  }
   }
 }
 
