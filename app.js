@@ -362,19 +362,6 @@ function handleVendorSubmit(e) {
   toast("success","Pengajuan Terkirim","Iklan Anda masuk antrean approval Admin BIVAK.");
 }
 
-function handleDonasiSubmit(e) {
-  e.preventDefault();
-  var nama = document.getElementById("inputDonasiNama").value.trim();
-  var nominal = parseInt(document.getElementById("inputDonasiNominal").value) || 0;
-  var email = document.getElementById("inputDonasiEmail").value.trim();
-  if (!nama || nominal <= 0) {
-    toast("error","Data Belum Lengkap","Isi nama dan nominal donasi dengan benar.");
-    return;
-  }
-  closeModal("modalDonasi");
-  donasiKirim(nominal);
-}
-
 // --- VENDOR DETAIL ---
 function openVendorDetail(vendorId) {
   const v = vendorsData.find(item => item.id === vendorId);
