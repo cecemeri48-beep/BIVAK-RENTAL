@@ -51,11 +51,19 @@ var BIVAK = {
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   },
 
-  el: function(id) { return document.getElementById(id); }
+  el: function(id) { return document.getElementById(id); },
+
+  isAdmin: false
 };
 
 document.addEventListener('DOMContentLoaded', function() {
   BIVAK.load();
+
+  // Check if already logged in
+  if (localStorage.getItem('bivak_admin_logged') === 'true') {
+    BIVAK.isAdmin = true;
+  }
+
   renderVendors();
   renderDonationList();
   updateBadges();
@@ -291,12 +299,60 @@ function handleVendorSubmit(e) {
 function openAdminPanel() {
   console.log('[DEBUG] openAdminPanel called');
   try {
-    renderAdminTables();
-    openModal('modalAdmin');
-    console.log('[DEBUG] Admin panel opened successfully');
+    // Check if already logged in
+    if (BIVAK.isAdmin) {
+      renderAdminTables();
+      openModal('modalAdmin');
+      updateAdminUI();
+      console.log('[DEBUG] Admin panel opened successfully');
+    } else {
+      // Show login modal
+      openModal('modalLogin');
+      document.getElementById('loginUsername').focus();
+      console.log('[DEBUG] Login modal shown');
+    }
   } catch(e) {
     console.error('[DEBUG] Error opening admin panel:', e);
     alert('Error membuka admin panel: ' + e.message);
+  }
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  var username = document.getElementById('loginUsername').value;
+  var password = document.getElementById('loginPassword').value;
+
+  // Simple credential check (demo only - not secure)
+  if (username === 'admin' && password === 'bivak2026') {
+    BIVAK.isAdmin = true;
+    localStorage.setItem('bivak_admin_logged', 'true');
+    closeModal('modalLogin');
+    renderAdminTables();
+    openModal('modalAdmin');
+    updateAdminUI();
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+  } else {
+    alert('Username atau password salah!');
+  }
+}
+
+function handleLogout() {
+  BIVAK.isAdmin = false;
+  localStorage.removeItem('bivak_admin_logged');
+  closeModal('modalAdmin');
+  alert('Anda telah logout.');
+}
+
+function updateAdminUI() {
+  var btnLogout = document.getElementById('btnLogout');
+  var adminBadge = document.getElementById('adminBadge');
+  if (BIVAK.isAdmin) {
+    if (btnLogout) btnLogout.style.display = 'inline-flex';
+    if (adminBadge) adminBadge.style.display = 'inline-block';
+  } else {
+    if (btnLogout) btnLogout.style.display = 'none';
+    if (adminBadge) adminBadge.style.display = 'none';
   }
 }
 
