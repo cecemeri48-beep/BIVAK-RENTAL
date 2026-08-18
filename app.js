@@ -235,11 +235,12 @@ function donasiKirim(n) {
     window.bivakDb.from('donasi').insert({nama: nm, amt: n, astatus: 'baru', source: 'bivak'})
       .then(function(res) {
         if (res.error) console.error('[BIVAK] Donasi insert error:', res.error);
-        closeSheet && closeSheet();
+        closeModal('modalDonasi');
         toast('success','Donasi Terkirim','Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! 💚',5000);
         renderDonation();
-      }).catch(function(){closeSheet && closeSheet(); toast('info','Catatan','Donasi tersimpan lokal, kirim ke admin via WA untuk verifikasi.' );});
+      }).catch(function(){closeModal('modalDonasi'); toast('info','Catatan','Donasi tersimpan lokal, kirim ke admin via WA untuk verifikasi.' );});
   } else {
+    closeModal('modalDonasi');
     toast('info','Catatan','Mode demo: donasi tersimpan lokal. Hubungi admin via WhatsApp untuk verifikasi.');
   }
 }
