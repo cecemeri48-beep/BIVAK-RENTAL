@@ -281,10 +281,6 @@ function handleVendorSubmit(e) {
   alert('Pengajuan berhasil! Iklan Anda masuk antrean approval admin.');
 }
 
-function openAdminPanel() {
-  renderAdminTables();
-  openModal('modalAdmin');
-}
 
 function switchAdminTab(tabName) {
   var btns = document.querySelectorAll('.tab-btn');
