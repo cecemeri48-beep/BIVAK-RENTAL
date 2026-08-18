@@ -486,7 +486,12 @@
   </footer>
 
   <!-- Script Loading - Core first, then extensions -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    window.addEventListener('error', function(e) {
+      console.warn('[BIVAK] Non-critical error caught:', e.message);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="console.warn('[BIVAK] Supabase CDN failed')"></script>
   <script src="supabase-config.js"></script>
   <script src="app.js"></script>
   <script src="shader-hero.js"></script>
