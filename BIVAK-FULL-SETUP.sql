@@ -7,9 +7,19 @@
 
 -- ==========================================================================
 -- 1. TIPE DATA
+-- (PostgreSQL tidak support `CREATE TYPE IF NOT EXISTS`)
 -- ==========================================================================
-CREATE TYPE IF NOT EXISTS public.vendor_status_type AS ENUM ('pending', 'approved', 'rejected');
-CREATE TYPE IF NOT EXISTS public.donation_status_type AS ENUM ('baru', 'disetujui', 'ditolak');
+DO $$ BEGIN
+    CREATE TYPE public.vendor_status_type AS ENUM ('pending', 'approved', 'rejected');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE public.donation_status_type AS ENUM ('baru', 'disetujui', 'ditolak');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 
 -- ==========================================================================
