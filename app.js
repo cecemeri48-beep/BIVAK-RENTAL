@@ -212,8 +212,9 @@ function donasi() {
     '<button class="btn btn-rose" style="width:100%;border:none;border-radius:12px;padding:13px;font-weight:800;cursor:pointer;margin-bottom:10px" onclick="donasiKirim('+_tierSel+')">✅ Saya Sudah Transfer · Konfirmasi</button>'+
     '<a class="btn" style="width:100%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;border-radius:12px;padding:12px;font-weight:800" href="'+wa+'" target="_blank" rel="noopener">📲 Tanya / Kirim Bukti via WhatsApp</a>'+
     '<p class="note" style="margin-top:8px;text-align:center">Admin akan memverifikasi dan nama Anda tampil di leaderboard publik.</p>';
-  document.getElementById('sheetBody') && (document.getElementById('sheetBody').innerHTML = html);
-  document.getElementById('sheetBody') && openSheet();
+  // Show in modal
+  openModal('modalDonasi');
+  document.getElementById('formDonasi').insertAdjacentHTML('afterend', html);
 }
 
 function donasiKirim(n) {
@@ -239,18 +240,8 @@ function donasiKirim(n) {
         renderDonation();
       }).catch(function(){closeSheet && closeSheet(); toast('info','Catatan','Donasi tersimpan lokal, kirim ke admin via WA untuk verifikasi.' );});
   } else {
-    closeSheet && closeSheet();
     toast('info','Catatan','Mode demo: donasi tersimpan lokal. Hubungi admin via WhatsApp untuk verifikasi.');
   }
-}
-
-function openSheet() {
-  var s = document.getElementById('sheet');
-  if (s) s.classList.add('active');
-}
-function closeSheet() {
-  var s = document.getElementById('sheet');
-  if (s) s.classList.remove('active');
 }
 
 // --- INITIALIZATION ---
