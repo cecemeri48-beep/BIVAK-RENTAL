@@ -1,588 +1,461 @@
-/* ==========================================================================
-   BIVAK v4 - Bursa Interaktif Vendor Alam & Komunitas
-   Application Logic & State Management
-   LELANG DIHAPUS — DIGANTI SISTEM DONASI PINTU ANGIN
-   ========================================================================== */
+﻿/**
+ * BIVAK v5 - Clean Build (ES5 Compatible)
+ * Simple, reliable, no external dependencies
+ */
 
-// --- INITIAL MOCK DATA STORAGE ---
-let vendorsData = [
-  {
-    id: 1,
-    name: "Celebes Outdoor Rental Makassar",
-    city: "Makassar",
-    address: "Jl. Sultan Alauddin No. 88, Rappocini, Makassar",
-    phone: "6281245678901",
-    rating: 4.9,
-    reviews: 128,
-    minPrice: 15000,
-    gears: ["Tenda Dome 4P", "Carrier 75L", "Sleeping Bag", "Kompor Portable", "Flysheet 3x4"],
-    image: "assets/gear-tent.png",
-    status: "approved",
-    isVerified: true
+var BIVAK = {
+  vendors: [
+    {id:1,name:"Celebes Outdoor Rental Makassar",city:"Makassar",phone:"6281245678901",rating:4.9,reviews:128,minPrice:15000,gears:["Tenda Dome 4P","Carrier 75L","Sleeping Bag","Kompor Portable"],image:"assets/gear-tent.png",verified:true},
+    {id:2,name:"Bawakaraeng Adventure Gowa",city:"Gowa",phone:"6285299887766",rating:4.8,reviews:95,minPrice:12000,gears:["Tenda 2-6P","Tracking Pole Carbon","Nesting Cookset","Lampu LED"],image:"assets/gear-carrier.png",verified:true},
+    {id:3,name:"Malino Highland Camp Gear",city:"Malino",phone:"6282188990011",rating:5.0,reviews:74,minPrice:20000,gears:["Tenda Family Luxury","Matras Thermal","Hammock Double","Grill Barbeque"],image:"assets/hero-bg.png",verified:true},
+    {id:4,name:"Rammang-Rammang Outdoor Maros",city:"Maros",phone:"6281355443322",rating:4.7,reviews:62,minPrice:15000,gears:["Tenda Glamping","Life Jacket","Kompor Ultralight","Headlamp"],image:"assets/gear-tent.png",verified:true},
+    {id:5,name:"Toraja Highland Explorer",city:"Toraja",phone:"6281142009988",rating:4.9,reviews:110,minPrice:25000,gears:["Sepatu Tracking","Jaket Windproof","Carrier 60L","GPS Navigation"],image:"assets/gear-tent.png",verified:true},
+    {id:6,name:"Palopo Camp & Trail Base",city:"Palopo",phone:"6285341122334",rating:4.6,reviews:48,minPrice:15000,gears:["Tenda Dome","Sleeping Bag","Kompor Mawar","Botol Tumbler"],image:"assets/gear-carrier.png",verified:true}
+  ],
+  pendingVendors: [],
+  donations: [],
+  tierSelected: 50000,
+  tiers: [20000, 50000, 100000, 250000],
+
+  load: function() {
+    try {
+      var v = localStorage.getItem('bivak_vendors');
+      if (v) this.vendors = JSON.parse(v);
+      var p = localStorage.getItem('bivak_pending');
+      if (p) this.pendingVendors = JSON.parse(p);
+      var d = localStorage.getItem('bivak_donations');
+      if (d) this.donations = JSON.parse(d);
+    } catch(e) { console.error('Load error:', e); }
   },
-  {
-    id: 2,
-    name: "Bawakaraeng Adventure Gowa",
-    city: "Gowa",
-    address: "Jl. Poros Malino Km. 12, Sungguminasa, Gowa",
-    phone: "6285299887766",
-    rating: 4.8,
-    reviews: 95,
-    minPrice: 12000,
-    gears: ["Tenda Kapasitas 2-6P", "Tracking Pole Carbon", "Nesting Cookset", "Lampu Tenda LED"],
-    image: "assets/gear-carrier.png",
-    status: "approved",
-    isVerified: true
+
+  save: function() {
+    try {
+      localStorage.setItem('bivak_vendors', JSON.stringify(this.vendors));
+      localStorage.setItem('bivak_pending', JSON.stringify(this.pendingVendors));
+      localStorage.setItem('bivak_donations', JSON.stringify(this.donations));
+    } catch(e) { console.error('Save error:', e); }
   },
-  {
-    id: 3,
-    name: "Malino Highland Camp Gear",
-    city: "Malino",
-    address: "Jl. Endang No. 15, kawasan Wisata Malino, Gowa",
-    phone: "6282188990011",
-    rating: 5.0,
-    reviews: 74,
-    minPrice: 20000,
-    gears: ["Tenda Family Luxury", "Matras Thermal Foil", "Hammock Double", "Grill Barbeque"],
-    image: "assets/hero-bg.png",
-    status: "approved",
-    isVerified: true
+
+  rupiah: function(num) {
+    return 'Rp ' + Number(num).toLocaleString('id-ID');
   },
-  {
-    id: 4,
-    name: "Rammang-Rammang Outdoor Maros",
-    city: "Maros",
-    address: "Jl. Poros Maros-Pangkep Km. 5, Salewangang, Maros",
-    phone: "6281355443322",
-    rating: 4.7,
-    reviews: 62,
-    minPrice: 15000,
-    gears: ["Tenda Glamping", "Life Jacket Water Sport", "Kompor Ultralight", "Headlamp waterproof"],
-    image: "assets/gear-tent.png",
-    status: "approved",
-    isVerified: true
+
+  escape: function(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   },
-  {
-    id: 5,
-    name: "Toraja Highland Explorer",
-    city: "Toraja",
-    address: "Jl. Ahmad Yani No. 24, Rantepao, Toraja Utara",
-    phone: "6281142009988",
-    rating: 4.9,
-    reviews: 110,
-    minPrice: 25000,
-    gears: ["Sepatu Tracking Waterproof", "Jaket Windproof", "Carrier 60L-80L", "GPS Navigation"],
-    image: "assets/gear-tent.png",
-    status: "approved",
-    isVerified: true
-  },
-  {
-    id: 6,
-    name: "Palopo Camp & Trail Base",
-    city: "Palopo",
-    address: "Jl. Jendral Sudirman No. 102, Wara, Palopo",
-    phone: "6285341122334",
-    rating: 4.6,
-    reviews: 48,
-    minPrice: 15000,
-    gears: ["Tenda Dome", "Sleeping Bag Polar", "Kompor Mawar", "Botol Tumbler Thermal"],
-    image: "assets/gear-carrier.png",
-    status: "approved",
-    isVerified: true
-  }
-];
 
-let pendingVendorsData = [
-  {
-    id: 101,
-    name: "Latimojong Peak Gear Enrekang",
-    city: "Enrekang",
-    address: "Jl. Swadaya No. 9, Baraka, Enrekang",
-    phone: "6285211998877",
-    minPrice: 20000,
-    gears: ["Tenda Expedition Extreme", "Oxygen Canister", "Thermal Blanket", "Carrier 90L"],
-    image: "assets/gear-tent.png",
-    status: "pending"
-  }
-];
+  el: function(id) { return document.getElementById(id); }
+};
 
-// --- DONASI (REPLACEMENT FOR LELANG) ---
-var _tiers = [20000, 50000, 100000, 250000];
-var _tierSel = 50000;
-var DONATE_TARGET = 75000000;
-var _dummyDonors = [
-  {nama:'Andi Mappanyukki',amt:10000000},{nama:'Komunitas Pencinta Alam Makassar',amt:7500000},
-  {nama:'Nurul Fadhilah',amt:5000000},{nama:'Baso Dg. Nassa',amt:5000000},
-  {nama:'Rina Kartika',amt:3500000},{nama:'Alumni Rimba 45',amt:3000000},
-  {nama:'Muh. Ilham',amt:2500000},{nama:'Sitti Aminah',amt:2500000},
-  {nama:'Yusuf Pratama',amt:2000000},{nama:'Andi Dg. Tata',amt:1500000},
-  {nama:'Hasan Basri',amt:1500000},{nama:'Wahyuni',amt:1000000},
-  {nama:'Fajar Nugraha',amt:1000000},{nama:'Hamba Lestari',amt:1000000},
-  {nama:'Reza Maulana',amt:500000}
-];
-var _alloc = [
-  {l:'🌱 Bibit & penanaman',v:45},{l:'🛡️ Patroli & pengamanan',v:25},
-  {l:'📚 Edukasi & sosialisasi',v:15},{l:'🛠️ Alat & logistik',v:15}
-];
-
-var _dnRows = [];
-var _dnCloud = false;
-
-function _rupiah(n){return 'Rp '+n.toLocaleString('id-ID');}
-function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');}
-
-// Donasi Functions
-function renderTier() {
-  document.getElementById('donasiTier') && (document.getElementById('donasiTier').innerHTML = _tiers.map(function(t) {
-    return '<button class="tier-btn'+(t===_tierSel?' on':'')+'" onclick="selTier('+t+')">'+_rupiah(t)+'</button>';
-  }).join(''));
-}
-function selTier(t) {
-  _tierSel = t;
-  document.querySelectorAll('.tier-btn').forEach(function(btn) {
-    btn.classList.toggle('on', btn.textContent.trim() === _rupiah(t));
-  });
-}
-function renderAlloc() {
-  var el = document.getElementById('allocList');
-  if (!el) return;
-  el.innerHTML = _alloc.map(function(a) {
-    return '<div class="arow"><div class="atop"><span>'+a.l+'</span><span>'+a.v+'%</span></div><div class="quota"><i style="width:'+a.v+'%;background:var(--g-green)"></i></div></div>';
-  }).join('');
-}
-
-function _approvedDonors() {
-  var real = [];
-  try {
-    var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
-    real = (arr || []).filter(function(d) { return d && d.astatus === 'disetujui'; }).map(function(d) {
-      return {nama: d.nama || 'Donatur', amt: +d.amt || 0, fresh: true};
-    });
-  } catch(e) {}
-  return real.concat(_dummyDonors);
-}
-
-function _renderDonorList(donors) {
-  donors = (donors || []).slice().sort(function(a, b) { return (+b.amt) - (+a.amt); });
-  var total = donors.reduce(function(s, d) { return s + (+d.amt || 0); }, 0);
-  var pct = Math.min(100, Math.round(total / DONATE_TARGET * 100));
-
-  var col = document.getElementById('dnCollected'); if (col) col.textContent = _rupiah(total);
-  var bar = document.getElementById('dnBar'); if (bar) bar.style.width = pct + '%';
-  var pc = document.getElementById('dnPct'); if (pc) pc.textContent = pct + '%';
-
-  var box = document.getElementById('dnDonors');
-  if (!box) return;
-  if (!donors.length) {
-    box.innerHTML = '<p class="note" style="text-align:center;padding:20px">Jadilah donatur pertama! 💚</p>';
-    return;
-  }
-  var medal = ['🥇','🥈','🥉'];
-  box.innerHTML = donors.map(function(d, i) {
-    var nm = escapeHtml(d.nama || 'Donatur');
-    var top = i < 3;
-    var rank = top ? medal[i] : ('<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">'+(i+1)+'</span>');
-    var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
-    var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)';
-    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:'+bg+';border:'+bd+'"><div style="width:28px;text-align:center;flex-shrink:0">'+rank+'</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">'+_rupiah(+d.amt||0)+'</div></div>';
-  }).join('');
-}
-
-function renderDonation() {
-  _renderDonorList(_approvedDonors());
-  // If Supabase available, load real data
-  if (window.bivakDb) {
-    window.bivakDb.from('donasi').select('nama,amt,astatus,created_at')
-      .eq('astatus','disetujui').order('created_at',{ascending:false}).then(function(res) {
-        if (!res.error) {
-          var real = (res.data || []).map(function(d) {
-            return {nama: d.nama||'Donatur', amt:+d.amt||0, fresh:false, ts:d.created_at};
-          });
-          _renderDonorList(real.concat(_dummyDonors));
-        }
-      }).catch(function(){});
-  }
-}
-
-function donasi() {
-  // Just open the modal - the form inside handles everything
-  openModal('modalDonasi');
-}
-
-function donasiKirim(n) {
-  var nm = prompt('Masukkan nama Anda untuk sertifikat donasi:') || 'Donatur';
-  nm = nm.trim();
-  if (!nm) { alert('Nama tidak boleh kosong'); return; }
-
-  // Save locally
-  try {
-    var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
-    arr = arr || [];
-    arr.unshift({id: 'D'+Date.now(), nama: nm, amt: n, email: '', ts: new Date().toISOString(), astatus: 'baru'});
-    if (typeof _lsSet === 'function') _lsSet('bivakDonasi', arr);
-  } catch(e) {}
-
-  // Send to Supabase if available
-  if (window.bivakDb) {
-    window.bivakDb.from('donasi').insert({nama: nm, amt: n, astatus: 'baru', source: 'bivak'})
-      .then(function(res) {
-        if (res.error) console.error('[BIVAK] Donasi insert error:', res.error);
-        closeModal('modalDonasi');
-        toast('success','Donasi Terkirim','Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! 💚',5000);
-        renderDonation();
-      }).catch(function(){closeModal('modalDonasi'); toast('info','Catatan','Donasi tersimpan lokal, kirim ke admin via WA untuk verifikasi.' );});
-  } else {
-    closeModal('modalDonasi');
-    toast('info','Catatan','Mode demo: donasi tersimpan lokal. Hubungi admin via WhatsApp untuk verifikasi.');
-  }
-}
-
-// --- INITIALIZATION ---
-document.addEventListener("DOMContentLoaded", () => {
-  renderVendors(vendorsData);
-  renderDonation();
-  renderTier();
-  renderAlloc();
-  updateBadgesAndStats();
+document.addEventListener('DOMContentLoaded', function() {
+  BIVAK.load();
+  renderVendors();
+  renderDonationList();
+  updateBadges();
 });
 
-// --- MOBILE NAVIGATION ---
-function toggleMobileMenu() {
-  const menu = document.getElementById("navMenu");
-  const icon = document.getElementById("mobileToggleIcon");
-  if (!menu) return;
-  menu.classList.toggle("active");
-  if (menu.classList.contains("active")) {
-    icon.classList.remove("fa-bars");
-    icon.classList.add("fa-xmark");
-  } else {
-    icon.classList.remove("fa-xmark");
-    icon.classList.add("fa-bars");
-  }
-}
-
-function closeMobileMenu() {
-  const menu = document.getElementById("navMenu");
-  const icon = document.getElementById("mobileToggleIcon");
-  if (menu && menu.classList.contains("active")) {
-    menu.classList.remove("active");
-    if (icon) { icon.classList.remove("fa-xmark"); icon.classList.add("fa-bars"); }
-  }
-}
-
-// --- RENDER VENDORS ---
-function renderVendors(list) {
-  const container = document.getElementById("vendorGridContainer");
+function renderVendors(filteredList) {
+  var container = BIVAK.el('vendorGridContainer');
   if (!container) return;
+
+  var list = filteredList || BIVAK.vendors;
+
   if (list.length === 0) {
-    container.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);"><i class="fa-solid fa-store-slash" style="font-size: 3rem; color: var(--text-dim); margin-bottom: 1rem;"></i><h3 style="color: #fff;">Tidak Ada Vendor Ditemukan</h3><p style="color: var(--text-muted);">Coba ubah kata kunci pencarian atau filter lokasi Anda.</p></div>';
+    container.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:4rem 1rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px dashed var(--border-glass);"><i class="fa-solid fa-store-slash" style="font-size:3rem;color:var(--text-dim);margin-bottom:1rem;"></i><h3 style="color:#fff;">Tidak Ada Vendor</h3><p style="color:var(--text-muted)">Coba ubah filter pencarian.</p></div>';
     return;
   }
-  container.innerHTML = list.map(v => `
-    <div class="vendor-card">
-      <div class="vendor-cover">
-        <img src="${v.image || 'assets/gear-tent.png'}" alt="${v.name}">
-        <div class="location-badge"><i class="fa-solid fa-location-dot"></i> ${v.city}</div>
-        ${v.isVerified ? `<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>` : ''}
-      </div>
-      <div class="vendor-body">
-        <div class="vendor-header">
-          <h3 class="vendor-title">${v.name}</h3>
-          <div class="vendor-rating"><i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'})</div>
-        </div>
-        <div class="vendor-address"><i class="fa-solid fa-map-pin"></i> ${v.address}</div>
-        <div class="gear-tags">${v.gears.map(g => `<span class="tag"><i class="fa-solid fa-campground"></i> ${g}</span>`).join('')}</div>
-        <div class="vendor-footer">
-          <div class="vendor-price">Sewa Mulai <span>Rp ${v.minPrice.toLocaleString('id-ID')}/hr</span></div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-outline" onclick="openVendorDetail(${v.id})" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;"><i class="fa-solid fa-eye"></i> Detail</button>
-            <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20menemukan%20vendor%20Anda%20di%20RCS.CBS%20-%20BIVAK%20dan%20ingin%20tanya%20sewa%20alat%20outdoor." target="_blank" class="btn btn-whatsapp" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;"><i class="fa-brands fa-whatsapp"></i> WA</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  `).join('');
+
+  container.innerHTML = list.map(function(v) {
+    return '<div class="vendor-card">' +
+      '<div class="vendor-cover">' +
+        '<img src="' + (v.image || 'assets/gear-tent.png') + '" alt="' + BIVAK.escape(v.name) + '" onerror="this.src=\'assets/gear-tent.png\'">' +
+        '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
+        (v.verified ? '<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>' : '') +
+      '</div>' +
+      '<div class="vendor-body">' +
+        '<div class="vendor-header">' +
+          '<h3 class="vendor-title">' + BIVAK.escape(v.name) + '</h3>' +
+          '<div class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + ' (' + (v.reviews || 25) + ')</div>' +
+        '</div>' +
+        '<div class="vendor-address"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</div>' +
+        '<div class="gear-tags">' + (v.gears || []).slice(0,4).map(function(g) {
+          return '<span class="tag"><i class="fa-solid fa-campground"></i> ' + BIVAK.escape(g) + '</span>';
+        }).join('') + '</div>' +
+        '<div class="vendor-footer">' +
+          '<div class="vendor-price">Sewa Mulai <span>' + BIVAK.rupiah(v.minPrice || 15000) + '/hr</span></div>' +
+          '<div style="display:flex;gap:0.5rem">' +
+            '<button class="btn btn-outline" onclick="openVendorDetail(' + v.id + ')" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-solid fa-eye"></i> Detail</button>' +
+            '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20menemukan%20vendor%20Anda%20di%20BIVAK" target="_blank" class="btn btn-whatsapp" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-brands fa-whatsapp"></i> WA</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
-// --- FILTER VENDORS ---
 function filterVendors() {
-  const query = document.getElementById("searchInput").value.toLowerCase();
-  const city = document.getElementById("cityFilter").value;
-  const filtered = vendorsData.filter(v => {
-    const matchesQuery = v.name.toLowerCase().includes(query) || v.gears.some(g => g.toLowerCase().includes(query));
-    const matchesCity = !city || v.city === city;
-    return matchesQuery && matchesCity;
+  var q = BIVAK.el('searchInput');
+  var query = q ? q.value.toLowerCase() : '';
+  var c = BIVAK.el('cityFilter');
+  var city = c ? c.value : '';
+
+  var filtered = BIVAK.vendors.filter(function(v) {
+    var matchQuery = !query || v.name.toLowerCase().indexOf(query) > -1 || (v.gears || []).some(function(g) { return g.toLowerCase().indexOf(query) > -1; });
+    var matchCity = !city || v.city === city;
+    return matchQuery && matchCity;
   });
+
   renderVendors(filtered);
 }
 
-function filterByCity(cityName) {
-  document.getElementById("cityFilter").value = cityName;
-  filterVendors();
-  document.getElementById("katalog").scrollIntoView({ behavior: 'smooth' });
+function openVendorDetail(id) {
+  var v = BIVAK.vendors.find(function(x) { return x.id === id; });
+  if (!v) return;
+
+  BIVAK.el('detailVendorTitle').textContent = v.name;
+  BIVAK.el('detailVendorBody').innerHTML =
+    '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem">' +
+      '<img src="' + (v.image || 'assets/gear-tent.png') + '" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.src=\'assets/gear-tent.png\'">' +
+      '<div style="flex:1">' +
+        '<div style="font-size:0.85rem;color:var(--primary-emerald);font-weight:700;margin-bottom:0.3rem"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
+        '<h3 style="color:#fff;margin-bottom:0.5rem">' + BIVAK.escape(v.name) + '</h3>' +
+        '<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</p>' +
+        '<div style="display:flex;gap:0.5rem;align-items:center">' +
+          '<span class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + '</span>' +
+          '<span style="color:var(--text-muted);font-size:0.85rem">Sewa mulai <strong>' + BIVAK.rupiah(v.minPrice || 15000) + '/hari</strong></span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<h4 style="color:#fff;margin-bottom:0.75rem;border-bottom:1px solid var(--border-glass);padding-bottom:0.4rem">Daftar Peralatan</h4>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem">' +
+      (v.gears || []).map(function(g) {
+        return '<div style="background:rgba(255,255,255,0.03);padding:0.6rem 0.9rem;border-radius:var(--radius-sm);border:1px solid var(--border-glass);color:#e5e7eb;font-size:0.88rem"><i class="fa-solid fa-circle-check text-emerald" style="color:#10b981"></i> ' + BIVAK.escape(g) + '</div>';
+      }).join('') +
+    '</div>' +
+    '<div style="display:flex;justify-content:flex-end;gap:0.75rem">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modalVendorDetail\')">Tutup</button>' +
+      '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20mau%20booking%20sewa%20alat%20outdoor%20lewat%20BIVAK" target="_blank" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp</a>' +
+    '</div>';
+
+  openModal('modalVendorDetail');
 }
 
-// --- MODAL CONTROLLERS ---
-function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) modal.classList.add("active");
+function selTier(n) {
+  BIVAK.tierSelected = n;
+  var btns = document.querySelectorAll('.tier-btn');
+  btns.forEach(function(btn) {
+    var isMatch = btn.textContent.indexOf(n.toLocaleString('id-ID')) > -1;
+    btn.classList.toggle('on', isMatch);
+  });
 }
 
-function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) modal.classList.remove("active");
+function donasi() { openModal('modalDonasi'); }
+
+function handleDonasiSubmit(e) {
+  e.preventDefault();
+
+  var namaEl = BIVAK.el('inputDonasiNama');
+  var nominalEl = BIVAK.el('inputDonasiNominal');
+  var emailEl = BIVAK.el('inputDonasiEmail');
+
+  var nama = namaEl ? namaEl.value.trim() : '';
+  var nominal = nominalEl ? parseInt(nominalEl.value) : 0;
+  var email = emailEl ? emailEl.value.trim() : '';
+
+  if (!nama || !nominal || nominal <= 0) {
+    alert('Isi nama dan nominal donasi dengan benar!');
+    return;
+  }
+
+  var donation = {
+    id: 'D' + Date.now(),
+    nama: nama,
+    email: email,
+    amt: nominal,
+    source: 'bivak',
+    astatus: 'baru',
+    created_at: new Date().toISOString()
+  };
+
+  BIVAK.donations.unshift(donation);
+  BIVAK.save();
+
+  closeModal('modalDonasi');
+  var form = BIVAK.el('formDonasi');
+  if (form) form.reset();
+
+  renderDonationList();
+  updateBadges();
+
+  alert('Donasi berhasil disimpan! Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! 💚');
 }
 
-// --- FORM SUBMISSIONS ---
+function renderDonationList() {
+  var approved = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; });
+  var allDonors = approved.slice();
+
+  if (allDonors.length === 0) {
+    allDonors = [
+      {nama:'Andi Mappanyukki',amt:10000000},
+      {nama:'Komunitas Pencinta Alam Makassar',amt:7500000},
+      {nama:'Nurul Fadhilah',amt:5000000},
+      {nama:'Baso Dg. Nassa',amt:5000000},
+      {nama:'Rina Kartika',amt:3500000}
+    ];
+  }
+
+  var sorted = allDonors.slice().sort(function(a,b) { return b.amt - a.amt; });
+  var total = sorted.reduce(function(s,d) { return s + (d.amt || 0); }, 0);
+  var pct = Math.min(100, Math.round(total / 75000000 * 100));
+
+  var col = BIVAK.el('dnCollected');
+  var bar = BIVAK.el('dnBar');
+  var pc = BIVAK.el('dnPct');
+  var box = BIVAK.el('dnDonors');
+
+  if (col) col.textContent = BIVAK.rupiah(total);
+  if (bar) bar.style.width = pct + '%';
+  if (pc) pc.textContent = pct + '%';
+
+  if (box) {
+    var medals = ['🥇','🥈','🥉'];
+    box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
+      var nm = BIVAK.escape(d.nama || 'Donatur');
+      var top = i < 3;
+      var rank = top ? medals[i] : '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">' + (i+1) + '</span>';
+      var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
+      var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:' + bg + ';border:' + bd + '"><div style="width:28px;text-align:center;flex-shrink:0">' + rank + '</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nm + '</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">' + BIVAK.rupiah(d.amt || 0) + '</div></div>';
+    }).join('');
+  }
+}
+
+function donasiApprove(i, st) {
+  if (i < 0 || i >= BIVAK.donations.length) return;
+
+  BIVAK.donations[i].astatus = st;
+  BIVAK.save();
+
+  renderDonationList();
+  renderAdminTables();
+  updateBadges();
+
+  alert(st === 'disetujui' ? 'Donasi disetujui!' : 'Donasi ditolak.');
+}
+
 function handleVendorSubmit(e) {
   e.preventDefault();
-  const newVendor = {
+
+  var nameEl = BIVAK.el('inputVendorName');
+  var cityEl = BIVAK.el('inputVendorCity');
+  var phoneEl = BIVAK.el('inputVendorPhone');
+  var addrEl = BIVAK.el('inputVendorAddress');
+  var gearsEl = BIVAK.el('inputVendorGears');
+  var priceEl = BIVAK.el('inputVendorMinPrice');
+
+  var vendor = {
     id: Date.now(),
-    name: document.getElementById("inputVendorName").value,
-    city: document.getElementById("inputVendorCity").value,
-    phone: document.getElementById("inputVendorPhone").value,
-    address: document.getElementById("inputVendorAddress").value,
-    gears: document.getElementById("inputVendorGears").value.split(',').map(s => s.trim()),
-    minPrice: parseInt(document.getElementById("inputVendorMinPrice").value) || 15000,
-    image: "assets/gear-tent.png",
-    status: "pending"
+    name: nameEl ? nameEl.value.trim() : '',
+    city: cityEl ? cityEl.value : '',
+    phone: phoneEl ? phoneEl.value.trim() : '',
+    address: addrEl ? addrEl.value.trim() : '',
+    gears: gearsEl ? gearsEl.value.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [],
+    minPrice: priceEl ? (parseInt(priceEl.value) || 15000) : 15000,
+    image: 'assets/gear-tent.png',
+    verified: false
   };
-  pendingVendorsData.push(newVendor);
-  updateBadgesAndStats();
-  closeModal("modalVendor");
-  document.getElementById("formAddVendor").reset();
-  toast("success","Pengajuan Terkirim","Iklan Anda masuk antrean approval Admin BIVAK.");
+
+  if (!vendor.name || !vendor.phone) {
+    alert('Lengkapi nama dan nomor WhatsApp!');
+    return;
+  }
+
+  BIVAK.pendingVendors.push(vendor);
+  BIVAK.save();
+
+  closeModal('modalVendor');
+  var form = BIVAK.el('formAddVendor');
+  if (form) form.reset();
+
+  updateBadges();
+  alert('Pengajuan berhasil! Iklan Anda masuk antrean approval admin.');
 }
 
-// --- VENDOR DETAIL ---
-function openVendorDetail(vendorId) {
-  const v = vendorsData.find(item => item.id === vendorId);
-  if (!v) return;
-  document.getElementById("detailVendorTitle").innerText = v.name;
-  document.getElementById("detailVendorBody").innerHTML = `
-    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-      <img src="${v.image}" style="width: 200px; height: 160px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
-      <div style="flex: 1;">
-        <div style="font-size: 0.85rem; color: var(--primary-emerald); font-weight: 700; margin-bottom: 0.3rem;"><i class="fa-solid fa-location-dot"></i> ${v.city} - TERVERIFIKASI</div>
-        <h3 style="color: #fff; margin-bottom: 0.5rem;">${v.name}</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-map-pin"></i> ${v.address}</p>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <span class="vendor-rating"><i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'} ulasan)</span>
-          <span style="color: var(--text-muted); font-size: 0.85rem;">Sewa mulai <strong>Rp ${v.minPrice.toLocaleString('id-ID')}/hari</strong></span>
-        </div>
-      </div>
-    </div>
-    <h4 style="color: #fff; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.4rem;">Daftar Peralatan Tersedia</h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
-      ${v.gears.map(g => `<div style="background: rgba(255,255,255,0.03); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); color: #e5e7eb; font-size: 0.88rem;"><i class="fa-solid fa-circle-check text-emerald" style="color:#10b981"></i> ${g}</div>`).join('')}
-    </div>
-    <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-      <button class="btn btn-outline" onclick="closeModal('modalVendorDetail')">Tutup</button>
-      <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20mau%20booking%20sewa%20alat%20outdoor%20lewat%20BIVAK." target="_blank" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp</a>
-    </div>
-  `;
-  openModal("modalVendorDetail");
-}
-
-// --- ADMIN PANEL ---
 function openAdminPanel() {
   renderAdminTables();
-  openModal("modalAdmin");
+  openModal('modalAdmin');
 }
 
 function switchAdminTab(tabName) {
-  document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-  document.querySelectorAll(".admin-tab-content").forEach(el => el.style.display = "none");
-  if (tabName === "pendingVendors") {
-    document.querySelectorAll(".tab-btn")[0].classList.add("active");
-    document.getElementById("tabPendingVendors").style.display = "block";
-  } else if (tabName === "activeVendors") {
-    document.querySelectorAll(".tab-btn")[1].classList.add("active");
-    document.getElementById("tabActiveVendors").style.display = "block";
-  } else if (tabName === "donasi") {
-    document.querySelectorAll(".tab-btn")[2].classList.add("active");
-    document.getElementById("tabDonasi").style.display = "block";
-  }
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(btn) { btn.classList.remove('active'); });
+
+  var contents = document.querySelectorAll('.admin-tab-content');
+  contents.forEach(function(el) { el.style.display = 'none'; });
+
+  var map = {
+    'pendingVendors': {idx: 0, id: 'tabPendingVendors'},
+    'activeVendors': {idx: 1, id: 'tabActiveVendors'},
+    'donasi': {idx: 2, id: 'tabDonasi'}
+  };
+
+  var pair = map[tabName] || map['pendingVendors'];
+  if (btns[pair.idx]) btns[pair.idx].classList.add('active');
+  var tabEl = BIVAK.el(pair.id);
+  if (tabEl) tabEl.style.display = 'block';
 }
 
 function renderAdminTables() {
-  // Pending Vendors
-  const pendingBody = document.getElementById("tablePendingVendorsBody");
-  if (!pendingBody) return;
-  if (pendingVendorsData.length === 0) {
-    pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>';
-  } else {
-    pendingBody.innerHTML = pendingVendorsData.map(pv => `
-      <tr>
-        <td><strong>${pv.name}</strong><br><small style="color:var(--text-muted)">${pv.city}</small></td>
-        <td>${pv.phone}</td>
-        <td><small>${pv.gears.slice(0,3).join(', ')}</small></td>
-        <td>Rp ${pv.minPrice.toLocaleString('id-ID')}</td>
-        <td>
-          <button class="btn btn-primary" onclick="approveVendor(${pv.id})" style="padding:0.35rem 0.7rem;font-size:0.78rem;"><i class="fa-solid fa-check"></i></button>
-          <button class="btn btn-outline" onclick="rejectVendor(${pv.id})" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  // Active Vendors
-  const activeBody = document.getElementById("tableActiveVendorsBody");
-  if (activeBody) {
-    activeBody.innerHTML = vendorsData.map(av => `
-      <tr>
-        <td><strong>${av.name}</strong></td>
-        <td>${av.city}</td>
-        <td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ${av.rating||'4.8'}</td>
-        <td><span class="status-tag status-approved">Tayang</span></td>
-        <td><button class="btn btn-outline" onclick="removeActiveVendor(${av.id})" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>
-      </tr>
-    `).join('');
-  }
-
-  // Donasi Table
-  const donasiBody = document.getElementById("tableDonasiBody");
-  if (donasiBody) {
-    // Prioritize cloud data, fallback to localStorage
-    var donasiRows = _dnRows.length ? _dnRows : (
-      function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return[];}}()
-    );
-
-    // Also check if localStorage has data that wasn't loaded to _dnRows
-    var lsData = [];
-    try {
-      lsData = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
-    } catch(e) {}
-
-    // Merge: cloud data first, then add any local-only entries
-    if (donasiRows.length === 0 && lsData.length > 0) {
-      donasiRows = lsData;
-    } else if (_dnCloud && donasiRows.length > 0) {
-      // Cloud mode: check for any local entries not in cloud
-      var cloudIds = {};
-      donasiRows.forEach(function(r) { cloudIds[r.id] = true; });
-      lsData.forEach(function(item) {
-        if (!cloudIds[item.id]) donasiRows.push(item);
-      });
+  var pendingBody = BIVAK.el('tablePendingVendorsBody');
+  if (pendingBody) {
+    if (BIVAK.pendingVendors.length === 0) {
+      pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>';
+    } else {
+      pendingBody.innerHTML = BIVAK.pendingVendors.map(function(pv, i) {
+        return '<tr>' +
+          '<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
+          '<td>' + BIVAK.escape(pv.phone) + '</td>' +
+          '<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
+          '<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
+          '<td>' +
+            '<button class="btn btn-primary" onclick="approveVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
+            '<button class="btn btn-outline" onclick="rejectVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
     }
+  }
 
-    if (donasiRows.length === 0) {
+  var activeBody = BIVAK.el('tableActiveVendorsBody');
+  if (activeBody) {
+    activeBody.innerHTML = BIVAK.vendors.map(function(av, i) {
+      return '<tr>' +
+        '<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
+        '<td>' + BIVAK.escape(av.city) + '</td>' +
+        '<td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ' + (av.rating || 4.8) + '</td>' +
+        '<td><span class="status-tag status-approved">Tayang</span></td>' +
+        '<td><button class="btn btn-outline" onclick="removeActiveVendor(' + i + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var donasiBody = BIVAK.el('tableDonasiBody');
+  if (donasiBody) {
+    if (BIVAK.donations.length === 0) {
       donasiBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Belum ada donasi.</td></tr>';
     } else {
-      donasiBody.innerHTML = donasiRows.map(function(r,i) {
-        var nm = escapeHtml(r.nama||'Donatur');
-        var amt = _rupiah(r.amt||0);
-         var when = r.created_at || r.ts;
+      donasiBody.innerHTML = BIVAK.donations.map(function(r, i) {
+        var nm = BIVAK.escape(r.nama || 'Donatur');
+        var amt = BIVAK.rupiah(r.amt || 0);
+        var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
         var st = r.astatus || 'baru';
         var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
-                      st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
-                      '<span style="color:#f59e0b;font-weight:700">⏳ Baru</span>';
-        return '<tr><td>'+nm+'</td><td>'+amt+'</td><td>'+((when)?new Date(when).toLocaleDateString('id-ID'):'-')+'</td><td>'+stBadge+'</td><td><button class="btn btn-primary" onclick="donasiApprove('+i+',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button><button class="btn btn-outline" onclick="donasiApprove('+i+',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button></td></tr>';
+                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+                       '<span style="color:#f59e0b;font-weight:700">⏳ Baru</span>';
+        return '<tr>' +
+          '<td>' + nm + '</td>' +
+          '<td>' + amt + '</td>' +
+          '<td>' + when + '</td>' +
+          '<td>' + stBadge + '</td>' +
+          '<td>' +
+            '<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
+            '<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+          '</td>' +
+        '</tr>';
       }).join('');
     }
   }
 }
 
-function approveVendor(id) {
-  const index = pendingVendorsData.findIndex(pv => pv.id === id);
-  if (index !== -1) {
-    const item = pendingVendorsData.splice(index, 1)[0];
-    item.status = "approved";
-    item.rating = 5.0;
-    item.reviews = 1;
-    item.isVerified = true;
-    vendorsData.unshift(item);
-    renderVendors(vendorsData);
-    renderAdminTables();
-    updateBadgesAndStats();
-    toast("success","Vendor Disetujui","Iklan '"+item.name+"' kini tampil publik.");
-  }
-}
-
-function rejectVendor(id) {
-  const index = pendingVendorsData.findIndex(pv => pv.id === id);
-  if (index !== -1) {
-    pendingVendorsData.splice(index, 1);
-    renderAdminTables();
-    updateBadgesAndStats();
-    toast("info","Vendor Ditolak","Pengajuan telah dihapus.");
-  }
-}
-
-function removeActiveVendor(id) {
-  if (!confirm("Hapus vendor ini dari katalog publik?")) return;
-  vendorsData = vendorsData.filter(v => v.id !== id);
-  renderVendors(vendorsData);
+function approveVendor(i) {
+  var item = BIVAK.pendingVendors.splice(i, 1)[0];
+  if (!item) return;
+  BIVAK.vendors.unshift(item);
+  BIVAK.save();
+  renderVendors();
   renderAdminTables();
-  updateBadgesAndStats();
+  updateBadges();
+  alert('Vendor disetujui!');
 }
 
-function donasiApprove(i, st) {
-  var r = _dnRows[i];
-  if (!r) return;
-  if (_dnCloud) {
-    if (window.bivakDb) {
-      window.bivakDb.from('donasi').update({astatus: st}).eq('id', r.id).then(function(res) {
-        if (res.error) toast("error", "Gagal", res.error.message);
-        else {
-          toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui' : 'Donasi ditolak');
-          try { if (typeof renderDonation === 'function') renderDonation(); } catch(e) {}
-          renderAdminTables();
-        }
-      });
-    }
-  } else {
-    try {
-      var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
-      arr = arr || [];
-      if (arr[i]) arr[i].astatus = st;
-      if (typeof _lsSet === 'function') _lsSet('bivakDonasi', arr);
-    } catch(e) {}
-    toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui' : 'Donasi ditolak');
-    try { if (typeof renderDonation === 'function') renderDonation(); } catch(e) {}
-    renderAdminTables();
-  }
+function rejectVendor(i) {
+  BIVAK.pendingVendors.splice(i, 1);
+  BIVAK.save();
+  renderAdminTables();
+  updateBadges();
+  alert('Vendor ditolak.');
 }
 
-function updateBadgesAndStats() {
-  const pendingCount = pendingVendorsData.length;
-  const coinBadge = document.getElementById("coinAdminBadge");
+function removeActiveVendor(i) {
+  if (!confirm('Hapus vendor ini dari katalog?')) return;
+  BIVAK.vendors.splice(i, 1);
+  BIVAK.save();
+  renderVendors();
+  renderAdminTables();
+  updateBadges();
+}
+
+function openModal(id) {
+  var m = BIVAK.el(id);
+  if (m) m.classList.add('active');
+}
+
+function closeModal(id) {
+  var m = BIVAK.el(id);
+  if (m) m.classList.remove('active');
+}
+
+function updateBadges() {
+  var coinBadge = BIVAK.el('coinAdminBadge');
   if (coinBadge) {
-    coinBadge.innerText = pendingCount;
-    coinBadge.style.display = pendingCount > 0 ? "inline-flex" : "none";
+    var count = BIVAK.pendingVendors.length;
+    coinBadge.textContent = count;
+    coinBadge.style.display = count > 0 ? 'inline-flex' : 'none';
   }
-  const pendingTabBadge = document.getElementById("pendingTabBadge");
-  if (pendingTabBadge) pendingTabBadge.innerText = pendingCount;
-  const activeTabBadge = document.getElementById("activeTabBadge");
-  if (activeTabBadge) activeTabBadge.innerText = vendorsData.length;
-  const donasiTabBadge = document.getElementById("donasiTabBadge");
-  if (donasiTabBadge) {
-    var donCount = _dnRows.length || (function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return[];}}()).length;
-    donasiTabBadge.innerText = donCount;
-  }
-  const statVendorsCount = document.getElementById("statVendorsCount");
-  if (statVendorsCount) statVendorsCount.innerText = vendorsData.length;
-  const statDonationTotal = document.getElementById("statDonationTotal");
-  if (statDonationTotal) {
-    var total = _dummyDonors.reduce(function(s,d){return s+(d.amt||0);},0);
-    try{var arr=(typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];(arr||[]).filter(function(d){return d&&d.astatus==='disetujui';}).forEach(function(d){total+=d.amt||0;});}catch(e){}
-    statDonationTotal.innerText = total.toLocaleString('id-ID');
+
+  var pendingBadge = BIVAK.el('pendingTabBadge');
+  if (pendingBadge) pendingBadge.textContent = BIVAK.pendingVendors.length;
+
+  var activeBadge = BIVAK.el('activeTabBadge');
+  if (activeBadge) activeBadge.textContent = BIVAK.vendors.length;
+
+  var donasiBadge = BIVAK.el('donasiTabBadge');
+  if (donasiBadge) donasiBadge.textContent = BIVAK.donations.length;
+
+  var statVendors = BIVAK.el('statVendorsCount');
+  if (statVendors) statVendors.textContent = BIVAK.vendors.length;
+
+  var statDonation = BIVAK.el('statDonationTotal');
+  if (statDonation) {
+    var total = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; }).reduce(function(s, d) { return s + d.amt; }, 0);
+    statDonation.textContent = total.toLocaleString('id-ID');
   }
 }
 
-// Simple toast replacement
-function toast(kind, title, msg, ms) {
-  if (!window.bivakToast) {
-    alert(title + (msg ? ': ' + msg : ''));
-    return;
+function toggleMobileMenu() {
+  var menu = BIVAK.el('navMenu');
+  var icon = BIVAK.el('mobileToggleIcon');
+  if (menu) menu.classList.toggle('active');
+  if (icon) {
+    icon.classList.toggle('fa-bars');
+    icon.classList.toggle('fa-xmark');
   }
-  window.bivakToast(kind, title, msg, ms || 4000);
 }
 
-// localStorage helpers (for demo mode)
-function _lsGet(k, def) {
-  try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+function closeMobileMenu() {
+  var menu = BIVAK.el('navMenu');
+  var icon = BIVAK.el('mobileToggleIcon');
+  if (menu) menu.classList.remove('active');
+  if (icon) {
+    icon.classList.add('fa-bars');
+    icon.classList.remove('fa-xmark');
+  }
 }
-function _lsSet(k, v) {
-  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+
+function filterByCity(city) {
+  var c = BIVAK.el('cityFilter');
+  if (c) c.value = city;
+  filterVendors();
+  var k = BIVAK.el('katalog');
+  if (k) k.scrollIntoView({behavior: 'smooth'});
 }
