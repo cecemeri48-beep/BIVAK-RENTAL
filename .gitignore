@@ -1,0 +1,6 @@
+# BIVAK v4 - Donasi Pintu Angin
+.env.local
+node_modules/
+.vercel/
+.DS_Store
+*.log

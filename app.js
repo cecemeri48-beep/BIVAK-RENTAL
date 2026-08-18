@@ -1,6 +1,7 @@
 /* ==========================================================================
-   BIVAK - Bursa Interaktif Vendor Alam & Komunitas Sulawesi Selatan
+   BIVAK v4 - Bursa Interaktif Vendor Alam & Komunitas
    Application Logic & State Management
+   LELANG DIHAPUS — DIGANTI SISTEM DONASI PINTU ANGIN
    ========================================================================== */
 
 // --- INITIAL MOCK DATA STORAGE ---
@@ -71,7 +72,7 @@ let vendorsData = [
     reviews: 110,
     minPrice: 25000,
     gears: ["Sepatu Tracking Waterproof", "Jaket Windproof", "Carrier 60L-80L", "GPS Navigation"],
-    image: "assets/auction-jacket.png",
+    image: "assets/gear-tent.png",
     status: "approved",
     isVerified: true
   },
@@ -102,83 +103,170 @@ let pendingVendorsData = [
     gears: ["Tenda Expedition Extreme", "Oxygen Canister", "Thermal Blanket", "Carrier 90L"],
     image: "assets/gear-tent.png",
     status: "pending"
-  },
-  {
-    id: 102,
-    name: "Tanjung Bira Beach Camp Bulukumba",
-    city: "Bulukumba",
-    address: "Jl. Raya Pantai Bira, Bontobahari, Bulukumba",
-    phone: "6281299882211",
-    minPrice: 18000,
-    gears: ["Tenda Beach Dome", "Alat Snorkeling", "Perahu Karet Kayak", "Lampu Sorot Portable"],
-    image: "assets/hero-bg.png",
-    status: "pending"
   }
 ];
 
-let auctionsData = [
-  {
-    id: 1,
-    title: "Jaket Gore-Tex Expedition Limited Edition",
-    donor: "Celebes Outdoor Club Makassar",
-    phone: "6281245678901",
-    cause: "🌱 Reboisasi Bawakaraeng",
-    startingBid: 250000,
-    currentBid: 850000,
-    highestBidder: "Rian (Pendaki Makassar)",
-    bidCount: 14,
-    hoursLeft: 4,
-    minutesLeft: 15,
-    image: "assets/auction-jacket.png",
-    description: "Jaket Gore-Tex waterproof kualitas ekspedisi. 100% donasi dialokasikan untuk pembibitan 200 bibit pohon di jalur Bawakaraeng."
-  },
-  {
-    id: 2,
-    title: "Carrier Deuter Aircontact Pro 75+10L",
-    donor: "Komunitas KPA Latimojong",
-    phone: "6285299887766",
-    cause: "🧹 Clean-Up Latimojong",
-    startingBid: 300000,
-    currentBid: 1200000,
-    highestBidder: "Fikri (Maros)",
-    bidCount: 19,
-    hoursLeft: 8,
-    minutesLeft: 42,
-    image: "assets/gear-carrier.png",
-    description: "Tas Carrier tangguh pemakaian 2x naik gunung. Hasil lelang untuk dana operasional pembersihan sampah plastik Jalur Latimojong."
-  },
-  {
-    id: 3,
-    title: "Tenda Dome Expedition 4 Person Aluminum Pole",
-    donor: "Mapala UMI Makassar",
-    phone: "6282188990011",
-    cause: "🆘 Tanggap Bencana Sulsel",
-    startingBid: 200000,
-    currentBid: 650000,
-    highestBidder: "Andi Toraja",
-    bidCount: 9,
-    hoursLeft: 12,
-    minutesLeft: 0,
-    image: "assets/gear-tent.png",
-    description: "Tenda tahan angin badai dengan pasak aluminium alloy. Donasi disalurkan untuk posko bantuan banjir dan tanah longsor Sulsel."
-  }
+// --- DONASI (REPLACEMENT FOR LELANG) ---
+var _tiers = [20000, 50000, 100000, 250000];
+var _tierSel = 50000;
+var DONATE_TARGET = 75000000;
+var _dummyDonors = [
+  {nama:'Andi Mappanyukki',amt:10000000},{nama:'Komunitas Pencinta Alam Makassar',amt:7500000},
+  {nama:'Nurul Fadhilah',amt:5000000},{nama:'Baso Dg. Nassa',amt:5000000},
+  {nama:'Rina Kartika',amt:3500000},{nama:'Alumni Rimba 45',amt:3000000},
+  {nama:'Muh. Ilham',amt:2500000},{nama:'Sitti Aminah',amt:2500000},
+  {nama:'Yusuf Pratama',amt:2000000},{nama:'Andi Dg. Tata',amt:1500000},
+  {nama:'Hasan Basri',amt:1500000},{nama:'Wahyuni',amt:1000000},
+  {nama:'Fajar Nugraha',amt:1000000},{nama:'Hamba Lestari',amt:1000000},
+  {nama:'Reza Maulana',amt:500000}
+];
+var _alloc = [
+  {l:'🌱 Bibit & penanaman',v:45},{l:'🛡️ Patroli & pengamanan',v:25},
+  {l:'📚 Edukasi & sosialisasi',v:15},{l:'🛠️ Alat & logistik',v:15}
 ];
 
-let totalDonationRaised = 45800000;
+var _dnRows = [];
+var _dnCloud = false;
+
+function _rupiah(n){return 'Rp '+n.toLocaleString('id-ID');}
+function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');}
+
+// Donasi Functions
+function renderTier() {
+  document.getElementById('donasiTier') && (document.getElementById('donasiTier').innerHTML = _tiers.map(function(t) {
+    return '<button class="tier-btn'+(t===_tierSel?' on':'')+'" onclick="selTier('+t+')">'+_rupiah(t)+'</button>';
+  }).join(''));
+}
+function selTier(t) {
+  _tierSel = t;
+  document.querySelectorAll('.tier-btn').forEach(function(btn) {
+    btn.classList.toggle('on', btn.textContent.trim() === _rupiah(t));
+  });
+}
+function renderAlloc() {
+  var el = document.getElementById('allocList');
+  if (!el) return;
+  el.innerHTML = _alloc.map(function(a) {
+    return '<div class="arow"><div class="atop"><span>'+a.l+'</span><span>'+a.v+'%</span></div><div class="quota"><i style="width:'+a.v+'%;background:var(--g-green)"></i></div></div>';
+  }).join('');
+}
+
+function _approvedDonors() {
+  var real = [];
+  try {
+    var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
+    real = (arr || []).filter(function(d) { return d && d.astatus === 'disetujui'; }).map(function(d) {
+      return {nama: d.nama || 'Donatur', amt: +d.amt || 0, fresh: true};
+    });
+  } catch(e) {}
+  return real.concat(_dummyDonors);
+}
+
+function _renderDonorList(donors) {
+  donors = (donors || []).slice().sort(function(a, b) { return (+b.amt) - (+a.amt); });
+  var total = donors.reduce(function(s, d) { return s + (+d.amt || 0); }, 0);
+  var pct = Math.min(100, Math.round(total / DONATE_TARGET * 100));
+
+  var col = document.getElementById('dnCollected'); if (col) col.textContent = _rupiah(total);
+  var bar = document.getElementById('dnBar'); if (bar) bar.style.width = pct + '%';
+  var pc = document.getElementById('dnPct'); if (pc) pc.textContent = pct + '%';
+
+  var box = document.getElementById('dnDonors');
+  if (!box) return;
+  if (!donors.length) {
+    box.innerHTML = '<p class="note" style="text-align:center;padding:20px">Jadilah donatur pertama! 💚</p>';
+    return;
+  }
+  var medal = ['🥇','🥈','🥉'];
+  box.innerHTML = donors.map(function(d, i) {
+    var nm = escapeHtml(d.nama || 'Donatur');
+    var top = i < 3;
+    var rank = top ? medal[i] : ('<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">'+(i+1)+'</span>');
+    var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
+    var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:'+bg+';border:'+bd+'"><div style="width:28px;text-align:center;flex-shrink:0">'+rank+'</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">'+_rupiah(+d.amt||0)+'</div></div>';
+  }).join('');
+}
+
+function renderDonation() {
+  _renderDonorList(_approvedDonors());
+  // If Supabase available, load real data
+  if (window.bivakDb) {
+    window.bivakDb.from('donasi').select('nama,amt,astatus,created_at')
+      .eq('astatus','disetujui').order('created_at',{ascending:false}).then(function(res) {
+        if (!res.error) {
+          var real = (res.data || []).map(function(d) {
+            return {nama: d.nama||'Donatur', amt:+d.amt||0, fresh:false, ts:d.created_at};
+          });
+          _renderDonorList(real.concat(_dummyDonors));
+        }
+      }).catch(function(){});
+  }
+}
+
+function donasi() {
+  var amt = _rupiah(_tierSel);
+  var wa = 'https://wa.me/6282320124040?text='+encodeURIComponent('Halo Admin RCS.CBS, saya ingin berdonasi '+amt+' untuk konservasi Gunung Bawakaraeng.');
+  var html = '<div style="background:linear-gradient(135deg,#0f3d2e,#13543c);color:#eafff5;border-radius:16px;padding:16px;margin-bottom:14px"><div style="font-size:12px;color:#7ff0bd;font-weight:800;margin-bottom:6px">GOPOY / QRIS</div><div style="font-weight:800;font-size:18px">082320124040</div><div style="font-size:13px;margin-top:4px">a.n. RCS.CBS</div></div>'+
+    '<div style="text-align:center;margin-bottom:14px"><img src="assets/qris-gopay.png" alt="QRIS" style="max-width:200px;border-radius:12px;border:8px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.3)" onerror="this.style.display=\'none\'"/></div>'+
+    '<button class="btn btn-rose" style="width:100%;border:none;border-radius:12px;padding:13px;font-weight:800;cursor:pointer;margin-bottom:10px" onclick="donasiKirim('+_tierSel+')">✅ Saya Sudah Transfer · Konfirmasi</button>'+
+    '<a class="btn" style="width:100%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;border-radius:12px;padding:12px;font-weight:800" href="'+wa+'" target="_blank" rel="noopener">📲 Tanya / Kirim Bukti via WhatsApp</a>'+
+    '<p class="note" style="margin-top:8px;text-align:center">Admin akan memverifikasi dan nama Anda tampil di leaderboard publik.</p>';
+  document.getElementById('sheetBody') && (document.getElementById('sheetBody').innerHTML = html);
+  document.getElementById('sheetBody') && openSheet();
+}
+
+function donasiKirim(n) {
+  var nm = prompt('Masukkan nama Anda untuk sertifikat donasi:') || 'Donatur';
+  nm = nm.trim();
+  if (!nm) { alert('Nama tidak boleh kosong'); return; }
+
+  // Save locally
+  try {
+    var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
+    arr = arr || [];
+    arr.unshift({id: 'D'+Date.now(), nama: nm, amt: n, email: '', ts: new Date().toISOString(), astatus: 'baru'});
+    if (typeof _lsSet === 'function') _lsSet('bivakDonasi', arr);
+  } catch(e) {}
+
+  // Send to Supabase if available
+  if (window.bivakDb) {
+    window.bivakDb.from('donasi').insert({nama: nm, amt: n, astatus: 'baru', source: 'bivak'})
+      .then(function(res) {
+        if (res.error) console.error('[BIVAK] Donasi insert error:', res.error);
+        closeSheet && closeSheet();
+        toast('success','Donasi Terkirim','Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! 💚',5000);
+        renderDonation();
+      }).catch(function(){closeSheet && closeSheet(); toast('info','Catatan','Donasi tersimpan lokal, kirim ke admin via WA untuk verifikasi.' );});
+  } else {
+    closeSheet && closeSheet();
+    toast('info','Catatan','Mode demo: donasi tersimpan lokal. Hubungi admin via WhatsApp untuk verifikasi.');
+  }
+}
+
+function openSheet() {
+  var s = document.getElementById('sheet');
+  if (s) s.classList.add('active');
+}
+function closeSheet() {
+  var s = document.getElementById('sheet');
+  if (s) s.classList.remove('active');
+}
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
   renderVendors(vendorsData);
-  renderAuctions();
+  renderDonation();
+  renderTier();
+  renderAlloc();
   updateBadgesAndStats();
 });
 
-// --- MOBILE NAVIGATION CONTROLLER ---
+// --- MOBILE NAVIGATION ---
 function toggleMobileMenu() {
   const menu = document.getElementById("navMenu");
   const icon = document.getElementById("mobileToggleIcon");
   if (!menu) return;
-
   menu.classList.toggle("active");
   if (menu.classList.contains("active")) {
     icon.classList.remove("fa-bars");
@@ -194,10 +282,7 @@ function closeMobileMenu() {
   const icon = document.getElementById("mobileToggleIcon");
   if (menu && menu.classList.contains("active")) {
     menu.classList.remove("active");
-    if (icon) {
-      icon.classList.remove("fa-xmark");
-      icon.classList.add("fa-bars");
-    }
+    if (icon) { icon.classList.remove("fa-xmark"); icon.classList.add("fa-bars"); }
   }
 }
 
@@ -205,95 +290,31 @@ function closeMobileMenu() {
 function renderVendors(list) {
   const container = document.getElementById("vendorGridContainer");
   if (!container) return;
-
   if (list.length === 0) {
-    container.innerHTML = `
-      <div style="grid-column: span 3; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);">
-        <i class="fa-solid fa-store-slash" style="font-size: 3rem; color: var(--text-dim); margin-bottom: 1rem;"></i>
-        <h3 style="color: #fff;">Tidak Ada Vendor Ditemukan</h3>
-        <p style="color: var(--text-muted);">Coba ubah kata kunci pencarian atau filter lokasi Anda.</p>
-      </div>
-    `;
+    container.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);"><i class="fa-solid fa-store-slash" style="font-size: 3rem; color: var(--text-dim); margin-bottom: 1rem;"></i><h3 style="color: #fff;">Tidak Ada Vendor Ditemukan</h3><p style="color: var(--text-muted);">Coba ubah kata kunci pencarian atau filter lokasi Anda.</p></div>';
     return;
   }
-
   container.innerHTML = list.map(v => `
     <div class="vendor-card">
       <div class="vendor-cover">
         <img src="${v.image || 'assets/gear-tent.png'}" alt="${v.name}">
-        <div class="location-badge">
-          <i class="fa-solid fa-location-dot"></i> ${v.city}
-        </div>
+        <div class="location-badge"><i class="fa-solid fa-location-dot"></i> ${v.city}</div>
         ${v.isVerified ? `<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>` : ''}
       </div>
       <div class="vendor-body">
         <div class="vendor-header">
           <h3 class="vendor-title">${v.name}</h3>
-          <div class="vendor-rating">
-            <i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'})
-          </div>
+          <div class="vendor-rating"><i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'})</div>
         </div>
-        <div class="vendor-address">
-          <i class="fa-solid fa-map-pin"></i> ${v.address}
-        </div>
-        <div class="gear-tags">
-          ${v.gears.map(g => `<span class="tag"><i class="fa-solid fa-campground"></i> ${g}</span>`).join('')}
-        </div>
+        <div class="vendor-address"><i class="fa-solid fa-map-pin"></i> ${v.address}</div>
+        <div class="gear-tags">${v.gears.map(g => `<span class="tag"><i class="fa-solid fa-campground"></i> ${g}</span>`).join('')}</div>
         <div class="vendor-footer">
-          <div class="vendor-price">
-            Sewa Mulai
-            <span>Rp ${v.minPrice.toLocaleString('id-ID')}/hr</span>
-          </div>
+          <div class="vendor-price">Sewa Mulai <span>Rp ${v.minPrice.toLocaleString('id-ID')}/hr</span></div>
           <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-outline" onclick="openVendorDetail(${v.id})" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;">
-              <i class="fa-solid fa-eye"></i> Detail
-            </button>
-            <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20menemukan%20vendor%20Anda%20di%20RCS.CBS%20-%20BIVAK%20(Reichas%20Chelebes)%20dan%20ingin%20tanya%20sewa%20alat%20outdoor." 
-               target="_blank" class="btn btn-whatsapp" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;">
-              <i class="fa-brands fa-whatsapp"></i> WA
-            </a>
+            <button class="btn btn-outline" onclick="openVendorDetail(${v.id})" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;"><i class="fa-solid fa-eye"></i> Detail</button>
+            <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20menemukan%20vendor%20Anda%20di%20RCS.CBS%20-%20BIVAK%20dan%20ingin%20tanya%20sewa%20alat%20outdoor." target="_blank" class="btn btn-whatsapp" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;"><i class="fa-brands fa-whatsapp"></i> WA</a>
           </div>
         </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// --- RENDER AUCTIONS ---
-function renderAuctions() {
-  const container = document.getElementById("auctionGridContainer");
-  if (!container) return;
-
-  container.innerHTML = auctionsData.map(a => `
-    <div class="auction-card">
-      <div style="position: relative; height: 200px;">
-        <img src="${a.image}" alt="${a.title}" style="width: 100%; height: 100%; object-fit: cover;">
-        <div class="auction-badge-cause">${a.cause}</div>
-      </div>
-      <div style="padding: 1.5rem;">
-        <h3 style="color: #fff; font-size: 1.2rem; margin-bottom: 0.4rem;">${a.title}</h3>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
-          <i class="fa-solid fa-user-heart" style="color: var(--accent-amber);"></i> Didonasikan oleh: <strong>${a.donor}</strong>
-        </p>
-
-        <div class="timer-box" data-remain="${a.hoursLeft * 3600 + a.minutesLeft * 60 + 15}">
-          <i class="fa-solid fa-clock"></i> Sisa Waktu: <span class="tick">${String(a.hoursLeft).padStart(2, '0')}j ${String(a.minutesLeft).padStart(2, '0')}m 15s</span>
-        </div>
-
-        <div class="bid-status">
-          <div class="bid-row">
-            <span style="color: var(--text-muted); font-size: 0.85rem;">Bid Tertinggi Saat Ini:</span>
-            <span class="bid-val">Rp ${a.currentBid.toLocaleString('id-ID')}</span>
-          </div>
-          <div class="bid-row">
-            <span style="color: var(--text-muted); font-size: 0.78rem;">Oleh: ${a.highestBidder}</span>
-            <span style="color: var(--primary-emerald); font-size: 0.78rem;">${a.bidCount} Penawaran</span>
-          </div>
-        </div>
-
-        <button class="btn btn-amber" style="width: 100%;" onclick="openBidModal(${a.id})">
-          <i class="fa-solid fa-gavel"></i> Tawar Sekarang (Bid)
-        </button>
       </div>
     </div>
   `).join('');
@@ -303,26 +324,16 @@ function renderAuctions() {
 function filterVendors() {
   const query = document.getElementById("searchInput").value.toLowerCase();
   const city = document.getElementById("cityFilter").value;
-  const category = document.getElementById("categoryFilter").value;
-
   const filtered = vendorsData.filter(v => {
     const matchesQuery = v.name.toLowerCase().includes(query) || v.gears.some(g => g.toLowerCase().includes(query));
     const matchesCity = !city || v.city === city;
-    const matchesCategory = !category || v.gears.some(g => g.toLowerCase().includes(category.toLowerCase()));
-    return matchesQuery && matchesCity && matchesCategory;
+    return matchesQuery && matchesCity;
   });
-
   renderVendors(filtered);
 }
 
 function filterByCity(cityName) {
   document.getElementById("cityFilter").value = cityName;
-  filterVendors();
-  document.getElementById("katalog").scrollIntoView({ behavior: 'smooth' });
-}
-
-function filterByCategory(categoryName) {
-  document.getElementById("categoryFilter").value = categoryName;
   filterVendors();
   document.getElementById("katalog").scrollIntoView({ behavior: 'smooth' });
 }
@@ -349,138 +360,60 @@ function handleVendorSubmit(e) {
     address: document.getElementById("inputVendorAddress").value,
     gears: document.getElementById("inputVendorGears").value.split(',').map(s => s.trim()),
     minPrice: parseInt(document.getElementById("inputVendorMinPrice").value) || 15000,
-    image: document.getElementById("inputVendorImage").value || "assets/gear-tent.png",
+    image: "assets/gear-tent.png",
     status: "pending"
   };
-
   pendingVendorsData.push(newVendor);
   updateBadgesAndStats();
   closeModal("modalVendor");
   document.getElementById("formAddVendor").reset();
-
-  alert("🎉 Pengajuan Iklan Vendor Berhasil Diterima!\n\nIklan Anda telah masuk ke Antrean Approval Admin BIVAK. Setelah ditinjau oleh Admin, iklan Anda akan otomatis terbit di marketplace.");
+  toast("success","Pengajuan Terkirim","Iklan Anda masuk antrean approval Admin BIVAK.");
 }
 
-function handleAuctionSubmit(e) {
+function handleDonasiSubmit(e) {
   e.preventDefault();
-  const newItem = {
-    id: Date.now(),
-    title: document.getElementById("inputAuctionItem").value,
-    donor: document.getElementById("inputDonorName").value,
-    phone: document.getElementById("inputDonorPhone").value,
-    cause: document.getElementById("inputAuctionCause").value,
-    startingBid: parseInt(document.getElementById("inputStartingBid").value) || 100000,
-    currentBid: parseInt(document.getElementById("inputStartingBid").value) || 100000,
-    highestBidder: "Belum ada",
-    bidCount: 0,
-    hoursLeft: 24,
-    minutesLeft: 0,
-    image: "assets/auction-jacket.png",
-    description: document.getElementById("inputAuctionDesc").value
-  };
-
-  auctionsData.unshift(newItem);
-  renderAuctions();
-  closeModal("modalLelang");
-  document.getElementById("formAddAuction").reset();
-
-  alert("❤️ Terima Kasih Atas Donasi Anda!\n\nBarang donasi outdoor Anda telah dipublikasikan di halaman Lelang Konservasi Alam BIVAK.");
-}
-
-function openBidModal(auctionId) {
-  const item = auctionsData.find(a => a.id === auctionId);
-  if (!item) return;
-
-  document.getElementById("bidItemId").value = item.id;
-  document.getElementById("bidItemName").innerText = item.title;
-  document.getElementById("bidItemCause").innerText = item.cause;
-  document.getElementById("bidCurrentAmount").innerText = `Rp ${item.currentBid.toLocaleString('id-ID')}`;
-  document.getElementById("inputBidAmount").value = item.currentBid + 25000;
-  
-  openModal("modalBid");
-}
-
-function handleBidSubmit(e) {
-  e.preventDefault();
-  const itemId = parseInt(document.getElementById("bidItemId").value);
-  const bidderName = document.getElementById("inputBidderName").value;
-  const bidAmount = parseInt(document.getElementById("inputBidAmount").value);
-
-  const item = auctionsData.find(a => a.id === itemId);
-  if (!item) return;
-
-  if (bidAmount <= item.currentBid) {
-    alert(`Nilai penawaran (Bid) harus lebih tinggi dari penawaran saat ini (Rp ${item.currentBid.toLocaleString('id-ID')})!`);
+  var nama = document.getElementById("inputDonasiNama").value.trim();
+  var nominal = parseInt(document.getElementById("inputDonasiNominal").value) || 0;
+  var email = document.getElementById("inputDonasiEmail").value.trim();
+  if (!nama || nominal <= 0) {
+    toast("error","Data Belum Lengkap","Isi nama dan nominal donasi dengan benar.");
     return;
   }
-
-  item.currentBid = bidAmount;
-  item.highestBidder = bidderName;
-  item.bidCount += 1;
-
-  totalDonationRaised += 25000; // Increment raised fund simulation
-
-  renderAuctions();
-  updateBadgesAndStats();
-  closeModal("modalBid");
-  document.getElementById("formSubmitBid").reset();
-
-  alert(`🔥 Penawaran Berhasil!\n\nAnda resmi memegang bid tertinggi sebesar Rp ${bidAmount.toLocaleString('id-ID')} untuk ${item.title}.`);
+  closeModal("modalDonasi");
+  donasiKirim(nominal);
 }
 
-// --- VENDOR DETAIL MODAL ---
+// --- VENDOR DETAIL ---
 function openVendorDetail(vendorId) {
   const v = vendorsData.find(item => item.id === vendorId);
   if (!v) return;
-
   document.getElementById("detailVendorTitle").innerText = v.name;
   document.getElementById("detailVendorBody").innerHTML = `
     <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
       <img src="${v.image}" style="width: 200px; height: 160px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
       <div style="flex: 1;">
-        <div style="font-size: 0.85rem; color: var(--primary-emerald); font-weight: 700; margin-bottom: 0.3rem;">
-          <i class="fa-solid fa-location-dot"></i> ${v.city} - TERVERIFIKASI
-        </div>
+        <div style="font-size: 0.85rem; color: var(--primary-emerald); font-weight: 700; margin-bottom: 0.3rem;"><i class="fa-solid fa-location-dot"></i> ${v.city} - TERVERIFIKASI</div>
         <h3 style="color: #fff; margin-bottom: 0.5rem;">${v.name}</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
-          <i class="fa-solid fa-map-pin"></i> ${v.address}
-        </p>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-map-pin"></i> ${v.address}</p>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <span class="vendor-rating"><i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'} ulasan pendaki)</span>
+          <span class="vendor-rating"><i class="fa-solid fa-star"></i> ${v.rating || '4.8'} (${v.reviews || '25'} ulasan)</span>
           <span style="color: var(--text-muted); font-size: 0.85rem;">Sewa mulai <strong>Rp ${v.minPrice.toLocaleString('id-ID')}/hari</strong></span>
         </div>
       </div>
     </div>
-
-    <h4 style="color: #fff; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.4rem;">
-      <i class="fa-solid fa-boxes-packing text-emerald" style="color:#10b981;"></i> Daftar Katalog Peralatan Tersedia
-    </h4>
+    <h4 style="color: #fff; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.4rem;">Daftar Peralatan Tersedia</h4>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
-      ${v.gears.map(g => `
-        <div style="background: rgba(255,255,255,0.03); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); color: #e5e7eb; font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;">
-          <span><i class="fa-solid fa-circle-check text-emerald" style="color:#10b981;"></i> ${g}</span>
-          <span style="color: var(--text-muted); font-size: 0.75rem;">Stok Ready</span>
-        </div>
-      `).join('')}
+      ${v.gears.map(g => `<div style="background: rgba(255,255,255,0.03); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); color: #e5e7eb; font-size: 0.88rem;"><i class="fa-solid fa-circle-check text-emerald" style="color:#10b981"></i> ${g}</div>`).join('')}
     </div>
-
-    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--border-emerald); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
-      <h5 style="color: var(--primary-emerald); margin-bottom: 0.3rem;"><i class="fa-solid fa-shield-halved"></i> Syarat & Ketentuan Sewa Vendor</h5>
-      <p style="color: var(--text-muted); font-size: 0.82rem;">Wajib menyertakan KTP/SIM asli sebagai jaminan. Pengambilan dan pengembalian alat dilakukan di lokasi vendor. Harap menjaga kebersihan dan keutuhan gear.</p>
-    </div>
-
     <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
       <button class="btn btn-outline" onclick="closeModal('modalVendorDetail')">Tutup</button>
-      <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20mau%20booking%20sewa%20alat%20outdoor%20lewat%20BIVAK." target="_blank" class="btn btn-whatsapp">
-        <i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp Vendor
-      </a>
+      <a href="https://wa.me/${v.phone}?text=Halo%20${encodeURIComponent(v.name)},%20saya%20mau%20booking%20sewa%20alat%20outdoor%20lewat%20BIVAK." target="_blank" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp</a>
     </div>
   `;
-
   openModal("modalVendorDetail");
 }
 
-// --- ADMIN PANEL FUNCTIONS ---
+// --- ADMIN PANEL ---
 function openAdminPanel() {
   renderAdminTables();
   openModal("modalAdmin");
@@ -489,73 +422,72 @@ function openAdminPanel() {
 function switchAdminTab(tabName) {
   document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
   document.querySelectorAll(".admin-tab-content").forEach(el => el.style.display = "none");
-
   if (tabName === "pendingVendors") {
     document.querySelectorAll(".tab-btn")[0].classList.add("active");
     document.getElementById("tabPendingVendors").style.display = "block";
   } else if (tabName === "activeVendors") {
     document.querySelectorAll(".tab-btn")[1].classList.add("active");
     document.getElementById("tabActiveVendors").style.display = "block";
-  } else if (tabName === "auctions") {
+  } else if (tabName === "donasi") {
     document.querySelectorAll(".tab-btn")[2].classList.add("active");
-    document.getElementById("tabAuctions").style.display = "block";
+    document.getElementById("tabDonasi").style.display = "block";
   }
 }
 
 function renderAdminTables() {
-  // Pending Vendors Table
+  // Pending Vendors
   const pendingBody = document.getElementById("tablePendingVendorsBody");
+  if (!pendingBody) return;
   if (pendingVendorsData.length === 0) {
-    pendingBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Tidak ada antrean iklan vendor pending.</td></tr>`;
+    pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>';
   } else {
     pendingBody.innerHTML = pendingVendorsData.map(pv => `
       <tr>
-        <td>
-          <strong>${pv.name}</strong><br>
-          <span style="font-size: 0.78rem; color: var(--text-muted);">${pv.city} • ${pv.address}</span>
-        </td>
+        <td><strong>${pv.name}</strong><br><small style="color:var(--text-muted)">${pv.city}</small></td>
         <td>${pv.phone}</td>
-        <td><span style="font-size: 0.8rem; color: var(--text-muted);">${pv.gears.join(', ')}</span></td>
+        <td><small>${pv.gears.slice(0,3).join(', ')}</small></td>
         <td>Rp ${pv.minPrice.toLocaleString('id-ID')}</td>
         <td>
-          <button class="btn btn-primary" onclick="approveVendor(${pv.id})" style="padding: 0.35rem 0.7rem; font-size: 0.78rem;">
-            <i class="fa-solid fa-check"></i> Approve
-          </button>
-          <button class="btn btn-outline" onclick="rejectVendor(${pv.id})" style="padding: 0.35rem 0.7rem; font-size: 0.78rem; border-color: var(--accent-rose); color: var(--accent-rose);">
-            <i class="fa-solid fa-xmark"></i> Tolak
-          </button>
+          <button class="btn btn-primary" onclick="approveVendor(${pv.id})" style="padding:0.35rem 0.7rem;font-size:0.78rem;"><i class="fa-solid fa-check"></i></button>
+          <button class="btn btn-outline" onclick="rejectVendor(${pv.id})" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>
         </td>
       </tr>
     `).join('');
   }
 
-  // Active Vendors Table
+  // Active Vendors
   const activeBody = document.getElementById("tableActiveVendorsBody");
-  activeBody.innerHTML = vendorsData.map(av => `
-    <tr>
-      <td><strong>${av.name}</strong></td>
-      <td>${av.city}</td>
-      <td><i class="fa-solid fa-star" style="color: var(--accent-amber);"></i> ${av.rating || '4.8'}</td>
-      <td><span class="status-tag status-approved"><i class="fa-solid fa-check-circle"></i> Tayang</span></td>
-      <td>
-        <button class="btn btn-outline" onclick="removeActiveVendor(${av.id})" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
-          Hapus
-        </button>
-      </td>
-    </tr>
-  `).join('');
+  if (activeBody) {
+    activeBody.innerHTML = vendorsData.map(av => `
+      <tr>
+        <td><strong>${av.name}</strong></td>
+        <td>${av.city}</td>
+        <td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ${av.rating||'4.8'}</td>
+        <td><span class="status-tag status-approved">Tayang</span></td>
+        <td><button class="btn btn-outline" onclick="removeActiveVendor(${av.id})" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>
+      </tr>
+    `).join('');
+  }
 
-  // Auctions Table
-  const auctionBody = document.getElementById("tableAuctionsBody");
-  auctionBody.innerHTML = auctionsData.map(ac => `
-    <tr>
-      <td><strong>${ac.title}</strong></td>
-      <td>${ac.donor}</td>
-      <td>${ac.cause}</td>
-      <td>Rp ${ac.currentBid.toLocaleString('id-ID')}</td>
-      <td><span class="status-tag status-approved">Aktif (${ac.bidCount} bid)</span></td>
-    </tr>
-  `).join('');
+  // Donasi Table
+  const donasiBody = document.getElementById("tableDonasiBody");
+  if (donasiBody) {
+    var donasiRows = _dnRows.length ? _dnRows : (
+      function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return [];}}()
+    );
+    if (donasiRows.length === 0) {
+      donasiBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Belum ada donasi.</td></tr>';
+    } else {
+      donasiBody.innerHTML = donasiRows.map(function(r,i) {
+        var nm = escapeHtml(r.nama||'Donatur');
+        var amt = _rupiah(r.amt||0);
+        var when = r.created_at || r.ts;
+        var st = r.astatus||'baru';
+        var stBadge = st==='disetujui'?'<span class="status-tag status-approved">Disetujui</span>':st==='ditolak'?'<span class="status-tag">Ditolak</span>':'<span class="status-tag status-pending">Baru</span>';
+        return '<tr><td>'+nm+'</td><td>'+amt+'</td><td>'+((when)?new Date(when).toLocaleDateString('id-ID'):'-')+'</td><td>'+stBadge+'</td><td><button class="btn btn-primary" onclick="donasiApprove('+i+',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button><button class="btn btn-outline" onclick="donasiApprove('+i+',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button></td></tr>';
+      }).join('');
+    }
+  }
 }
 
 function approveVendor(id) {
@@ -567,80 +499,88 @@ function approveVendor(id) {
     item.reviews = 1;
     item.isVerified = true;
     vendorsData.unshift(item);
-
     renderVendors(vendorsData);
     renderAdminTables();
     updateBadgesAndStats();
-
-    alert(`✅ Iklan "${item.name}" berhasil di-APPROVE! Iklan kini tampil secara publik di marketplace BIVAK.`);
+    toast("success","Vendor Disetujui","Iklan '"+item.name+"' kini tampil publik.");
   }
 }
 
 function rejectVendor(id) {
   const index = pendingVendorsData.findIndex(pv => pv.id === id);
   if (index !== -1) {
-    const item = pendingVendorsData.splice(index, 1)[0];
+    pendingVendorsData.splice(index, 1);
     renderAdminTables();
     updateBadgesAndStats();
-    alert(`❌ Iklan "${item.name}" telah ditolak.`);
+    toast("info","Vendor Ditolak","Pengajuan telah dihapus.");
   }
 }
 
 function removeActiveVendor(id) {
-  if (confirm("Apakah Anda yakin ingin menghapus vendor ini dari katalog publik?")) {
-    vendorsData = vendorsData.filter(v => v.id !== id);
-    renderVendors(vendorsData);
+  if (!confirm("Hapus vendor ini dari katalog publik?")) return;
+  vendorsData = vendorsData.filter(v => v.id !== id);
+  renderVendors(vendorsData);
+  renderAdminTables();
+  updateBadgesAndStats();
+}
+
+function donasiApprove(i,st) {
+  var r = _dnRows[i];
+  if (!r) return;
+  if (_dnCloud) {
+    if (window.bivakDb) {
+      window.bivakDb.from('donasi').update({astatus:st}).eq('id',r.id).then(function(res){
+        if(res.error)toast("error","Gagal",res.error.message);
+        else{toast("success","Berhasil",st==='disetujui'?'Donasi disetujui':'Donasi ditolak');try{if(typeof renderDonation==='function')renderDonation();}catch(e){}renderAdminTables();}
+      });
+    }
+  } else {
+    try{var arr=(typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];if(arr[i]){arr[i].astatus=st;(typeof _lsSet==='function'&&_lsSet('bivakDonasi',arr));}catch(e){}
+    toast("success","Berhasil",st==='disetujui'?'Donasi disetujui':'Donasi ditolak');
+    try{if(typeof renderDonation==='function')renderDonation();}catch(e){}
     renderAdminTables();
-    updateBadgesAndStats();
   }
 }
 
 function updateBadgesAndStats() {
   const pendingCount = pendingVendorsData.length;
-  document.querySelectorAll(".pendingCountBadge").forEach(el => el.innerText = pendingCount);
-
   const coinBadge = document.getElementById("coinAdminBadge");
   if (coinBadge) {
     coinBadge.innerText = pendingCount;
     coinBadge.style.display = pendingCount > 0 ? "inline-flex" : "none";
   }
-  const pendingCountBadge = document.getElementById("pendingCountBadge");
-  if (pendingCountBadge) pendingCountBadge.innerText = pendingCount;
-  
   const pendingTabBadge = document.getElementById("pendingTabBadge");
   if (pendingTabBadge) pendingTabBadge.innerText = pendingCount;
-  
   const activeTabBadge = document.getElementById("activeTabBadge");
   if (activeTabBadge) activeTabBadge.innerText = vendorsData.length;
-  
-  const auctionTabBadge = document.getElementById("auctionTabBadge");
-  if (auctionTabBadge) auctionTabBadge.innerText = auctionsData.length;
-  
+  const donasiTabBadge = document.getElementById("donasiTabBadge");
+  if (donasiTabBadge) {
+    var donCount = _dnRows.length || (function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return[];}}()).length;
+    donasiTabBadge.innerText = donCount;
+  }
   const statVendorsCount = document.getElementById("statVendorsCount");
   if (statVendorsCount) statVendorsCount.innerText = vendorsData.length;
-  
   const statDonationTotal = document.getElementById("statDonationTotal");
-  if (statDonationTotal) statDonationTotal.innerText = totalDonationRaised.toLocaleString('id-ID');
+  if (statDonationTotal) {
+    var total = _dummyDonors.reduce(function(s,d){return s+(d.amt||0);},0);
+    try{var arr=(typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];(arr||[]).filter(function(d){return d&&d.astatus==='disetujui';}).forEach(function(d){total+=d.amt||0;});}catch(e){}
+    statDonationTotal.innerText = total.toLocaleString('id-ID');
+  }
 }
 
-/* ==========================================================================
-   Countdown lelang berdetak
-   Setiap kartu lelang menyimpan sisa detik di atribut data-remain.
-   Interval ini menguranginya tiap detik dan menulis ulang teksnya,
-   sehingga timer terasa hidup tanpa perlu reload halaman.
-   ========================================================================== */
-setInterval(() => {
-  document.querySelectorAll('.timer-box[data-remain]').forEach((box) => {
-    let t = parseInt(box.dataset.remain, 10);
-    if (isNaN(t) || t <= 0) return;
-    t -= 1;
-    box.dataset.remain = t;
-    const h = Math.floor(t / 3600);
-    const m = Math.floor((t % 3600) / 60);
-    const s = t % 60;
-    const tick = box.querySelector('.tick');
-    if (tick) {
-      tick.textContent = `${String(h).padStart(2, '0')}j ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
-    }
-  });
-}, 1000);
+// Simple toast replacement
+function toast(kind, title, msg, ms) {
+  if (!window.bivakToast) {
+    alert(title + (msg ? ': ' + msg : ''));
+    return;
+  }
+  window.bivakToast(kind, title, msg, ms || 4000);
+}
+
+// localStorage helpers (for demo mode)
+function _lsGet(k, def) {
+  try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+}
+function _lsSet(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+}

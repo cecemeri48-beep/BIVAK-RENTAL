@@ -1,0 +1,12 @@
+{
+  "name": "bivak-rental",
+  "version": "4.0.0",
+  "description": "BIVAK - Bursa Interaktif Vendor Alam & Komunitas | Donasi Pintu Angin Bawakaraeng",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["bivak", "rental", "outdoor", "donasi", "bawakaraeng"],
+  "license": "MIT"
+}

@@ -1,0 +1,8 @@
+{
+  "outputDirectory": ".",
+  "framework": null,
+  "publicSource": true,
+  "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/assets/$1" }
+  ]
+}
