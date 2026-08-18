@@ -205,16 +205,8 @@ function renderDonation() {
 }
 
 function donasi() {
-  var amt = _rupiah(_tierSel);
-  var wa = 'https://wa.me/6282320124040?text='+encodeURIComponent('Halo Admin RCS.CBS, saya ingin berdonasi '+amt+' untuk konservasi Gunung Bawakaraeng.');
-  var html = '<div style="background:linear-gradient(135deg,#0f3d2e,#13543c);color:#eafff5;border-radius:16px;padding:16px;margin-bottom:14px"><div style="font-size:12px;color:#7ff0bd;font-weight:800;margin-bottom:6px">GOPOY / QRIS</div><div style="font-weight:800;font-size:18px">082320124040</div><div style="font-size:13px;margin-top:4px">a.n. RCS.CBS</div></div>'+
-    '<div style="text-align:center;margin-bottom:14px"><img src="assets/qris-gopay.png" alt="QRIS" style="max-width:200px;border-radius:12px;border:8px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.3)" onerror="this.style.display=\'none\'"/></div>'+
-    '<button class="btn btn-rose" style="width:100%;border:none;border-radius:12px;padding:13px;font-weight:800;cursor:pointer;margin-bottom:10px" onclick="donasiKirim('+_tierSel+')">✅ Saya Sudah Transfer · Konfirmasi</button>'+
-    '<a class="btn" style="width:100%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;border-radius:12px;padding:12px;font-weight:800" href="'+wa+'" target="_blank" rel="noopener">📲 Tanya / Kirim Bukti via WhatsApp</a>'+
-    '<p class="note" style="margin-top:8px;text-align:center">Admin akan memverifikasi dan nama Anda tampil di leaderboard publik.</p>';
-  // Show in modal
+  // Just open the modal - the form inside handles everything
   openModal('modalDonasi');
-  document.getElementById('formDonasi').insertAdjacentHTML('afterend', html);
 }
 
 function donasiKirim(n) {
