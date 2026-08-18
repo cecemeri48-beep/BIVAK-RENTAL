@@ -289,8 +289,15 @@ function handleVendorSubmit(e) {
 }
 
 function openAdminPanel() {
-  renderAdminTables();
-  openModal('modalAdmin');
+  console.log('[DEBUG] openAdminPanel called');
+  try {
+    renderAdminTables();
+    openModal('modalAdmin');
+    console.log('[DEBUG] Admin panel opened successfully');
+  } catch(e) {
+    console.error('[DEBUG] Error opening admin panel:', e);
+    alert('Error membuka admin panel: ' + e.message);
+  }
 }
 
 function switchAdminTab(tabName) {
