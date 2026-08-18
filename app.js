@@ -443,9 +443,29 @@ function renderAdminTables() {
   // Donasi Table
   const donasiBody = document.getElementById("tableDonasiBody");
   if (donasiBody) {
+    // Prioritize cloud data, fallback to localStorage
     var donasiRows = _dnRows.length ? _dnRows : (
-      function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return [];}}()
+      function(){try{return (typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];}catch(e){return[];}}()
     );
+
+    // Also check if localStorage has data that wasn't loaded to _dnRows
+    var lsData = [];
+    try {
+      lsData = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
+    } catch(e) {}
+
+    // Merge: cloud data first, then add any local-only entries
+    if (donasiRows.length === 0 && lsData.length > 0) {
+      donasiRows = lsData;
+    } else if (_dnCloud && donasiRows.length > 0) {
+      // Cloud mode: check for any local entries not in cloud
+      var cloudIds = {};
+      donasiRows.forEach(function(r) { cloudIds[r.id] = true; });
+      lsData.forEach(function(item) {
+        if (!cloudIds[item.id]) donasiRows.push(item);
+      });
+    }
+
     if (donasiRows.length === 0) {
       donasiBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Belum ada donasi.</td></tr>';
     } else {
@@ -453,11 +473,14 @@ function renderAdminTables() {
         var nm = escapeHtml(r.nama||'Donatur');
         var amt = _rupiah(r.amt||0);
         var when = r.created_at || r.ts;
-        var st = r.astatus||'baru';
-        var stBadge = st==='disetujui'?'<span class="status-tag status-approved">Disetujui</span>':st==='ditolak'?'<span class="status-tag">Ditolak</span>':'<span class="status-tag status-pending">Baru</span>';
+        var st = r.astatus || 'baru';
+        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
+                      st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+                      '<span style="color:#f59e0b;font-weight:700">⏳ Baru</span>';
         return '<tr><td>'+nm+'</td><td>'+amt+'</td><td>'+((when)?new Date(when).toLocaleDateString('id-ID'):'-')+'</td><td>'+stBadge+'</td><td><button class="btn btn-primary" onclick="donasiApprove('+i+',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button><button class="btn btn-outline" onclick="donasiApprove('+i+',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button></td></tr>';
       }).join('');
     }
+  }
   }
 }
 
