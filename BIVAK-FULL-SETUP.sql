@@ -177,7 +177,7 @@ INSERT INTO public.vendors (name, city, address, phone, rating, reviews_count, m
 
 
 -- ==========================================================================
--- 7. SEED DATA — CITIES
+-- 7. SEED DATA — CITIES (ON CONFLICT untuk menghindari duplicate)
 -- ==========================================================================
 INSERT INTO public.cities (name, region) VALUES
 ('Makassar', 'Sulawesi Selatan'),
@@ -201,7 +201,8 @@ INSERT INTO public.cities (name, region) VALUES
 ('Toraja Utara', 'Sulawesi Selatan'),
 ('Enrekang', 'Sulawesi Selatan'),
 ('Mamuju', 'Sulawesi Barat'),
-('Mamasa', 'Sulawesi Barat');
+('Mamasa', 'Sulawesi Barat')
+ON CONFLICT (name) DO NOTHING;
 
 
 -- ==========================================================================
