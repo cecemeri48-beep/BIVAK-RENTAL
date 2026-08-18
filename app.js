@@ -3,6 +3,13 @@
  * Simple, reliable, no external dependencies
  */
 
+// ==================== ERROR HANDLER ====================
+window.onerror = function(msg, url, line, col, err) {
+  console.error('[BIVAK Error]', msg, 'Line:', line);
+  return false; // Continue execution
+};
+
+// ==================== STATE MANAGEMENT ====================
 var BIVAK = {
   vendors: [
     {id:1,name:"Celebes Outdoor Rental Makassar",city:"Makassar",phone:"6281245678901",rating:4.9,reviews:128,minPrice:15000,gears:["Tenda Dome 4P","Carrier 75L","Sleeping Bag","Kompor Portable"],image:"assets/gear-tent.png",verified:true},
