@@ -1222,3 +1222,132 @@ html {
   border: 2px solid var(--bg-dark);
   box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
 }
+
+/* ==========================================================================
+   BIVAK v4 - Donasi Pintu Angin Styles
+   ========================================================================== */
+
+.btn-rose {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+}
+.btn-rose:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.45);
+  filter: brightness(1.1);
+}
+
+.donation-section {
+  background: linear-gradient(180deg, rgba(15, 25, 22, 0.5) 0%, var(--bg-dark) 100%);
+}
+
+.donation-progress-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.quota {
+  background: rgba(140, 150, 170, 0.15);
+  border-radius: var(--radius-full);
+  height: 10px;
+  overflow: hidden;
+}
+.quota i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.tier-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tier-btn:hover {
+  border-color: var(--primary-emerald);
+  background: rgba(16, 185, 129, 0.1);
+}
+.tier-btn.on {
+  border-color: var(--primary-emerald);
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary-emerald);
+}
+
+.sh {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2rem 0 1rem 0;
+}
+.sh .bar {
+  width: 4px;
+  height: 24px;
+  border-radius: 2px;
+}
+.sh h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.arow {
+  margin-bottom: 0.75rem;
+}
+.atop {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: var(--text-muted);
+}
+.atop span:last-child {
+  color: var(--primary-emerald);
+  font-weight: 700;
+}
+
+.note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-rose {
+  color: #f43f5e;
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

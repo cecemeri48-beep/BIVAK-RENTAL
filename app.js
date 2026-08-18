@@ -524,20 +524,29 @@ function removeActiveVendor(id) {
   updateBadgesAndStats();
 }
 
-function donasiApprove(i,st) {
+function donasiApprove(i, st) {
   var r = _dnRows[i];
   if (!r) return;
   if (_dnCloud) {
     if (window.bivakDb) {
-      window.bivakDb.from('donasi').update({astatus:st}).eq('id',r.id).then(function(res){
-        if(res.error)toast("error","Gagal",res.error.message);
-        else{toast("success","Berhasil",st==='disetujui'?'Donasi disetujui':'Donasi ditolak');try{if(typeof renderDonation==='function')renderDonation();}catch(e){}renderAdminTables();}
+      window.bivakDb.from('donasi').update({astatus: st}).eq('id', r.id).then(function(res) {
+        if (res.error) toast("error", "Gagal", res.error.message);
+        else {
+          toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui' : 'Donasi ditolak');
+          try { if (typeof renderDonation === 'function') renderDonation(); } catch(e) {}
+          renderAdminTables();
+        }
       });
     }
   } else {
-    try{var arr=(typeof _lsGet==='function')?_lsGet('bivakDonasi',[]):[];if(arr[i]){arr[i].astatus=st;(typeof _lsSet==='function'&&_lsSet('bivakDonasi',arr));}catch(e){}
-    toast("success","Berhasil",st==='disetujui'?'Donasi disetujui':'Donasi ditolak');
-    try{if(typeof renderDonation==='function')renderDonation();}catch(e){}
+    try {
+      var arr = (typeof _lsGet === 'function') ? _lsGet('bivakDonasi', []) : [];
+      arr = arr || [];
+      if (arr[i]) arr[i].astatus = st;
+      if (typeof _lsSet === 'function') _lsSet('bivakDonasi', arr);
+    } catch(e) {}
+    toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui' : 'Donasi ditolak');
+    try { if (typeof renderDonation === 'function') renderDonation(); } catch(e) {}
     renderAdminTables();
   }
 }
