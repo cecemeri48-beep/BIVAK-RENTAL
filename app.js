@@ -50,7 +50,6 @@ var BIVAK = {
 document.addEventListener('DOMContentLoaded', function() {
   BIVAK.load();
   renderVendors();
-  # SKIP(); // Di-skip karena ditangani oleh supabase-data.js
   updateBadges();
 });
 
@@ -184,7 +183,6 @@ function handleDonasiSubmit(e) {
   var form = BIVAK.el('formDonasi');
   if (form) form.reset();
 
-  # SKIP(); // Di-skip karena ditangani oleh supabase-data.js
   updateBadges();
 
   alert('Donasi berhasil disimpan! Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! ??');
@@ -236,7 +234,6 @@ function donasiApprove(i, st) {
   BIVAK.donations[i].astatus = st;
   BIVAK.save();
 
-  # SKIP(); // Di-skip karena ditangani oleh supabase-data.js
   renderAdminTables();
   updateBadges();
 
