@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BIVAK v5 - Clean Build (ES5 Compatible)
  * Simple, reliable, no external dependencies
  */
@@ -50,7 +50,7 @@ var BIVAK = {
 document.addEventListener('DOMContentLoaded', function() {
   BIVAK.load();
   renderVendors();
-  renderDonationList();
+  # renderDonationList(); // Di-skip karena ditangani oleh supabase-data.js
   updateBadges();
 });
 
@@ -184,10 +184,10 @@ function handleDonasiSubmit(e) {
   var form = BIVAK.el('formDonasi');
   if (form) form.reset();
 
-  renderDonationList();
+  # renderDonationList(); // Di-skip karena ditangani oleh supabase-data.js
   updateBadges();
 
-  alert('Donasi berhasil disimpan! Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! 💚');
+  alert('Donasi berhasil disimpan! Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! ??');
 }
 
 function renderDonationList() {
@@ -218,7 +218,7 @@ function renderDonationList() {
   if (pc) pc.textContent = pct + '%';
 
   if (box) {
-    var medals = ['🥇','🥈','🥉'];
+    var medals = ['??','??','??'];
     box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
       var nm = BIVAK.escape(d.nama || 'Donatur');
       var top = i < 3;
@@ -236,7 +236,7 @@ function donasiApprove(i, st) {
   BIVAK.donations[i].astatus = st;
   BIVAK.save();
 
-  renderDonationList();
+  # renderDonationList(); // Di-skip karena ditangani oleh supabase-data.js
   renderAdminTables();
   updateBadges();
 
@@ -345,9 +345,9 @@ function renderAdminTables() {
         var amt = BIVAK.rupiah(r.amt || 0);
         var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
         var st = r.astatus || 'baru';
-        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
-                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
-                       '<span style="color:#f59e0b;font-weight:700">⏳ Baru</span>';
+        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">? Diterima</span>' :
+                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">? Ditolak</span>' :
+                       '<span style="color:#f59e0b;font-weight:700">? Baru</span>';
         return '<tr>' +
           '<td>' + nm + '</td>' +
           '<td>' + amt + '</td>' +
