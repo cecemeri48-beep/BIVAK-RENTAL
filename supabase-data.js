@@ -167,10 +167,15 @@
 		var pRes = results[1]
 		var dRes = results[2]
 
-		if (vRes.error) throw vRes.error
-
-		vendorsData = (vRes.data || []).map(mapVendor)
-		pendingVendorsData = (pRes && pRes.data ? pRes.data : []).map(mapVendor)
+		if (vRes.error) {
+			// Table 'vendors' mungkin belum dibuat di database ini
+			// Lanjutkan dengan data kosong, jangan hentikan load donasi
+			console.warn("[BIVAK] Tabel vendors tidak tersedia:", vRes.error.message)
+			pendingVendorsData = []
+		} else {
+			vendorsData = (vRes.data || []).map(mapVendor)
+			pendingVendorsData = (pRes && pRes.data ? pRes.data : []).map(mapVendor)
+		}
 
 		// Load donasi rows for admin panel
 		_dnRows = (dRes && dRes.data ? dRes.data : [])
