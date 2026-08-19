@@ -134,7 +134,7 @@
 		if (bar) bar.style.width = pct + '%';
 		if (pc) pc.textContent = pct + '%';
 		if (box) {
-			var medals = ['🥇','🥈','🥉'];
+			var medals = ["1","2","3"];
 			box.innerHTML = sorted.slice(0, 15).map(function(d,i) {
 				var nm = BIVAK.escape(d.nama || 'Donatur');
 				var top = i < 3;
