@@ -91,6 +91,16 @@
 	window.bivakDb = sb
 
 	/* ----------------------------------------------------------------------
+	   NAMING ALIAS — agar panggil "renderDonation" tetap ke renderDonationList
+	   yang didefinisikan di app.js.
+	   ---------------------------------------------------------------------- */
+	if (typeof renderDonation === 'function') {
+		// sudah ada alias, abaikan
+	} else if (typeof renderDonationList === 'function') {
+		window.renderDonation = renderDonationList
+	}
+
+	/* ----------------------------------------------------------------------
 	   2. ID surrogate
 	   ---------------------------------------------------------------------- */
 	var seq = 1
@@ -294,7 +304,7 @@
 		badge.style.display = isAdmin && (pendingVendorsData || []).length > 0 ? "inline-flex" : "none"
 	}
 
-	var origUpdateBadgesAndStats = window.updateBadgesAndStats
+	var origUpdateBadgesAndStats = window.updateBadgesAndStats || window.updateBadges
 	if (typeof origUpdateBadgesAndStats === "function") {
 		window.updateBadgesAndStats = function () {
 			origUpdateBadgesAndStats()
