@@ -205,8 +205,7 @@
 				? sb.from("vendors").select("*").eq("status","pending").order("created_at",{ascending:true})
 				: Promise.resolve({ data: [], error: null }),
 			isAdmin
-				? sb.from("donasi").select("*").order("created_at",{ascending:false}).limit(50)
-				: Promise.resolve({ data: [], error: null }),
+				? sb.from("donasi").select("*").order("created_at",{ascending:false}).limit(50),
 		])
 
 		var vRes = results[0]
