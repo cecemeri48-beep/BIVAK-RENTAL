@@ -227,8 +227,8 @@
 		_dnRows = (dRes && dRes.data ? dRes.data : [])
 		_dnCloud = true
 
-		renderVendors(vendorsData)
-		updateBadges()
+		try { renderVendors(vendorsData); } catch(e) { console.warn("[BIVAK] renderVendors error:", e.message); }
+		try { updateBadges(); } catch(e) { console.warn("[BIVAK] updateBadges error:", e.message); }
 
 		// Render donation leaderboard
 		if (typeof renderDonation === 'function') renderDonation()
