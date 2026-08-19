@@ -136,7 +136,7 @@
 		if (box) {
 			var medals = ['🥇','🥈','🥉'];
 			box.innerHTML = sorted.slice(0, 15).map(function(d,i) {
-				var nm = escapeHtml(d.nama || 'Donatur');
+				var nm = BIVAK.escape(d.nama || 'Donatur');
 				var top = i < 3;
 				var rank = top ? medals[i] : '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">' + (i+1) + '</span>';
 				var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
