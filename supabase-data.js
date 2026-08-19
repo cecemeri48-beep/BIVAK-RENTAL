@@ -97,7 +97,7 @@
 	if (typeof renderDonation === 'function') {
 		// sudah ada alias, abaikan
 	} else if (typeof renderDonationList === 'function') {
-		window.renderDonation = renderDonationList
+		window.renderDonation = function() { if (typeof window.renderDonationList === "function") window.renderDonationList(); }
 	}
 
 	/* ----------------------------------------------------------------------
