@@ -167,7 +167,7 @@
 		_dnCloud = true
 
 		renderVendors(vendorsData)
-		updateBadgesAndStats()
+		updateBadges()
 
 		// Render donation leaderboard
 		if (typeof renderDonation === 'function') renderDonation()
