@@ -109,6 +109,12 @@
 		}
 	}
 
+	/* ----------------------------------------------------------------------
+	   3. PUBLIC DATA (vendors & pending) — declared here so Supabase can populate them
+	   ---------------------------------------------------------------------- */
+	var vendorsData = []
+	var pendingVendorsData = []
+
 	function findVendor(id) {
 		var all = (vendorsData || []).concat(pendingVendorsData || [])
 		for (var i = 0; i < all.length; i++) {
