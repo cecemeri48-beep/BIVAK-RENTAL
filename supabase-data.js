@@ -696,7 +696,7 @@
 				whatsapp: wa,
 				package_name: _selectedPackage.name,
 				amount: _selectedPackage.amount,
-				quantity: _selectedPackage.id === 1 ? 1 : _selectedPackage.id === 2 ? 2 : _selectedPackage.id === 3 ? 5 : 15,
+				quantity: _selectedPackage.id === 'bibit' ? 1 : _selectedPackage.id === 'pohon' ? 1 : 10,
 				status: 'menunggu_bukti'
 			})
 			if (res.error) throw res.error
