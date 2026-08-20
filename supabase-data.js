@@ -763,8 +763,7 @@
 					no: adopsiData ? adopsiData.adoption_code : 'RC-ADP-2026-00001',
 					date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 				}
-				// Draw on offscreen high-res canvas first, then scale to preview
-				drawAdopsiCertToCanvas(cv, data)
+				drawAdopsiCert(cv, data)
 			}
 		} else {
 			preview.style.display = 'none'
