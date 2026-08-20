@@ -107,13 +107,18 @@
 		if (!email) return false
 		email = email.trim().toLowerCase()
 		console.log("[BIVAK] Checking admin:", email)
-		var res = await sb.from("admins").select("id").eq("email", email).single()
-		console.log("[BIVAK] Admin check result:", res)
-		if (res.error) {
-			console.warn("[BIVAK] Admin query error:", res.error.message)
+		try {
+			var res = await sb.from("admins").select("id").eq("email", email).single()
+			console.log("[BIVAK] Admin check result:", res)
+			if (res.error) {
+				console.warn("[BIVAK] Admin query error:", res.error.message)
+				return false
+			}
+			return !!res.data
+		} catch (err) {
+			console.warn("[BIVAK] Admin check exception:", err.message)
 			return false
 		}
-		return !!res.data
 	}
 
 	async function refreshAdminFlag() {
