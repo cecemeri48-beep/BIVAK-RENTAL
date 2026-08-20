@@ -364,58 +364,142 @@
 	/* ----------------------------------------------------------------------
 	   9. Login admin
 	   ---------------------------------------------------------------------- */
-	function buildLoginModal() {
-		if (document.getElementById("modalAdminLogin")) return
-		var wrap = document.createElement("div")
-		wrap.className = "modal-overlay"
-		wrap.id = "modalAdminLogin"
-		wrap.innerHTML = [
-			'<div class="modal-container" style="max-width:420px;">',
-			'<div class="modal-header">',
-			'<div><h3 style="color:#fff;font-size:1.15rem;">Masuk sebagai Admin</h3>',
-			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;">Panel approval vendor & donasi BIVAK</p></div>',
-			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
-			'</div><div class="modal-body">',
-			'<form id="formAdminLogin">',
-			'<div class="input-group"><label>Email Admin</label>',
-			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
-			'<div class="input-group"><label>Password</label>',
-			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="••••••••"></div>',
-			'<button class="btn btn-primary" type="submit" style="width:100%;margin-top:.5rem;">Masuk</button>',
-			'</form></div></div>',
-		].join("")
-		document.body.appendChild(wrap)
+ 	function buildLoginModal() {
+ 		if (document.getElementById("modalAdminLogin")) return
+ 		var wrap = document.createElement("div")
+ 		wrap.className = "modal-overlay"
+ 		wrap.id = "modalAdminLogin"
+ 		wrap.innerHTML = [
+ 			'<div class="modal-container" style="max-width:420px;">',
+ 			'<div class="modal-header">',
+ 			'<div><h3 style="color:#fff;font-size:1.15rem;" id="loginModalTitle">Masuk sebagai Admin</h3>',
+ 			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Panel approval vendor & donasi BIVAK</p></div>',
+ 			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
+ 			'</div><div class="modal-body">',
+ 			'<form id="formAdminLogin">',
+ 			'<div class="input-group"><label>Email Admin</label>',
+ 			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
+ 			'<div class="input-group"><label>Password</label>',
+ 			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="••••••••"></div>',
+ 			'<div class="input-group" id="signupPasswordGroup" style="display:none;"><label>Buat Password</label>',
+ 			'<input class="form-control" type="password" id="inputAdminPasswordNew" minlength="6" placeholder="Minimal 6 karakter"></div>',
+ 			'<div class="input-group" id="confirmPasswordGroup" style="display:none;"><label>Konfirmasi Password</label>',
+ 			'<input class="form-control" type="password" id="inputAdminPasswordConfirm" minlength="6" placeholder="Ulangi password"></div>',
+ 			'<button class="btn btn-primary" type="submit" id="btnLoginSubmit" style="width:100%;margin-top:.5rem;">Masuk</button>',
+ 			'</form>',
+ 			'<p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--text-muted);">',
+ 			'<a href="#" id="toggleAuthMode" style="color:#10b981;text-decoration:underline;cursor:pointer;">',
+ 			'Belum punya akun? Daftar di sini</a></p>',
+ 			'</div></div>',
+ 		].join("")
+ 		document.body.appendChild(wrap)
 
-		document.getElementById("formAdminLogin").addEventListener("submit", async function (e) {
-			e.preventDefault()
-			var form = e.currentTarget
-			busy(form, true, "Memeriksa...")
-			try {
-				var res = await sb.auth.signInWithPassword({
-					email: val("inputAdminEmail"),
-					password: document.getElementById("inputAdminPassword").value,
-				})
-				if (res.error) throw res.error
-				var ok = await refreshAdminFlag()
-				if (!ok) {
-					await sb.auth.signOut()
-					toast("error", "Bukan Admin", "Login berhasil, tetapi akun belum terdaftar di tabel admins.")
-					return
-				}
-				form.reset()
-				closeModal("modalAdminLogin")
-				await loadPublicData()
-				renderAdminTables()
-				decorateAdminPanel()
-				openModal("modalAdmin")
-				toast("success", "Selamat Datang", "Panel admin siap digunakan.")
-			} catch (err) {
-				dbErr(err, "Gagal masuk")
-			} finally {
-				busy(form, false)
-			}
-		})
-	}
+ 		var isSignUpMode = false
+
+ 		document.getElementById("toggleAuthMode").addEventListener("click", function(e) {
+ 			e.preventDefault()
+ 			isSignUpMode = !isSignUpMode
+ 			var title = document.getElementById("loginModalTitle")
+ 			var subtitle = document.getElementById("loginModalSubtitle")
+ 			var btn = document.getElementById("btnLoginSubmit")
+ 			var pwNew = document.getElementById("signupPasswordGroup")
+ 			var pwConfirm = document.getElementById("confirmPasswordGroup")
+ 			var pwInput = document.getElementById("inputAdminPassword")
+ 			
+ 			if (isSignUpMode) {
+ 				title.textContent = "Daftar sebagai Admin"
+ 				subtitle.textContent = "Buat akun admin baru untuk panel BIVAK"
+ 				btn.textContent = "Daftar"
+ 				pwNew.style.display = "block"
+ 				pwConfirm.style.display = "block"
+ 				pwInput.required = false
+ 				document.getElementById("toggleAuthMode").textContent = "Sudah punya akun? Masuk di sini"
+ 			} else {
+ 				title.textContent = "Masuk sebagai Admin"
+ 				subtitle.textContent = "Panel approval vendor & donasi BIVAK"
+ 				btn.textContent = "Masuk"
+ 				pwNew.style.display = "none"
+ 				pwConfirm.style.display = "none"
+ 				pwInput.required = true
+ 				document.getElementById("toggleAuthMode").textContent = "Belum punya akun? Daftar di sini"
+ 			}
+ 		})
+
+ 		document.getElementById("formAdminLogin").addEventListener("submit", async function (e) {
+ 			e.preventDefault()
+ 			var form = e.currentTarget
+ 			busy(form, true, isSignUpMode ? "Mendaftar..." : "Memeriksa...")
+ 			try {
+ 				if (isSignUpMode) {
+ 					// SIGN UP MODE
+ 					var email = val("inputAdminEmail")
+ 					var pwNew = document.getElementById("inputAdminPasswordNew").value
+ 					var pwConfirm = document.getElementById("inputAdminPasswordConfirm").value
+ 					
+ 					if (pwNew.length < 6) { toast("error","Password terlalu pendek","Gunakan minimal 6 karakter."); busy(form,false); return }
+ 					if (pwNew !== pwConfirm) { toast("error","Password tidak sama","Konfirmasi password harus cocok."); busy(form,false); return }
+ 					
+ 					var res = await sb.auth.signUp({ email: email, password: pwNew })
+ 					if (res.error) throw res.error
+ 					
+ 					toast("success", "Pendaftaran Berhasil", "Akun telah dibuat. Silakan login.")
+ 					form.reset()
+ 					
+ 					// Switch back to login mode
+ 					isSignUpMode = false
+ 					document.getElementById("loginModalTitle").textContent = "Masuk sebagai Admin"
+ 					document.getElementById("loginModalSubtitle").textContent = "Panel approval vendor & donasi BIVAK"
+ 					document.getElementById("btnLoginSubmit").textContent = "Masuk"
+ 					document.getElementById("signupPasswordGroup").style.display = "none"
+ 					document.getElementById("confirmPasswordGroup").style.display = "none"
+ 					document.getElementById("inputAdminPassword").required = true
+ 					document.getElementById("toggleAuthMode").textContent = "Belum punya akun? Daftar di sini"
+ 					
+ 					// Auto login after signup
+ 					var loginRes = await sb.auth.signInWithPassword({ email: email, password: pwNew })
+ 					if (loginRes.error) throw loginRes.error
+ 					
+ 					var ok = await refreshAdminFlag()
+ 					if (!ok) {
+ 						await sb.auth.signOut()
+ 						toast("error", "Bukan Admin", "Akun dibuat, tetapi belum terdaftar di tabel admins. Hubungi admin utama.")
+ 						return
+ 					}
+ 					
+ 					closeModal("modalAdminLogin")
+ 					await loadPublicData()
+ 					renderAdminTables()
+ 					decorateAdminPanel()
+ 					openModal("modalAdmin")
+ 					toast("success", "Selamat Datang", "Panel admin siap digunakan.")
+ 				} else {
+ 					// LOGIN MODE
+ 					var res = await sb.auth.signInWithPassword({
+ 						email: val("inputAdminEmail"),
+ 						password: document.getElementById("inputAdminPassword").value,
+ 					})
+ 					if (res.error) throw res.error
+ 					var ok = await refreshAdminFlag()
+ 					if (!ok) {
+ 						await sb.auth.signOut()
+ 						toast("error", "Bukan Admin", "Login berhasil, tetapi akun belum terdaftar di tabel admins.")
+ 						return
+ 					}
+ 					form.reset()
+ 					closeModal("modalAdminLogin")
+ 					await loadPublicData()
+ 					renderAdminTables()
+ 					decorateAdminPanel()
+ 					openModal("modalAdmin")
+ 					toast("success", "Selamat Datang", "Panel admin siap digunakan.")
+ 				}
+ 			} catch (err) {
+ 				dbErr(err, isSignUpMode ? "Gagal mendaftar" : "Gagal masuk")
+ 			} finally {
+ 				busy(form, false)
+ 			}
+ 		})
+ 	}
 
 	function buildChangePasswordModal() {
 		if (document.getElementById("modalChangePassword")) return
