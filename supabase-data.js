@@ -108,13 +108,15 @@
 		email = email.trim().toLowerCase()
 		console.log("[BIVAK] Checking admin:", email)
 		try {
-			var res = await sb.from("admins").select("id").eq("email", email).single()
+			// Use limit(1) instead of single() for better compatibility
+			var res = await sb.from("admins").select("id").eq("email", email).limit(1)
 			console.log("[BIVAK] Admin check result:", res)
+			var data = res.data || []
 			if (res.error) {
 				console.warn("[BIVAK] Admin query error:", res.error.message)
 				return false
 			}
-			return !!res.data
+			return data.length > 0
 		} catch (err) {
 			console.warn("[BIVAK] Admin check exception:", err.message)
 			return false
