@@ -289,13 +289,19 @@ function switchAdminTab(tabName) {
   var map = {
     'pendingVendors': {idx: 0, id: 'tabPendingVendors'},
     'activeVendors': {idx: 1, id: 'tabActiveVendors'},
-    'donasi': {idx: 2, id: 'tabDonasi'}
+    'donasi': {idx: 2, id: 'tabDonasi'},
+    'adopsi': {idx: 3, id: 'tabAdopsi'}
   };
 
   var pair = map[tabName] || map['pendingVendors'];
   if (btns[pair.idx]) btns[pair.idx].classList.add('active');
   var tabEl = BIVAK.el(pair.id);
   if (tabEl) tabEl.style.display = 'block';
+
+  // Load data for the selected tab
+  if (tabName === 'adopsi' && typeof renderAdopsiAdmin === 'function') {
+    renderAdopsiAdmin();
+  }
 }
 
 function renderAdminTables() {

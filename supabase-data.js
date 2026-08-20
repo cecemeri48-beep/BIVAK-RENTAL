@@ -204,9 +204,23 @@
 			_dnCloud = false
 		}
 
+		// Adopsi Pohon dari database Pintu Angin
+		if (sbd) {
+			try {
+				var aRes = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
+				_adoptionRows = (aRes.data || [])
+			} catch(e) {
+				console.warn("[BIVAK] Adopsi load error:", e.message)
+				_adoptionRows = []
+			}
+		} else {
+			_adoptionRows = []
+		}
+
 		try { renderVendors(vendorsData); } catch(e) { console.warn("[BIVAK] renderVendors error:", e.message); }
 		try { updateBadges(); } catch(e) { console.warn("[BIVAK] updateBadges error:", e.message); }
 		if (typeof renderDonation === 'function') renderDonation()
+		updateAdopsiBadge()
 
 		if (options.alsoAdminTables && document.getElementById("tablePendingVendorsBody")) {
 			renderAdminTables()
@@ -629,7 +643,387 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   15. Boot
+	   15. Adopsi Pohon — Cloned from Bawakaraeng Hub
+	   ---------------------------------------------------------------------- */
+	var _adoptionRows = []
+	var _selectedPackage = null
+
+	window.selectAdopsiPackage = function(pkgId, amount, packageName) {
+		_selectedPackage = { id: pkgId, amount: amount, name: packageName }
+		// Highlight selected
+		document.querySelectorAll('.adopsi-card').forEach(function(card) {
+			card.style.borderColor = 'transparent'
+			card.style.transform = 'none'
+		})
+		var selected = document.getElementById('pkg-' + pkgId)
+		if (selected) {
+			selected.style.borderColor = '#10b981'
+			selected.style.transform = 'scale(1.02)'
+		}
+		// Show form
+		document.getElementById('adopsiFormCard').style.display = 'block'
+		document.getElementById('adopsiPaymentInfo').style.display = 'none'
+		document.getElementById('adopsiSelectedPkg').textContent = packageName
+		document.getElementById('adopsiSelectedAmt').textContent = 'Rp ' + amount.toLocaleString('id-ID')
+		// Scroll to form
+		selected.scrollIntoView({ behavior: 'smooth', block: 'center' })
+	}
+
+	window.cancelAdopsi = function() {
+		_selectedPackage = null
+		document.getElementById('adopsiFormCard').style.display = 'none'
+		document.getElementById('adopsiPaymentInfo').style.display = 'none'
+		document.querySelectorAll('.adopsi-card').forEach(function(card) {
+			card.style.borderColor = 'transparent'
+			card.style.transform = 'none'
+		})
+	}
+
+	window.submitAdopsi = async function() {
+		var nama = document.getElementById('adopsiNama').value.trim()
+		var wa = document.getElementById('adopsiWA').value.trim()
+		if (!nama || !wa || !_selectedPackage) {
+			toast("error", "Lengkapi Data", "Isi nama dan nomor WhatsApp dengan benar.")
+			return
+		}
+		// Format WhatsApp to international format
+		if (wa.startsWith('0')) wa = '62' + wa.substring(1)
+		if (!wa.startsWith('62')) wa = '62' + wa
+
+		try {
+			var res = await sbd.from("adoption_requests").insert({
+				customer_name: nama,
+				whatsapp: wa,
+				package_name: _selectedPackage.name,
+				amount: _selectedPackage.amount,
+				quantity: _selectedPackage.id === 1 ? 1 : _selectedPackage.id === 2 ? 2 : _selectedPackage.id === 3 ? 5 : 15,
+				status: 'menunggu_bukti'
+			})
+			if (res.error) throw res.error
+			toast("success", "Pengajuan Tersimpan!", "Silakan lakukan pembayaran. Admin akan memverifikasi dan menerbitkan kode adopsi.")
+			// Show payment info
+			document.getElementById('adopsiFormCard').style.display = 'none'
+			document.getElementById('adopsiPaymentInfo').style.display = 'block'
+		} catch (err) {
+			dbErr(err, "Gagal menyimpan pengajuan")
+		}
+	}
+
+	window.confirmAdopsiPayment = function() {
+		var wa = document.getElementById('adopsiWA').value.trim()
+		if (wa.startsWith('0')) wa = '62' + wa.substring(1)
+		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + document.getElementById('adopsiNama').value + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + _selectedPackage.name + '\nTotal: Rp ' + _selectedPackage.amount.toLocaleString('id-ID') + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
+		window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank')
+	}
+
+	window.checkAdopsiCode = function() {
+		var code = document.getElementById('certAdopsiCode').value.trim().toUpperCase()
+		var msg = document.getElementById('certCodeMsg')
+		if (!code) {
+			msg.textContent = ''
+			return
+		}
+		if (!code.startsWith('POH-') || code.length !== 8) {
+			msg.textContent = 'Format salah. Harap gunakan format: POH-XXXXX'
+			msg.style.color = '#f43f5e'
+			return
+		}
+		msg.textContent = 'Memeriksa kode...'
+		msg.style.color = 'var(--text-muted)'
+		// Check in cloud data
+		var found = (_adoptionRows || []).find(function(r) {
+			return r.adoption_code === code && r.status === 'terverifikasi'
+		})
+		if (found) {
+			msg.textContent = '✓ Kode valid! Silakan isi nama penerima.'
+			msg.style.color = '#10b981'
+			window._validAdopsiCode = found
+		} else {
+			msg.textContent = 'Kode tidak ditemukan atau belum diverifikasi.'
+			msg.style.color = '#f59e0b'
+			window._validAdopsiCode = null
+		}
+		updateCertPreview()
+	}
+
+	window.updateCertPreview = function() {
+		var name = document.getElementById('certAdopsiName').value.trim()
+		var preview = document.getElementById('certPreview')
+		var btn = document.getElementById('btnDownloadCert')
+		if (window._validAdopsiCode && name) {
+			preview.style.display = 'block'
+			btn.disabled = false
+			document.getElementById('certPreviewText').textContent = window._validAdopsiCode.customer_name + ' — ' + window._validAdopsiCode.package_name + ' (' + window._validAdopsiCode.quantity + ' bibit)'
+		} else {
+			preview.style.display = 'none'
+			btn.disabled = true
+		}
+	}
+
+	window.downloadAdopsiCert = function() {
+		if (!window._validAdopsiCode) return
+		var name = document.getElementById('certAdopsiName').value.trim()
+		var code = window._validAdopsiCode.adoption_code
+		var pkg = window._validAdopsiCode.package_name
+		var qty = window._validAdopsiCode.quantity
+		// Create simple certificate as text file (PNG would need canvas drawing)
+		var certContent = [
+			'╔══════════════════════════════════════════════════════════╗',
+			'║           SERTIFIKAT ADOPSI POHON RESMI                  ║',
+			'║              Gunung Bawakaraeng                         ║',
+			'╠══════════════════════════════════════════════════════════╣',
+			'║                                                          ║',
+			'║  Dengan ini dinyatakan bahwa:                           ║',
+			'║                                                          ║',
+			'║    ' + name.padEnd(46) + ' ║',
+			'║                                                          ║',
+			'║  Telah mengadopsi ' + qty + ' bibit pohon endemik              ║',
+			'║  di Kawasan Gunung Bawakaraeng, Sulawesi Selatan.        ║',
+			'║                                                          ║',
+			'║  Kode Adopsi: ' + code.padEnd(35) + ' ║',
+			'║  Paket: ' + pkg.padEnd(42) + ' ║',
+			'║                                                          ║',
+			'║  Dikeluarkan oleh: RCS.CBS Rangers                      ║',
+			'║  Tanggal: ' + new Date().toLocaleDateString('id-ID') + ''.padEnd(33) + ' ║',
+			'║                                                          ║',
+			'╚══════════════════════════════════════════════════════════╝',
+			'',
+			'Terima kasih atas partisipasi Anda dalam restorasi ekosistem Bawakaraeng.',
+			'Pohon Anda akan dirawat dan dipantau oleh tim RCS.CBS.'
+		].join('\n')
+
+		var blob = new Blob([certContent], { type: 'text/plain' })
+		var url = URL.createObjectURL(blob)
+		var a = document.createElement('a')
+		a.href = url
+		a.download = 'Sertifikat-Adopsi-' + name.replace(/[^a-zA-Z0-9]/g, '-') + '.txt'
+		a.click()
+		URL.revokeObjectURL(url)
+		toast("success", "Sertifikat Unduh!", 'File sertifikat berhasil diunduh.')
+	}
+
+	/* ----------------------------------------------------------------------
+	   16. Admin Panel — Adopsi Tab
+	   ---------------------------------------------------------------------- */
+	function renderAdopsiAdmin() {
+		var tbody = document.getElementById("tableAdopsiBody")
+		if (!tbody) return
+		if (!_adoptionRows || _adoptionRows.length === 0) {
+			tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Belum ada pengajuan adopsi.</td></tr>'
+			return
+		}
+		tbody.innerHTML = _adoptionRows.map(function(r, i) {
+			var isVerified = r.status === 'terverifikasi'
+			var isRejected = r.status === 'ditolak'
+			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
+			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
+			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
+			var actions = isVerified ?
+				'<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-trash"></i></button>' :
+				'<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				'<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-xmark"></i></button>'
+			return '<tr>' +
+				'<td>' + BIVAK.escape(r.customer_name || '-') + '</td>' +
+				'<td>' + BIVAK.escape(r.package_name || '-') + '</td>' +
+				'<td>' + (r.quantity || '-') + ' bibit</td>' +
+				'<td>Rp ' + (Number(r.amount || 0).toLocaleString('id-ID')) + '</td>' +
+				'<td>' + BIVAK.escape(r.whatsapp || '-') + '</td>' +
+				'<td>' + statusBadge + '</td>' +
+				'<td>' + codeDisplay + '</td>' +
+				'<td>' + actions + '</td>' +
+			'</tr>'
+		}).join('')
+	}
+
+	window.approveAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
+		try {
+			var res = await sbd.from("adoption_requests").update({
+				status: 'terverifikasi',
+				adoption_code: code,
+				verified_at: new Date().toISOString()
+			}).eq("id", r.id)
+			if (res.error) throw res.error
+			toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal memverifikasi")
+		}
+	}
+
+	window.rejectAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		if (!confirm('Tolak pengajuan adopsi ini?')) return
+		try {
+			var res = await sbd.from("adoption_requests").update({
+				status: 'ditolak'
+			}).eq("id", r.id)
+			if (res.error) throw res.error
+			toast("info", "Ditolak", "Pengajuan adopsi telah ditolak.")
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal menolak")
+		}
+	}
+
+	window.deleteAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		if (!confirm('Hapus pengajuan adopsi ini? Tindakan permanen.')) return
+		try {
+			var res = await sbd.from("adoption_requests").delete().eq("id", r.id)
+			if (res.error) throw res.error
+			toast("success", "Dihapus", "Pengajuan adopsi telah dihapus.")
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal menghapus")
+		}
+	}
+
+	async function loadAdopsiData() {
+		if (!sbd) {
+			_adoptionRows = []
+			return
+		}
+		try {
+			var res = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
+			_adoptionRows = (res.data || [])
+		} catch (e) {
+			console.warn("[BIVAK] Adopsi load error:", e.message)
+			_adoptionRows = []
+		}
+	}
+
+	function updateAdopsiBadge() {
+		var badge = document.getElementById("adopsiBadge")
+		if (!badge) return
+		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
+		badge.innerText = pending
+		badge.style.display = pending > 0 ? "inline-flex" : "none"
+	}
+
+	/* ----------------------------------------------------------------------
+	   16. Admin Panel — Adopsi Tab
+	   ---------------------------------------------------------------------- */
+	function renderAdopsiAdmin() {
+		var tbody = document.getElementById("tableAdopsiBody")
+		if (!tbody) return
+		if (!_adoptionRows || _adoptionRows.length === 0) {
+			tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Belum ada pengajuan adopsi.</td></tr>'
+			return
+		}
+		tbody.innerHTML = _adoptionRows.map(function(r, i) {
+			var isVerified = r.status === 'terverifikasi'
+			var isRejected = r.status === 'ditolak'
+			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
+			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
+			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
+			var actions = isVerified ?
+				'<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-trash"></i></button>' :
+				'<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				'<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-xmark"></i></button>'
+			return '<tr>' +
+				'<td>' + BIVAK.escape(r.customer_name || '-') + '</td>' +
+				'<td>' + BIVAK.escape(r.package_name || '-') + '</td>' +
+				'<td>' + (r.quantity || '-') + ' bibit</td>' +
+				'<td>Rp ' + (Number(r.amount || 0).toLocaleString('id-ID')) + '</td>' +
+				'<td>' + BIVAK.escape(r.whatsapp || '-') + '</td>' +
+				'<td>' + statusBadge + '</td>' +
+				'<td>' + codeDisplay + '</td>' +
+				'<td>' + actions + '</td>' +
+			'</tr>'
+		}).join('')
+	}
+
+	window.approveAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
+		try {
+			var res = await sbd.from("adoption_requests").update({
+				status: 'terverifikasi',
+				adoption_code: code,
+				verified_at: new Date().toISOString()
+			}).eq("id", r.id)
+			if (res.error) throw res.error
+			toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal memverifikasi")
+		}
+	}
+
+	window.rejectAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		if (!confirm('Tolak pengajuan adopsi ini?')) return
+		try {
+			var res = await sbd.from("adoption_requests").update({
+				status: 'ditolak'
+			}).eq("id", r.id)
+			if (res.error) throw res.error
+			toast("info", "Ditolak", "Pengajuan adopsi telah ditolak.")
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal menolak")
+		}
+	}
+
+	window.deleteAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		if (!r) return
+		if (!confirm('Hapus pengajuan adopsi ini? Tindakan permanen.')) return
+		try {
+			var res = await sbd.from("adoption_requests").delete().eq("id", r.id)
+			if (res.error) throw res.error
+			toast("success", "Dihapus", "Pengajuan adopsi telah dihapus.")
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			dbErr(err, "Gagal menghapus")
+		}
+	}
+
+	async function loadAdopsiData() {
+		if (!sbd) {
+			_adoptionRows = []
+			return
+		}
+		try {
+			var res = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
+			_adoptionRows = (res.data || [])
+		} catch (e) {
+			console.warn("[BIVAK] Adopsi load error:", e.message)
+			_adoptionRows = []
+		}
+	}
+
+	function updateAdopsiBadge() {
+		var badge = document.getElementById("adopsiBadge")
+		if (!badge) return
+		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
+		badge.innerText = pending
+		badge.style.display = pending > 0 ? "inline-flex" : "none"
+	}
+
+	/* ----------------------------------------------------------------------
+	   17. Boot
 	   ---------------------------------------------------------------------- */
 	async function boot() {
 		try {
