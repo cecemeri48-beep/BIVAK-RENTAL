@@ -991,17 +991,17 @@
 		var m = 54
 		ctx.strokeStyle = gold()
 		ctx.lineWidth = 9
-		_rr(ctx, m, m, W0 - 2 * m, H0 - 2 * m, 26)
+		_rr(ctx, m, m, W - 2 * m, H - 2 * m, 26)
 		ctx.stroke()
 
 		var m2 = 76
 		ctx.lineWidth = 2.5
 		ctx.strokeStyle = 'rgba(247,224,138,.7)'
-		_rr(ctx, m2, m2, W0 - 2 * m2, H0 - 2 * m2, 18)
+		_rr(ctx, m2, m2, W - 2 * m2, H - 2 * m2, 18)
 		ctx.stroke()
 
 		ctx.fillStyle = gold()
-		[[m, m], [W0 - m, m], [m, H0 - m], [W0 - m, H0 - m]].forEach(function(pt) {
+		[[m, m], [W - m, m], [m, H - m], [W - m, H - m]].forEach(function(pt) {
 			ctx.save()
 			ctx.translate(pt[0], pt[1])
 			ctx.rotate(Math.PI / 4)
@@ -1009,7 +1009,7 @@
 			ctx.restore()
 		})
 
-		var cx = W0 / 2
+		var cx = W / 2
 		var ly = 196
 		var lr = 90
 		ctx.beginPath()
@@ -1073,7 +1073,7 @@
 		var nm = data.name
 		ctx.fillText(nm, cx, dy + 162)
 
-		var nw = Math.min(ctx.measureText(nm).width + 140, W0 - 260)
+		var nw = Math.min(ctx.measureText(nm).width + 140, W - 260)
 		ctx.strokeStyle = gold()
 		ctx.lineWidth = 3
 		ctx.beginPath()
@@ -1084,13 +1084,13 @@
 		ctx.fillStyle = '#cfe3da'
 		ctx.font = '30px Georgia,serif'
 		var body = 'atas dedikasi dan partisipasinya dalam mengadopsi ' + data.qty + ' bibit pohon guna pemulihan serta pelestarian ekosistem Gunung Bawakaraeng. Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
-		_wrap(ctx, body, cx, dy + 258, W0 - 480, 44)
+		_wrap(ctx, body, cx, dy + 258, W - 480, 44)
 
-		var by = H0 - 196
+		var by = H - 196
 		ctx.strokeStyle = 'rgba(247,224,138,.7)'
 		ctx.lineWidth = 2
-		var lx = W0 * 0.24
-		var rx = W0 * 0.76
+		var lx = W * 0.24
+		var rx = W * 0.76
 		ctx.beginPath()
 		ctx.moveTo(lx - 150, by)
 		ctx.lineTo(lx + 150, by)
@@ -1108,7 +1108,7 @@
 		_seal(ctx, cx, by + 2, 84)
 		ctx.fillStyle = 'rgba(223,238,231,.82)'
 		ctx.font = '22px Georgia,serif'
-		ctx.fillText('No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc, cx, H0 - 92)
+		ctx.fillText('No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc, cx, H - 92)
 	}
 
 	function buildAdopsiCert(name, qty, code) {
