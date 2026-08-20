@@ -645,4 +645,7 @@
 	} else {
 		boot()
 	}
+
+	// Alias agar renderDonation() bisa dipanggil dari index.html
+	window.renderDonation = window.renderDonationList
 })()
