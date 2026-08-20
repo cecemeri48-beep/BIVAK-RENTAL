@@ -738,22 +738,33 @@
 			msg.textContent = '✓ Kode valid! Silakan isi nama penerima.'
 			msg.style.color = '#10b981'
 			window._validAdopsiCode = found
+			updateCertPreview(found)
 		} else {
 			msg.textContent = 'Kode tidak ditemukan atau belum diverifikasi.'
 			msg.style.color = '#f59e0b'
 			window._validAdopsiCode = null
+			updateCertPreview()
 		}
-		updateCertPreview()
 	}
 
-	window.updateCertPreview = function() {
+	window.updateCertPreview = function(adopsiData) {
 		var name = document.getElementById('certAdopsiName').value.trim()
 		var preview = document.getElementById('certPreview')
 		var btn = document.getElementById('btnDownloadCert')
 		if (window._validAdopsiCode && name) {
 			preview.style.display = 'block'
 			btn.disabled = false
-			document.getElementById('certPreviewText').textContent = window._validAdopsiCode.customer_name + ' — ' + window._validAdopsiCode.package_name + ' (' + window._validAdopsiCode.quantity + ' bibit)'
+			var cv = document.getElementById('certCanvas')
+			if (cv) {
+				var data = {
+					name: name,
+					qty: adopsiData ? adopsiData.quantity : 1,
+					loc: 'Kawasan Gunung Bawakaraeng',
+					no: adopsiData ? adopsiData.adoption_code : 'RC-ADP-2026-00001',
+					date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+				}
+				drawAdopsiCert(cv, data)
+			}
 		} else {
 			preview.style.display = 'none'
 			btn.disabled = true
