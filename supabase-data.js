@@ -105,8 +105,15 @@
 	// Cek admin berdasarkan email langsung dari tabel admins
 	async function checkAdminByEmail(email) {
 		if (!email) return false
-		var res = await sb.from("admins").select("id").eq("email", email.trim().toLowerCase()).single()
-		return !res.error && !!res.data
+		email = email.trim().toLowerCase()
+		console.log("[BIVAK] Checking admin:", email)
+		var res = await sb.from("admins").select("id").eq("email", email).single()
+		console.log("[BIVAK] Admin check result:", res)
+		if (res.error) {
+			console.warn("[BIVAK] Admin query error:", res.error.message)
+			return false
+		}
+		return !!res.data
 	}
 
 	async function refreshAdminFlag() {
@@ -156,8 +163,10 @@
 
 		// Load vendors dari database baru
 		var vRes = await sb.from("vendors").select("*").eq("status", "approved").order("created_at", { ascending: false })
+		console.log("[BIVAK] Vendors query:", vRes)
 		if (vRes.error) {
 			console.warn("[BIVAK] Tabel vendors:", vRes.error.message)
+			console.warn("[BIVAK] Error details:", JSON.stringify(vRes.error))
 			vendorsData = []
 		} else {
 			vendorsData = (vRes.data || []).map(mapVendor)

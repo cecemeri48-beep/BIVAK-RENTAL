@@ -108,7 +108,7 @@ GRANT EXECUTE ON FUNCTION public.check_admin_email(TEXT) TO anon, authenticated;
 INSERT INTO public.cities (name) VALUES
     ('Makassar'),('Gowa'),('Maros'),('Palopo'),('Toraja'),
     ('Bantaeng'),('Sinjai'),('Takalar'),('Jeneponto'),('Bulukumba'),
-    ('Selayar'),('Wajo'),('Soppeng'),('Pinrang'),('Enrekang')
+    ('Selayar'),('Wajo'),('Soppeng'),('Pinrang'),('Enrekang'),('Malino')
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO public.vendors (name, city, address, phone, rating, reviews_count, min_price, gears, image_url, is_verified, status) VALUES
