@@ -1,5 +1,5 @@
 -- =====================================
--- BIVAK v5 FULL SETUP (Database sqxwhfdarnzypicoamzl)
+-- BIVAK v5 FULL SETUP — sqxwhfdarnzypicoamzl
 -- ======================================
 
 -- Tipe data
@@ -8,14 +8,22 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- Tabel utama
-CREATE TABLE IF NOT EXISTS public.cities (
+-- =========================================
+-- 1. DROP + CREATE semua tabel (idempotent)
+-- =========================================
+DROP TABLE IF EXISTS public.donasi CASCADE;
+DROP TABLE IF EXISTS public.site_settings CASCADE;
+DROP TABLE IF EXISTS public.admins CASCADE;
+DROP TABLE IF EXISTS public.vendors CASCADE;
+DROP TABLE IF EXISTS public.cities CASCADE;
+
+CREATE TABLE public.cities (
     id     SERIAL PRIMARY KEY,
     name   VARCHAR(100) NOT NULL UNIQUE,
     region VARCHAR(50) DEFAULT 'Sulawesi Selatan'
 );
 
-CREATE TABLE IF NOT EXISTS public.vendors (
+CREATE TABLE public.vendors (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id       UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     name          VARCHAR(150) NOT NULL,
@@ -33,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.vendors (
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS public.admins (
+CREATE TABLE public.admins (
     id         SERIAL PRIMARY KEY,
     user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     email      TEXT NOT NULL,
@@ -42,15 +50,15 @@ CREATE TABLE IF NOT EXISTS public.admins (
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_admins_email ON public.admins (email);
 
-CREATE TABLE IF NOT EXISTS public.site_settings (
+CREATE TABLE public.site_settings (
     id            INT PRIMARY KEY DEFAULT 1,
     donation_base NUMERIC(14,2) NOT NULL DEFAULT 0,
     CONSTRAINT single_row CHECK (id = 1)
 );
 
--- ============================================================
--- RLS Policies — gunakan DROP IF EXISTS agar aman di-rerun
--- ============================================================
+-- =========================================
+-- 2. RLS POLICIES
+-- =========================================
 ALTER TABLE public.cities ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "cities_select_public" ON public.cities;
 CREATE POLICY "cities_select_public" ON public.cities FOR SELECT USING (true);
@@ -75,7 +83,9 @@ ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "settings_select_public" ON public.site_settings;
 CREATE POLICY "settings_select_public" ON public.site_settings FOR SELECT USING (true);
 
--- Fungsi cek admin
+-- =========================================
+-- 3. Fungsi cek admin
+-- =========================================
 CREATE OR REPLACE FUNCTION public.check_admin_email(p_email TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -92,7 +102,9 @@ $fn$;
 
 GRANT EXECUTE ON FUNCTION public.check_admin_email(TEXT) TO anon, authenticated;
 
--- Seed data
+-- =========================================
+-- 4. Seed data
+-- =========================================
 INSERT INTO public.cities (name) VALUES
     ('Makassar'),('Gowa'),('Maros'),('Palopo'),('Toraja'),
     ('Bantaeng'),('Sinjai'),('Takalar'),('Jeneponto'),('Bulukumba'),
@@ -112,7 +124,9 @@ INSERT INTO public.admins (email) VALUES
     ('upik.zulkiflie@gmail.com')
 ON CONFLICT ON CONSTRAINT idx_admins_email DO NOTHING;
 
--- Verifikasi
+-- =========================================
+-- 5. Verifikasi
+-- =========================================
 SELECT 'admins'   AS tbl, count(*) FROM public.admins
 UNION ALL SELECT 'vendors', count(*) FROM public.vendors
 UNION ALL SELECT 'cities',  count(*) FROM public.cities;
