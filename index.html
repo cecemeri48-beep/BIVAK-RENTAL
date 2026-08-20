@@ -296,16 +296,13 @@
           <label>Nama Penerima</label>
           <input type="text" id="certAdopsiName" class="form-control" placeholder="Nama lengkap untuk sertifikat" oninput="updateCertPreview()">
         </div>
-        <div id="certPreview" style="margin-top:1rem;padding:1rem;background:rgba(16,185,129,0.05);border-radius:var(--radius-md);display:none">
-          <div style="text-align:center">
-            <div style="font-size:2rem;margin-bottom:0.5rem">🌳</div>
-            <h4 style="color:#10b981;margin-bottom:0.25rem">Sertifikat Adopsi Pohon</h4>
-            <p style="color:var(--text-muted);font-size:0.85rem" id="certPreviewText">-</p>
-          </div>
+        <div id="certPreview" style="margin-top:1rem;display:none;text-align:center">
+          <canvas id="certCanvas" width="2000" height="1414" style="max-width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3)"></canvas>
         </div>
         <button class="btn btn-primary" onclick="downloadAdopsiCert()" style="width:100%;margin-top:1rem" id="btnDownloadCert" disabled>
           <i class="fa-solid fa-download"></i> Unduh Sertifikat (PNG)
         </button>
+        <p class="note" style="margin-top:0.5rem;text-align:center">File PNG resolusi tinggi (2000×1414). Wajib memasukkan kode adopsi yang valid.</p>
       </div>
     </div>
   </section>
