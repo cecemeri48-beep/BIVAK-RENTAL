@@ -723,7 +723,7 @@
 			msg.textContent = ''
 			return
 		}
-		if (!code.startsWith('POH-') || code.length !== 8) {
+		if (!code.startsWith('POH-') || code.length < 8) {
 			msg.textContent = 'Format salah. Harap gunakan format: POH-XXXXX'
 			msg.style.color = '#f43f5e'
 			return
