@@ -332,11 +332,25 @@
 		badge.style.display = isAdmin && (pendingVendorsData || []).length > 0 ? "inline-flex" : "none"
 	}
 
+	function syncDonasiBadge() {
+		var badge = document.getElementById("donasiBadge")
+		if (!badge) return
+		var newCount = (_dnRows || []).filter(function(d) { return d.astatus === 'baru' }).length
+		badge.innerText = newCount
+		badge.style.display = newCount > 0 ? "inline-flex" : "none"
+	}
+
 	var origUpdateBadges = window.updateBadgesAndStats || window.updateBadges
 	if (typeof origUpdateBadges === "function") {
 		window.updateBadgesAndStats = function () {
 			origUpdateBadges()
 			syncCoinBadge()
+			syncDonasiBadge()
+		}
+	} else {
+		window.updateBadgesAndStats = function () {
+			syncCoinBadge()
+			syncDonasiBadge()
 		}
 	}
 
