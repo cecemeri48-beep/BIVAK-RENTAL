@@ -1,35 +1,32 @@
 -- ============================================================
 -- BIVAK Admin Email-Only Setup
 -- Database: sqxwhfdarnzypicoamzl
+-- CARA PAKAI: Copy semua SQL di bawah, paste ke SQL Editor, Run
 -- ============================================================
 
--- BLOK 1: Tabel admins
-CREATE TABLE IF NOT EXISTS public.admins (
+-- 1. Hapus tabel lama (jika ada) agar bisa buat ulang fresh
+DROP TABLE IF EXISTS public.admins CASCADE;
+
+-- 2. Buat tabel baru
+CREATE TABLE public.admins (
     id         SERIAL PRIMARY KEY,
     user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     email      TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Tambah UNIQUE constraint dengan nama eksplisit agar ON CONFLICT bisa bekerja
-DO $$ 
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint 
-        WHERE conname = 'admins_email_unique'
-    ) THEN
-        ALTER TABLE public.admins ADD CONSTRAINT admins_email_unique UNIQUE (email);
-    END IF;
-END $$;
+-- 3. Tambah UNIQUE constraint pada email
+ALTER TABLE public.admins ADD CONSTRAINT admins_email_unique UNIQUE (email);
 
--- BLOK 2: RLS
+-- 4. Aktifkan RLS
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
+-- 5. Buat policy agar admin bisa dibaca
 DROP POLICY IF EXISTS "admins_select" ON public.admins;
 CREATE POLICY "admins_select" ON public.admins
     FOR SELECT TO anon, authenticated USING (true);
 
--- BLOK 3: Fungsi RPC cek admin
+-- 6. Fungsi RPC untuk cek admin berdasarkan email
 CREATE OR REPLACE FUNCTION public.check_admin_email(p_email TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -46,11 +43,11 @@ $fn$;
 
 GRANT EXECUTE ON FUNCTION public.check_admin_email(TEXT) TO anon, authenticated;
 
--- BLOK 4: Grant akses
+-- 7. Grant akses ke semua tabel & sequence
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
--- BLOK 5: Masukkan admin (pakai constraint name)
+-- 8. Masukkan admin
 INSERT INTO public.admins (email)
 VALUES ('cemeri48@gmail.com')
 ON CONFLICT ON CONSTRAINT admins_email_unique DO NOTHING;
@@ -59,5 +56,5 @@ INSERT INTO public.admins (email)
 VALUES ('upik.zulkiflie@gmail.com')
 ON CONFLICT ON CONSTRAINT admins_email_unique DO NOTHING;
 
--- Verifikasi
-SELECT email, created_at FROM public.admins ORDER BY created_at DESC;
+-- 9. Verifikasi
+SELECT id, email, created_at FROM public.admins ORDER BY created_at DESC;
