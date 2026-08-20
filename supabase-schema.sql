@@ -194,9 +194,9 @@ USING (public.is_admin()) WITH CHECK (public.is_admin());
 CREATE POLICY "Admin Read Bids"
 ON public.bids FOR SELECT TO authenticated USING (public.is_admin());
 
--- 5i. Admins: user hanya boleh mengecek barisnya sendiri.
-CREATE POLICY "Admin Read Admins"
-ON public.admins FOR SELECT TO authenticated USING (user_id = auth.uid());
+-- 5i. Admins: anonymous boleh baca untuk cek email admin (email-only login)
+CREATE POLICY "Public Read Admins Email"
+ON public.admins FOR SELECT TO anon, authenticated USING (true);
 
 -- 5j. Settings: publik baca, admin ubah
 CREATE POLICY "Public Read Settings"

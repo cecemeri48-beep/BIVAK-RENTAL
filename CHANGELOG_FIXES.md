@@ -1,5 +1,20 @@
 # CHANGELOG - BIVAK RENTAL FIXES
-**Last Updated: 2026-08-19**
+**Last Updated: 2026-08-20**
+
+---
+
+## ✅ SELESAI HARI INI (2026-08-20)
+
+### Fix #3 — Multiple GoTrueClient Warning + Image ERR_UNKNOWN_URL_SCHEME + Admin Login
+| Item | Detail |
+|---|---|
+| **Tanggal** | 2026-08-20 |
+| **File** | `supabase-data.js`, `supabase-schema.sql`, `FIX-ADMIN-LOGIN-RLS.sql` |
+| **Masalah** | 1. Warning "Multiple GoTrueClient instances" karena 2 client pakai storageKey sama. 2. Gambar vendor error `net::ERR_UNKNOWN_URL_SCHEME` karena URL Unsplash eksternal diblokir. 3. Admin login gagal karena RLS policy `Admin Read Admins` hanya izinkan role `authenticated`, tapi query pakai anonymous key. |
+| **Akar** | `createClient()` tanpa option `auth.storageKey` → kedua client berbagi key yang sama. URL gambar dari DB menggunakan `https://images.unsplash.com` yang memicu error scheme. RLS policy terlalu ketat. |
+| **Fix** | 1. Tambah `auth: { storageKey: "bivak-main-auth" }` dan `"bivak-donasi-auth"` di `createClient()`. 2. Tambah filter di `mapVendor()` untuk replace URL unsplash dengan local asset. 3. Ganti RLS policy `Admin Read Admins` → `Public Read Admins Email` dengan `TO anon, authenticated USING (true)`. |
+| **Verifikasi** | Run SQL `FIX-ADMIN-LOGIN-RLS.sql` di Supabase SQL Editor untuk deploy perubahan RLS. Hard refresh browser. |
+| **Log Keyword** | `GoTrueClient`, `ERR_UNKNOWN_URL_SCHEME`, `Admin Read Admins` |
 
 ---
 

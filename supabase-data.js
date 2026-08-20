@@ -89,12 +89,16 @@
 	}
 
 	// Database utama: vendors, settings, admins
-	var sb = window.supabase.createClient(mainCfg.url, mainCfg.anonKey)
+	var sb = window.supabase.createClient(mainCfg.url, mainCfg.anonKey, {
+		auth: { storageKey: "bivak-main-auth" }
+	})
 	window.bivakDb = sb
 
 	// Database donasi (pintu angin)
 	var sbd = donasiCfg.url && donasiCfg.anonKey
-		? window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey)
+		? window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey, {
+				auth: { storageKey: "bivak-donasi-auth" }
+			})
 		: null
 
 	/* ----------------------------------------------------------------------
@@ -138,6 +142,11 @@
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
+		// Only use local assets — external Unsplash URLs cause ERR_UNKNOWN_URL_SCHEME
+		var img = row.image_url || "assets/gear-tent.png"
+		if (img && img.indexOf("unsplash") !== -1) {
+			img = "assets/gear-tent.png"
+		}
 		return {
 			id: nextId(), dbId: row.id, name: row.name, city: row.city,
 			address: row.address, phone: row.phone,
@@ -145,7 +154,7 @@
 			reviews: row.reviews_count != null ? row.reviews_count : 1,
 			minPrice: Number(row.min_price) || 15000,
 			gears: Array.isArray(row.gears) ? row.gears : [],
-			image: row.image_url || "assets/gear-tent.png",
+			image: img,
 			status: row.status, isVerified: !!row.is_verified,
 		}
 	}
