@@ -1,8 +1,9 @@
 /* ==========================================================================
-   BIVAK v4 - Lapisan Data Supabase
+   BIVAK v4 - Lapisan Data Supabase (Email-only Admin)
    --------------------------------------------------------------------------
-   LELANG DIHAPUS — DIGANTI DENGAN SISTEM DONASI PINTU ANGIN
-   File ini TIDAK mengubah app.js sama sekali.
+   - Admin login TANPA password — cukup email, cek tabel admins
+   - Donasi ambil dari database lama (pintu angin)
+   - Vendors & settings dari database baru
    ========================================================================== */
 
 ;(function () {
@@ -71,13 +72,13 @@
 	window.bivakToast = toast
 
 	/* ----------------------------------------------------------------------
-	   1. Cek konfigurasi
+	   1. Konfigurasi DATABASE
 	   ---------------------------------------------------------------------- */
-	var cfg = window.BIVAK_SUPABASE || {}
-	var configured = !!(cfg.url && cfg.anonKey)
+	var mainCfg = window.BIVAK_SUPABASE || {}
+	var donasiCfg = window.BIVAK_DONASI_SUPABASE || {}
 
-	if (!configured) {
-		console.info("[BIVAK] Mode demo aktif. Isi supabase-config.js untuk menyambung ke database.")
+	if (!mainCfg.url || !mainCfg.anonKey) {
+		console.info("[BIVAK] Mode demo — supabase-config.js belum diisi.")
 		return
 	}
 
@@ -87,70 +88,40 @@
 		return
 	}
 
-	var sb = window.supabase.createClient(cfg.url, cfg.anonKey)
+	// Database utama: vendors, settings, admins
+	var sb = window.supabase.createClient(mainCfg.url, mainCfg.anonKey)
 	window.bivakDb = sb
 
+	// Database donasi (pintu angin)
+	var sbd = donasiCfg.url && donasiCfg.anonKey
+		? window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey)
+		: null
+
 	/* ----------------------------------------------------------------------
-	   NAMING ALIAS — agar panggil "renderDonation" tetap ke renderDonationList
-	   yang didefinisikan di app.js.
+	   2. Status admin — TANPA password
 	   ---------------------------------------------------------------------- */
-	if (typeof renderDonation === 'function') {
-		// sudah ada alias, abaikan
-	} else if (typeof renderDonationList === 'function') {
-		window.renderDonation = function() { if (typeof window.renderDonationList === "function") window.renderDonationList(); }
+	var isAdmin = false
+
+	// Cek admin berdasarkan email langsung dari tabel admins
+	async function checkAdminByEmail(email) {
+		if (!email) return false
+		var res = await sb.from("admins").select("id").eq("email", email.trim().toLowerCase()).single()
+		return !res.error && !!res.data
+	}
+
+	async function refreshAdminFlag() {
+		isAdmin = false
+		return false
 	}
 
 	/* ----------------------------------------------------------------------
-	   OVERRIDE renderDonationList untuk pakai data Supabase
-	   ---------------------------------------------------------------------- */
-	window.renderDonationList = function() {
-		var approved = [];
-		try {
-			if (_dnRows) approved = _dnRows.filter(function(d) { return d.astatus === 'disetujui'; });
-		} catch(e) {}
-		if (!approved.length) {
-			try {
-				var local = (typeof _lsGet === 'function') ? _lsGet('bivak_donations', []) : [];
-				approved = local.filter(function(d) { return d && d.astatus === 'disetujui'; });
-			} catch(e) {}
-		}
-		if (!approved.length) {
-			approved = [
-				{nama: 'Andi Mappanyukki', amt: 10000000},
-				{nama: 'Komunitas Pencinta Alam Makassar', amt: 7500000},
-				{nama: 'Nurul Fadhilah', amt: 5000000},
-				{nama: 'Baso Dg. Nassa', amt: 5000000},
-				{nama: 'Rina Kartika', amt: 3500000}
-			];
-		}
-		var sorted = approved.slice().sort(function(a,b) { return (b.amt||0) - (a.amt||0); });
-		var total = sorted.reduce(function(s,d) { return s + (d.amt||0); }, 0);
-		var pct = Math.min(100, Math.round(total / 75000000 * 100));
-		var col = document.getElementById('dnCollected');
-		var bar = document.getElementById('dnBar');
-		var pc = document.getElementById('dnPct');
-		var box = document.getElementById('dnDonors');
-		if (col) col.textContent = 'Rp ' + total.toLocaleString('id-ID');
-		if (bar) bar.style.width = pct + '%';
-		if (pc) pc.textContent = pct + '%';
-		if (box) {
-			var medals = ["1","2","3"];
-			box.innerHTML = sorted.slice(0, 15).map(function(d,i) {
-				var nm = BIVAK.escape(d.nama || 'Donatur');
-				var top = i < 3;
-				var rank = top ? medals[i] : '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">' + (i+1) + '</span>';
-				var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
-				var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)';
-				return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:' + bg + ';border:' + bd + '"><div style="width:28px;text-align:center;flex-shrink:0">' + rank + '</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nm + '</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">Rp ' + (d.amt||0).toLocaleString('id-ID') + '</div></div>';
-			}).join('');
-		}
-	};
-
-	/* ----------------------------------------------------------------------
-	   2. ID surrogate
+	   3. ID & mapping
 	   ---------------------------------------------------------------------- */
 	var seq = 1
 	function nextId() { return seq++ }
+
+	var vendorsData = []
+	var pendingVendorsData = []
 
 	function mapVendor(row) {
 		return {
@@ -165,12 +136,6 @@
 		}
 	}
 
-	/* ----------------------------------------------------------------------
-	   3. PUBLIC DATA (vendors & pending) — declared here so Supabase can populate them
-	   ---------------------------------------------------------------------- */
-	var vendorsData = []
-	var pendingVendorsData = []
-
 	function findVendor(id) {
 		var all = (vendorsData || []).concat(pendingVendorsData || [])
 		for (var i = 0; i < all.length; i++) {
@@ -180,64 +145,48 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   3. Status admin
+	   4. Muat data publik
 	   ---------------------------------------------------------------------- */
-	var isAdmin = false
+	var _dnRows = []
+	var _dnCloud = false
 
-	async function refreshAdminFlag() {
-		var sess = await sb.auth.getSession()
-		if (!sess.data.session) { isAdmin = false; return false }
-		var res = await sb.rpc("is_app_admin")
-		isAdmin = res.data === true
-		return isAdmin
-	}
-
-	/* ----------------------------------------------------------------------
-	   4. Memuat data dari database
-	   ---------------------------------------------------------------------- */
 	async function loadPublicData(options) {
 		options = options || {}
 		seq = 1
 
-		var results = await Promise.all([
-			sb.from("vendors").select("*").eq("status","approved").order("created_at",{ascending:false}),
-			isAdmin
-				? sb.from("vendors").select("*").eq("status","pending").order("created_at",{ascending:true})
-				: Promise.resolve({ data: [], error: null }),
-			sb.from("donasi").select("*").order("created_at",{ascending:false}).limit(50),
-		])
-
-		var vRes = results[0]
-		var pRes = results[1]
-		var dRes = results[2]
-
+		// Load vendors dari database baru
+		var vRes = await sb.from("vendors").select("*").eq("status", "approved").order("created_at", { ascending: false })
 		if (vRes.error) {
-			// Table 'vendors' mungkin belum dibuat di database ini
-			// Lanjutkan dengan data kosong, jangan hentikan load donasi
-			console.warn("[BIVAK] Tabel vendors tidak tersedia:", vRes.error.message)
-			pendingVendorsData = []
+			console.warn("[BIVAK] Tabel vendors:", vRes.error.message)
+			vendorsData = []
 		} else {
 			vendorsData = (vRes.data || []).map(mapVendor)
-			pendingVendorsData = (pRes && pRes.data ? pRes.data : []).map(mapVendor)
 		}
 
-		// Load donasi rows for admin panel
-		_dnRows = (dRes && dRes.data ? dRes.data : [])
-		_dnCloud = true
+		// Pending vendors hanya untuk admin
+		var pRes = isAdmin
+			? await sb.from("vendors").select("*").eq("status", "pending").order("created_at", { ascending: true })
+			: { data: [], error: null }
+		pendingVendorsData = (pRes.data || []).map(mapVendor)
+
+		// Donasi dari database lama (pintu angin)
+		if (sbd) {
+			var dRes = await sbd.from("donasi").select("*").order("created_at", { ascending: false }).limit(50)
+			_dnRows = (dRes.data || [])
+			_dnCloud = true
+		} else {
+			_dnRows = []
+			_dnCloud = false
+		}
 
 		try { renderVendors(vendorsData); } catch(e) { console.warn("[BIVAK] renderVendors error:", e.message); }
 		try { updateBadges(); } catch(e) { console.warn("[BIVAK] updateBadges error:", e.message); }
-
-		// Render donation leaderboard
 		if (typeof renderDonation === 'function') renderDonation()
 
 		if (options.alsoAdminTables && document.getElementById("tablePendingVendorsBody")) {
 			renderAdminTables()
 		}
 	}
-
-	var _dnRows = []
-	var _dnCloud = false
 
 	function dbErr(err, fallbackTitle) {
 		console.error("[BIVAK]", err)
@@ -272,7 +221,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   6. Vendor Submit (Supabase version)
+	   6. Vendor Submit
 	   ---------------------------------------------------------------------- */
 	window.handleVendorSubmit = async function (e) {
 		e.preventDefault()
@@ -306,7 +255,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   7. Donasi Submit (Supabase version)
+	   7. Donasi Submit — ke database LAMA
 	   ---------------------------------------------------------------------- */
 	window.handleDonasiSubmit = async function (e) {
 		e.preventDefault()
@@ -320,9 +269,14 @@
 			return
 		}
 
+		if (!sbd) {
+			toast("error", "Database Donasi Tidak Tersedia", "Database pintu angin belum dikonfigurasi.")
+			return
+		}
+
 		busy(form, true, "Mengirim...")
 		try {
-			var res = await sb.from("donasi").insert({
+			var res = await sbd.from("donasi").insert({
 				nama: nama,
 				email: email,
 				amt: nominal,
@@ -353,209 +307,84 @@
 		badge.style.display = isAdmin && (pendingVendorsData || []).length > 0 ? "inline-flex" : "none"
 	}
 
-	var origUpdateBadgesAndStats = window.updateBadgesAndStats || window.updateBadges
-	if (typeof origUpdateBadgesAndStats === "function") {
+	var origUpdateBadges = window.updateBadgesAndStats || window.updateBadges
+	if (typeof origUpdateBadges === "function") {
 		window.updateBadgesAndStats = function () {
-			origUpdateBadgesAndStats()
+			origUpdateBadges()
 			syncCoinBadge()
 		}
 	}
 
 	/* ----------------------------------------------------------------------
-	   9. Login admin
+	   9. Login Admin — TANPA PASSWORD
 	   ---------------------------------------------------------------------- */
- 	function buildLoginModal() {
- 		if (document.getElementById("modalAdminLogin")) return
- 		var wrap = document.createElement("div")
- 		wrap.className = "modal-overlay"
- 		wrap.id = "modalAdminLogin"
- 		wrap.innerHTML = [
- 			'<div class="modal-container" style="max-width:420px;">',
- 			'<div class="modal-header">',
- 			'<div><h3 style="color:#fff;font-size:1.15rem;" id="loginModalTitle">Masuk sebagai Admin</h3>',
- 			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Panel approval vendor & donasi BIVAK</p></div>',
- 			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
- 			'</div><div class="modal-body">',
- 			'<form id="formAdminLogin">',
- 			'<div class="input-group"><label>Email Admin</label>',
- 			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
- 			'<div class="input-group"><label>Password</label>',
- 			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="••••••••"></div>',
- 			'<div class="input-group" id="signupPasswordGroup" style="display:none;"><label>Buat Password</label>',
- 			'<input class="form-control" type="password" id="inputAdminPasswordNew" minlength="6" placeholder="Minimal 6 karakter"></div>',
- 			'<div class="input-group" id="confirmPasswordGroup" style="display:none;"><label>Konfirmasi Password</label>',
- 			'<input class="form-control" type="password" id="inputAdminPasswordConfirm" minlength="6" placeholder="Ulangi password"></div>',
- 			'<button class="btn btn-primary" type="submit" id="btnLoginSubmit" style="width:100%;margin-top:.5rem;">Masuk</button>',
- 			'</form>',
- 			'<p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--text-muted);">',
- 			'<a href="#" id="toggleAuthMode" style="color:#10b981;text-decoration:underline;cursor:pointer;">',
- 			'Belum punya akun? Daftar di sini</a></p>',
- 			'</div></div>',
- 		].join("")
- 		document.body.appendChild(wrap)
-
- 		var isSignUpMode = false
-
- 		document.getElementById("toggleAuthMode").addEventListener("click", function(e) {
- 			e.preventDefault()
- 			isSignUpMode = !isSignUpMode
- 			var title = document.getElementById("loginModalTitle")
- 			var subtitle = document.getElementById("loginModalSubtitle")
- 			var btn = document.getElementById("btnLoginSubmit")
- 			var pwNew = document.getElementById("signupPasswordGroup")
- 			var pwConfirm = document.getElementById("confirmPasswordGroup")
- 			var pwInput = document.getElementById("inputAdminPassword")
- 			
- 			if (isSignUpMode) {
- 				title.textContent = "Daftar sebagai Admin"
- 				subtitle.textContent = "Buat akun admin baru untuk panel BIVAK"
- 				btn.textContent = "Daftar"
- 				pwNew.style.display = "block"
- 				pwConfirm.style.display = "block"
- 				pwInput.required = false
- 				document.getElementById("toggleAuthMode").textContent = "Sudah punya akun? Masuk di sini"
- 			} else {
- 				title.textContent = "Masuk sebagai Admin"
- 				subtitle.textContent = "Panel approval vendor & donasi BIVAK"
- 				btn.textContent = "Masuk"
- 				pwNew.style.display = "none"
- 				pwConfirm.style.display = "none"
- 				pwInput.required = true
- 				document.getElementById("toggleAuthMode").textContent = "Belum punya akun? Daftar di sini"
- 			}
- 		})
-
- 		document.getElementById("formAdminLogin").addEventListener("submit", async function (e) {
- 			e.preventDefault()
- 			var form = e.currentTarget
- 			busy(form, true, isSignUpMode ? "Mendaftar..." : "Memeriksa...")
- 			try {
- 				if (isSignUpMode) {
- 					// SIGN UP MODE
- 					var email = val("inputAdminEmail")
- 					var pwNew = document.getElementById("inputAdminPasswordNew").value
- 					var pwConfirm = document.getElementById("inputAdminPasswordConfirm").value
- 					
- 					if (pwNew.length < 6) { toast("error","Password terlalu pendek","Gunakan minimal 6 karakter."); busy(form,false); return }
- 					if (pwNew !== pwConfirm) { toast("error","Password tidak sama","Konfirmasi password harus cocok."); busy(form,false); return }
- 					
- 					var res = await sb.auth.signUp({ email: email, password: pwNew })
- 					if (res.error) throw res.error
- 					
- 					toast("success", "Pendaftaran Berhasil", "Akun telah dibuat. Silakan login.")
- 					form.reset()
- 					
- 					// Switch back to login mode
- 					isSignUpMode = false
- 					document.getElementById("loginModalTitle").textContent = "Masuk sebagai Admin"
- 					document.getElementById("loginModalSubtitle").textContent = "Panel approval vendor & donasi BIVAK"
- 					document.getElementById("btnLoginSubmit").textContent = "Masuk"
- 					document.getElementById("signupPasswordGroup").style.display = "none"
- 					document.getElementById("confirmPasswordGroup").style.display = "none"
- 					document.getElementById("inputAdminPassword").required = true
- 					document.getElementById("toggleAuthMode").textContent = "Belum punya akun? Daftar di sini"
- 					
- 					// Auto login after signup
- 					var loginRes = await sb.auth.signInWithPassword({ email: email, password: pwNew })
- 					if (loginRes.error) throw loginRes.error
- 					
- 					var ok = await refreshAdminFlag()
- 					if (!ok) {
- 						await sb.auth.signOut()
- 						toast("error", "Bukan Admin", "Akun dibuat, tetapi belum terdaftar di tabel admins. Hubungi admin utama.")
- 						return
- 					}
- 					
- 					closeModal("modalAdminLogin")
- 					await loadPublicData()
- 					renderAdminTables()
- 					decorateAdminPanel()
- 					openModal("modalAdmin")
- 					toast("success", "Selamat Datang", "Panel admin siap digunakan.")
- 				} else {
- 					// LOGIN MODE
- 					var res = await sb.auth.signInWithPassword({
- 						email: val("inputAdminEmail"),
- 						password: document.getElementById("inputAdminPassword").value,
- 					})
- 					if (res.error) throw res.error
- 					var ok = await refreshAdminFlag()
- 					if (!ok) {
- 						await sb.auth.signOut()
- 						toast("error", "Bukan Admin", "Login berhasil, tetapi akun belum terdaftar di tabel admins.")
- 						return
- 					}
- 					form.reset()
- 					closeModal("modalAdminLogin")
- 					await loadPublicData()
- 					renderAdminTables()
- 					decorateAdminPanel()
- 					openModal("modalAdmin")
- 					toast("success", "Selamat Datang", "Panel admin siap digunakan.")
- 				}
- 			} catch (err) {
- 				dbErr(err, isSignUpMode ? "Gagal mendaftar" : "Gagal masuk")
- 			} finally {
- 				busy(form, false)
- 			}
- 		})
- 	}
-
-	function buildChangePasswordModal() {
-		if (document.getElementById("modalChangePassword")) return
+	function buildLoginModal() {
+		if (document.getElementById("modalAdminLogin")) return
 		var wrap = document.createElement("div")
 		wrap.className = "modal-overlay"
-		wrap.id = "modalChangePassword"
+		wrap.id = "modalAdminLogin"
 		wrap.innerHTML = [
 			'<div class="modal-container" style="max-width:420px;">',
 			'<div class="modal-header">',
-			'<div><h3 style="color:#fff;font-size:1.15rem;">Ganti Password Admin</h3>',
-			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;">Berlaku untuk akun yang sedang login</p></div>',
-			'<button class="modal-close" type="button" onclick="closeModal(\'modalChangePassword\')">&times;</button>',
+			'<div><h3 style="color:#fff;font-size:1.15rem;" id="loginModalTitle">Masuk sebagai Admin</h3>',
+			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Panel approval vendor & donasi BIVAK</p></div>',
+			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
 			'</div><div class="modal-body">',
-			'<form id="formChangePassword">',
-			'<div class="input-group"><label>Password Baru</label>',
-			'<input class="form-control" type="password" id="inputNewPassword" autocomplete="new-password" required minlength="6" placeholder="Minimal 6 karakter"></div>',
-			'<div class="input-group"><label>Ulangi Password Baru</label>',
-			'<input class="form-control" type="password" id="inputNewPasswordConfirm" autocomplete="new-password" required minlength="6" placeholder="Ketik ulang"></div>',
-			'<button class="btn btn-primary" type="submit" style="width:100%;margin-top:.5rem;">Simpan Password</button>',
-			'</form></div></div>',
+			'<form id="formAdminLogin">',
+			'<div class="input-group"><label>Email Admin</label>',
+			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
+			'<button class="btn btn-primary" type="submit" id="btnLoginSubmit" style="width:100%;margin-top:.5rem;">Masuk</button>',
+			'</form>',
+			'<p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text-muted);">',
+			'Cukup masukkan email yang terdaftar di tabel admins.',
+			'</p></div></div>',
 		].join("")
 		document.body.appendChild(wrap)
 
-		document.getElementById("formChangePassword").addEventListener("submit", async function (e) {
+		document.getElementById("formAdminLogin").addEventListener("submit", async function (e) {
 			e.preventDefault()
 			var form = e.currentTarget
-			var p1 = document.getElementById("inputNewPassword").value
-			var p2 = document.getElementById("inputNewPasswordConfirm").value
-			if (p1.length < 6) { toast("error","Password terlalu pendek","Gunakan minimal 6 karakter."); return }
-			if (p1 !== p2) { toast("error","Password tidak sama","Kolom konfirmasi harus sama persis."); return }
-			busy(form, true, "Menyimpan...")
+			var email = val("inputAdminEmail")
+
+			if (!email) {
+				toast("error", "Email Kosong", "Masukkan email admin Anda.")
+				return
+			}
+
+			busy(form, true, "Memeriksa...")
 			try {
-				var res = await sb.auth.updateUser({ password: p1 })
-				if (res.error) throw res.error
+				var isAdminRow = await checkAdminByEmail(email)
+
+				if (!isAdminRow) {
+					toast("error", "Bukan Admin", "Email ini belum terdaftar di tabel admins.")
+					form.reset()
+					return
+				}
+
+				// Admin valid — langsung masuk!
+				isAdmin = true
 				form.reset()
-				closeModal("modalChangePassword")
-				toast("success","Password Diganti","Gunakan password baru saat login berikutnya.")
+				closeModal("modalAdminLogin")
+				await loadPublicData()
+				renderAdminTables()
+				decorateAdminPanel()
+				openModal("modalAdmin")
+				toast("success", "Selamat Datang", "Panel admin siap digunakan. Email: " + email)
 			} catch (err) {
-				dbErr(err, "Gagal mengganti password")
+				dbErr(err, "Gagal masuk")
 			} finally {
 				busy(form, false)
 			}
 		})
 	}
 
+	/* ----------------------------------------------------------------------
+	   10. Admin panel decoration
+	   ---------------------------------------------------------------------- */
 	function decorateAdminPanel() {
 		var header = document.querySelector("#modalAdmin .modal-header")
 		if (!header || document.getElementById("btnAdminLogout")) return
-		buildChangePasswordModal()
-		var btnPw = document.createElement("button")
-		btnPw.id = "btnChangePassword"
-		btnPw.type = "button"
-		btnPw.className = "btn btn-outline"
-		btnPw.style.cssText = "padding:.35rem .7rem;font-size:.78rem;margin-left:auto;margin-right:.4rem;"
-		btnPw.textContent = "Ganti Password"
-		btnPw.addEventListener("click", function () { openModal("modalChangePassword") })
+
 		var btn = document.createElement("button")
 		btn.id = "btnAdminLogout"
 		btn.type = "button"
@@ -563,29 +392,30 @@
 		btn.style.cssText = "padding:.35rem .7rem;font-size:.78rem;margin-right:.6rem;"
 		btn.textContent = "Keluar"
 		btn.addEventListener("click", async function () {
-			await sb.auth.signOut()
 			isAdmin = false
 			closeModal("modalAdmin")
 			await loadPublicData()
 			toast("info", "Keluar", "Sesi admin diakhiri.")
 		})
+
 		var closeBtn = header.querySelector(".modal-close")
 		header.insertBefore(btn, closeBtn)
-		header.insertBefore(btnPw, btn)
 	}
 
 	window.openAdminPanel = async function () {
 		buildLoginModal()
-		var ok = await refreshAdminFlag()
-		if (!ok) { openModal("modalAdminLogin"); return }
-		await loadPublicData()
-		renderAdminTables()
-		decorateAdminPanel()
-		openModal("modalAdmin")
+		if (!isAdmin) {
+			openModal("modalAdminLogin")
+		} else {
+			await loadPublicData()
+			renderAdminTables()
+			decorateAdminPanel()
+			openModal("modalAdmin")
+		}
 	}
 
 	/* ----------------------------------------------------------------------
-	   10. Aksi admin
+	   11. Aksi admin
 	   ---------------------------------------------------------------------- */
 	async function adminUpdateVendor(id, patch, successTitle, successMsg) {
 		var v = findVendor(id)
@@ -616,13 +446,17 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   11. Donasi Admin Actions
+	   12. Donasi Admin Actions — dari database LAMA
 	   ---------------------------------------------------------------------- */
 	window.donasiApprove = async function (i, st) {
 		var r = _dnRows[i]
 		if (!r) return
+		if (!sbd) {
+			toast("error", "Database Donasi Tidak Tersedia", "")
+			return
+		}
 		try {
-			var res = await sb.from("donasi").update({ astatus: st }).eq("id", r.id)
+			var res = await sbd.from("donasi").update({ astatus: st }).eq("id", r.id)
 			if (res.error) throw res.error
 			toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui. Nama akan tampil di leaderboard.' : 'Donasi ditolak.')
 			await loadPublicData({ alsoAdminTables: true })
@@ -633,13 +467,58 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   12. Boot
+	   13. Render donasi leaderboard
+	   ---------------------------------------------------------------------- */
+	window.renderDonationList = function() {
+		var approved = []
+		try {
+			if (_dnRows) approved = _dnRows.filter(function(d) { return d.astatus === 'disetujui'; })
+		} catch(e) {}
+		if (!approved.length) {
+			try {
+				var local = (typeof _lsGet === 'function') ? _lsGet('bivak_donations', []) : []
+				approved = local.filter(function(d) { return d && d.astatus === 'disetujui'; })
+			} catch(e) {}
+		}
+		if (!approved.length) {
+			approved = [
+				{nama: 'Andi Mappanyukki', amt: 10000000},
+				{nama: 'Komunitas Pencinta Alam Makassar', amt: 7500000},
+				{nama: 'Nurul Fadhilah', amt: 5000000},
+				{nama: 'Baso Dg. Nassa', amt: 5000000},
+				{nama: 'Rina Kartika', amt: 3500000}
+			]
+		}
+		var sorted = approved.slice().sort(function(a,b) { return (b.amt||0) - (a.amt||0); })
+		var total = sorted.reduce(function(s,d) { return s + (d.amt||0); }, 0)
+		var pct = Math.min(100, Math.round(total / 75000000 * 100))
+		var col = document.getElementById('dnCollected')
+		var bar = document.getElementById('dnBar')
+		var pc = document.getElementById('dnPct')
+		var box = document.getElementById('dnDonors')
+		if (col) col.textContent = 'Rp ' + total.toLocaleString('id-ID')
+		if (bar) bar.style.width = pct + '%'
+		if (pc) pc.textContent = pct + '%'
+		if (box) {
+			var medals = ["1","2","3"]
+			box.innerHTML = sorted.slice(0, 15).map(function(d,i) {
+				var nm = BIVAK.escape(d.nama || 'Donatur')
+				var top = i < 3
+				var rank = top ? medals[i] : '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">' + (i+1) + '</span>'
+				var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)'
+				var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)'
+				return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:' + bg + ';border:' + bd + '"><div style="width:28px;text-align:center;flex-shrink:0">' + rank + '</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nm + '</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">Rp ' + (d.amt||0).toLocaleString('id-ID') + '</div></div>'
+			}).join('')
+		}
+	}
+
+	/* ----------------------------------------------------------------------
+	   14. Boot
 	   ---------------------------------------------------------------------- */
 	async function boot() {
 		try {
-			await refreshAdminFlag()
 			await loadPublicData()
-			console.info("[BIVAK] Terhubung ke Supabase.")
+			console.info("[BIVAK] Terhubung ke Supabase (email-only admin).")
 		} catch (err) {
 			dbErr(err, "Gagal memuat data dari database")
 		}
