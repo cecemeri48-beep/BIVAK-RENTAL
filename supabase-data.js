@@ -1215,6 +1215,22 @@
 		boot()
 	}
 
+	// Draw example certificate on page load
+	if (document.getElementById('exampleCertCanvas')) {
+		var exCv = document.getElementById('exampleCertCanvas')
+		var exData = {
+			name: 'Contoh Nama Penerima',
+			qty: 1,
+			loc: 'Kawasan Gunung Bawakaraeng',
+			no: 'RC-ADP-2026-54321',
+			date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+		}
+		drawAdopsiCert(exCv, exData)
+		_loadCertLogo(function() {
+			drawAdopsiCert(exCv, exData)
+		})
+	}
+
 	// Alias agar renderDonation() bisa dipanggil dari index.html
 	window.renderDonation = window.renderDonationList
 })()
