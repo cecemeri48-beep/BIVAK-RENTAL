@@ -538,7 +538,84 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   14. Boot
+	   14. Render admin tables — menggunakan data cloud
+	   ---------------------------------------------------------------------- */
+	window.renderAdminTables = function() {
+		// Pending vendors
+		var pendingBody = document.getElementById("tablePendingVendorsBody")
+		if (pendingBody) {
+			if (!pendingVendorsData || pendingVendorsData.length === 0) {
+				pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>'
+			} else {
+				pendingBody.innerHTML = pendingVendorsData.map(function(pv, i) {
+					return '<tr>' +
+						'<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
+						'<td>' + BIVAK.escape(pv.phone) + '</td>' +
+						'<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
+						'<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
+						'<td>' +
+							'<button class="btn btn-primary" onclick="approveVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
+							'<button class="btn btn-outline" onclick="rejectVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
+						'</td>' +
+					'</tr>'
+				}).join('')
+			}
+		}
+
+		// Active vendors
+		var activeBody = document.getElementById("tableActiveVendorsBody")
+		if (activeBody) {
+			activeBody.innerHTML = vendorsData.map(function(av, i) {
+				return '<tr>' +
+					'<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
+					'<td>' + BIVAK.escape(av.city) + '</td>' +
+					'<td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ' + (av.rating || 4.8) + '</td>' +
+					'<td><span class="status-tag status-approved">Tayang</span></td>' +
+					'<td><button class="btn btn-outline" onclick="removeActiveVendor(' + av.id + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
+				'</tr>'
+			}).join('')
+		}
+
+		// Donasi — dari cloud, bukan localStorage!
+		var donasiBody = document.getElementById("tableDonasiBody")
+		if (donasiBody) {
+			// Gabung semua donasi (baru + disetujui + ditolak)
+			var allDonasi = _dnRows || []
+			if (allDonasi.length === 0) {
+				donasiBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Belum ada donasi.</td></tr>'
+			} else {
+				donasiBody.innerHTML = allDonasi.map(function(r, i) {
+					var nm = BIVAK.escape(r.nama || 'Donatur')
+					var amt = 'Rp ' + (Number(r.amt || 0)).toLocaleString('id-ID')
+					var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-'
+					var st = r.astatus || 'baru'
+					var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
+					              st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+					              '<span style="color:#f59e0b;font-weight:700">○ Baru</span>'
+					return '<tr>' +
+						'<td>' + nm + '</td>' +
+						'<td>' + amt + '</td>' +
+						'<td>' + when + '</td>' +
+						'<td>' + stBadge + '</td>' +
+						'<td>' +
+							'<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
+							'<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+						'</td>' +
+					'</tr>'
+				}).join('')
+			}
+		}
+
+		// Update badge tab donasi
+		var donasiBadge = document.getElementById("donasiTabBadge")
+		if (donasiBadge) {
+			var newDonasi = (_dnRows || []).filter(function(d) { return d.astatus === 'baru' }).length
+			donasiBadge.textContent = newDonasi
+		}
+	}
+
+	/* ----------------------------------------------------------------------
+	   15. Boot
 	   ---------------------------------------------------------------------- */
 	async function boot() {
 		try {
