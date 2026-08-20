@@ -941,7 +941,7 @@
 		bg.addColorStop(0.5, '#123c31')
 		bg.addColorStop(1, '#09201a')
 		ctx.fillStyle = bg
-		ctx.fillRect(0, 0, W, H)
+		ctx.fillRect(0, 0, W0, H0)
 
 		var gl = ctx.createRadialGradient(W0 / 2, H0 * 0.30, 60, W0 / 2, H0 * 0.30, W0 * 0.62)
 		gl.addColorStop(0, 'rgba(215,175,55,.22)')
