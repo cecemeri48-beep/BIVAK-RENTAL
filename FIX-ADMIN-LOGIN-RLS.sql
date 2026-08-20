@@ -13,6 +13,6 @@ TO anon, authenticated
 USING (true);
 
 -- Verifikasi
-SELECT pol.polname, pol.polallroles, pol.polcmd
-FROM pg_policy pol
-WHERE pol.relname = 'admins';
+SELECT polname, polcmd, polroles::text
+FROM pg_policy
+WHERE polrelid = 'public.admins'::regclass;
