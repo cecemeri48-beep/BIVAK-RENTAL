@@ -5,12 +5,12 @@
 
 var BIVAK = {
   vendors: [
-    {id:1,name:"Celebes Outdoor Rental Makassar",city:"Makassar",phone:"6281245678901",rating:4.9,reviews:128,minPrice:15000,gears:["Tenda Dome 4P","Carrier 75L","Sleeping Bag","Kompor Portable"],image:"assets/gear-tent.png",verified:true},
-    {id:2,name:"Bawakaraeng Adventure Gowa",city:"Gowa",phone:"6285299887766",rating:4.8,reviews:95,minPrice:12000,gears:["Tenda 2-6P","Tracking Pole Carbon","Nesting Cookset","Lampu LED"],image:"assets/gear-carrier.png",verified:true},
-    {id:3,name:"Malino Highland Camp Gear",city:"Malino",phone:"6282188990011",rating:5.0,reviews:74,minPrice:20000,gears:["Tenda Family Luxury","Matras Thermal","Hammock Double","Grill Barbeque"],image:"assets/hero-bg.png",verified:true},
-    {id:4,name:"Rammang-Rammang Outdoor Maros",city:"Maros",phone:"6281355443322",rating:4.7,reviews:62,minPrice:15000,gears:["Tenda Glamping","Life Jacket","Kompor Ultralight","Headlamp"],image:"assets/gear-tent.png",verified:true},
-    {id:5,name:"Toraja Highland Explorer",city:"Toraja",phone:"6281142009988",rating:4.9,reviews:110,minPrice:25000,gears:["Sepatu Tracking","Jaket Windproof","Carrier 60L","GPS Navigation"],image:"assets/gear-tent.png",verified:true},
-    {id:6,name:"Palopo Camp & Trail Base",city:"Palopo",phone:"6285341122334",rating:4.6,reviews:48,minPrice:15000,gears:["Tenda Dome","Sleeping Bag","Kompor Mawar","Botol Tumbler"],image:"assets/gear-carrier.png",verified:true}
+    {id:1,name:"Celebes Outdoor Rental Makassar",city:"Makassar",phone:"6281245678901",rating:4.9,reviews:128,minPrice:15000,gears:["Tenda Dome 4P","Carrier 75L","Sleeping Bag","Kompor Portable"],image:"assets/vendor-makassar.jpg",verified:true},
+    {id:2,name:"Bawakaraeng Adventure Gowa",city:"Gowa",phone:"6285299887766",rating:4.8,reviews:95,minPrice:12000,gears:["Tenda 2-6P","Tracking Pole Carbon","Nesting Cookset","Lampu LED"],image:"assets/vendor-gowa.jpg",verified:true},
+    {id:3,name:"Malino Highland Camp Gear",city:"Malino",phone:"6282188990011",rating:5.0,reviews:74,minPrice:20000,gears:["Tenda Family Luxury","Matras Thermal","Hammock Double","Grill Barbeque"],image:"assets/vendor-malino.jpg",verified:true},
+    {id:4,name:"Rammang-Rammang Outdoor Maros",city:"Maros",phone:"6281355443322",rating:4.7,reviews:62,minPrice:15000,gears:["Tenda Glamping","Life Jacket","Kompor Ultralight","Headlamp"],image:"assets/vendor-maros.jpg",verified:true},
+    {id:5,name:"Toraja Highland Explorer",city:"Toraja",phone:"6281142009988",rating:4.9,reviews:110,minPrice:25000,gears:["Sepatu Tracking","Jaket Windproof","Carrier 60L","GPS Navigation"],image:"assets/vendor-toraja.jpg",verified:true},
+    {id:6,name:"Palopo Camp & Trail Base",city:"Palopo",phone:"6285341122334",rating:4.6,reviews:48,minPrice:15000,gears:["Tenda Dome","Sleeping Bag","Kompor Mawar","Botol Tumbler"],image:"assets/vendor-palopo.jpg",verified:true}
   ],
   pendingVendors: [],
   donations: [],
@@ -67,7 +67,7 @@ function renderVendors(filteredList) {
   container.innerHTML = list.map(function(v) {
     return '<div class="vendor-card">' +
       '<div class="vendor-cover">' +
-        '<img src="' + (v.image || 'assets/gear-tent.png') + '" alt="' + BIVAK.escape(v.name) + '" onerror="this.src=\'assets/gear-tent.png\'">' +
+        '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'assets/gear-fallback.jpg\'">' +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>' : '') +
       '</div>' +
@@ -114,7 +114,7 @@ function openVendorDetail(id) {
   BIVAK.el('detailVendorTitle').textContent = v.name;
   BIVAK.el('detailVendorBody').innerHTML =
     '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem">' +
-      '<img src="' + (v.image || 'assets/gear-tent.png') + '" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.src=\'assets/gear-tent.png\'">' +
+      '<img src="' + BIVAK.vendorImg(v) + '" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.onerror=null;this.src=\'assets/gear-fallback.jpg\'">' +
       '<div style="flex:1">' +
         '<div style="font-size:0.85rem;color:var(--primary-emerald);font-weight:700;margin-bottom:0.3rem"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
         '<h3 style="color:#fff;margin-bottom:0.5rem">' + BIVAK.escape(v.name) + '</h3>' +
@@ -162,7 +162,7 @@ function handleDonasiSubmit(e) {
   var email = emailEl ? emailEl.value.trim() : '';
 
   if (!nama || !nominal || nominal <= 0) {
-    alert('Isi nama dan nominal donasi dengan benar!');
+    BIVAK.notify("error", "Data Belum Lengkap", "Isi nama dan nominal donasi dengan benar.");
     return;
   }
 
@@ -185,22 +185,12 @@ function handleDonasiSubmit(e) {
 
   updateBadges();
 
-  alert('Donasi berhasil disimpan! Nama Anda akan muncul setelah diverifikasi admin. Terima kasih! ??');
+  BIVAK.notify("success", "Terima Kasih!", "Donasi tersimpan. Nama Anda muncul setelah diverifikasi admin.");
 }
 
 function renderDonationList() {
   var approved = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; });
   var allDonors = approved.slice();
-
-  if (allDonors.length === 0) {
-    allDonors = [
-      {nama:'Andi Mappanyukki',amt:10000000},
-      {nama:'Komunitas Pencinta Alam Makassar',amt:7500000},
-      {nama:'Nurul Fadhilah',amt:5000000},
-      {nama:'Baso Dg. Nassa',amt:5000000},
-      {nama:'Rina Kartika',amt:3500000}
-    ];
-  }
 
   var sorted = allDonors.slice().sort(function(a,b) { return b.amt - a.amt; });
   var total = sorted.reduce(function(s,d) { return s + (d.amt || 0); }, 0);
@@ -215,8 +205,10 @@ function renderDonationList() {
   if (bar) bar.style.width = pct + '%';
   if (pc) pc.textContent = pct + '%';
 
-  if (box) {
-    var medals = ['??','??','??'];
+  if (box && sorted.length === 0) {
+    box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-dim);font-size:0.85rem;border:1px dashed rgba(140,150,170,.25);border-radius:12px">Belum ada donasi terverifikasi. Jadilah yang pertama mendukung konservasi Bawakaraeng.</div>';
+  } else if (box) {
+    var medals = ['🥇', '🥈', '🥉'];
     box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
       var nm = BIVAK.escape(d.nama || 'Donatur');
       var top = i < 3;
@@ -237,7 +229,7 @@ function donasiApprove(i, st) {
   renderAdminTables();
   updateBadges();
 
-  alert(st === 'disetujui' ? 'Donasi disetujui!' : 'Donasi ditolak.');
+  BIVAK.notify(st === 'disetujui' ? "success" : "info", st === 'disetujui' ? "Donasi Disetujui" : "Donasi Ditolak", "Status donasi berhasil diperbarui.");
 }
 
 function handleVendorSubmit(e) {
@@ -258,12 +250,12 @@ function handleVendorSubmit(e) {
     address: addrEl ? addrEl.value.trim() : '',
     gears: gearsEl ? gearsEl.value.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [],
     minPrice: priceEl ? (parseInt(priceEl.value) || 15000) : 15000,
-    image: 'assets/gear-tent.png',
+    image: 'assets/gear-fallback.jpg',
     verified: false
   };
 
   if (!vendor.name || !vendor.phone) {
-    alert('Lengkapi nama dan nomor WhatsApp!');
+    BIVAK.notify("error", "Data Belum Lengkap", "Lengkapi nama dan nomor WhatsApp.");
     return;
   }
 
@@ -275,7 +267,7 @@ function handleVendorSubmit(e) {
   if (form) form.reset();
 
   updateBadges();
-  alert('Pengajuan berhasil! Iklan Anda masuk antrean approval admin.');
+  BIVAK.notify("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval admin.");
 }
 
 
@@ -299,17 +291,12 @@ function switchAdminTab(tabName) {
   if (tabEl) tabEl.style.display = 'block';
 
   // Load data for the selected tab
-  console.log("[BIVAK] switchAdminTab called with:", tabName)
-  console.log("[BIVAK] renderAdopsiAdmin available:", typeof renderAdopsiAdmin)
-  console.log("[BIVAK] window.renderAdopsiAdmin available:", typeof window.renderAdopsiAdmin)
   if (tabName === 'adopsi') {
     if (typeof renderAdopsiAdmin === 'function') {
-      console.log("[BIVAK] Calling renderAdopsiAdmin from local scope")
       renderAdopsiAdmin()
     } else {
       console.warn("[BIVAK] renderAdopsiAdmin not found in local scope, trying window...")
       if (typeof window.renderAdopsiAdmin === 'function') {
-        console.log("[BIVAK] Calling renderAdopsiAdmin from window scope")
         window.renderAdopsiAdmin()
       } else {
         console.error("[BIVAK] renderAdopsiAdmin still not available!")
@@ -389,7 +376,7 @@ function approveVendor(i) {
   renderVendors();
   renderAdminTables();
   updateBadges();
-  alert('Vendor disetujui!');
+  BIVAK.notify("success", "Vendor Disetujui", "Vendor kini tampil di daftar publik.");
 }
 
 function rejectVendor(i) {
@@ -397,7 +384,7 @@ function rejectVendor(i) {
   BIVAK.save();
   renderAdminTables();
   updateBadges();
-  alert('Vendor ditolak.');
+  BIVAK.notify("info", "Vendor Ditolak", "Pengajuan vendor telah dihapus dari antrean.");
 }
 
 function removeActiveVendor(i) {
@@ -411,12 +398,17 @@ function removeActiveVendor(i) {
 
 function openModal(id) {
   var m = BIVAK.el(id);
-  if (m) m.classList.add('active');
+  if (!m) return;
+  m.classList.add('active');
+  closeMobileMenu();
+  BIVAK.lockScroll(true);
 }
 
 function closeModal(id) {
   var m = BIVAK.el(id);
   if (m) m.classList.remove('active');
+  // Buka kunci hanya kalau tidak ada modal lain yang masih terbuka
+  if (!document.querySelector('.modal-overlay.active')) BIVAK.lockScroll(false);
 }
 
 function updateBadges() {
@@ -446,14 +438,30 @@ function updateBadges() {
   }
 }
 
+// Backdrop dibuat sekali lalu dipakai ulang
+BIVAK.navBackdrop = function() {
+  var el = document.getElementById('navBackdrop');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'navBackdrop';
+    el.className = 'nav-backdrop';
+    el.addEventListener('click', closeMobileMenu);
+    document.body.appendChild(el);
+  }
+  return el;
+};
+
 function toggleMobileMenu() {
   var menu = BIVAK.el('navMenu');
   var icon = BIVAK.el('mobileToggleIcon');
-  if (menu) menu.classList.toggle('active');
+  var open = menu ? !menu.classList.contains('active') : false;
+  if (menu) menu.classList.toggle('active', open);
   if (icon) {
-    icon.classList.toggle('fa-bars');
-    icon.classList.toggle('fa-xmark');
+    icon.classList.toggle('fa-bars', !open);
+    icon.classList.toggle('fa-xmark', open);
   }
+  BIVAK.navBackdrop().classList.toggle('active', open);
+  BIVAK.lockScroll(open);
 }
 
 function closeMobileMenu() {
@@ -464,6 +472,8 @@ function closeMobileMenu() {
     icon.classList.add('fa-bars');
     icon.classList.remove('fa-xmark');
   }
+  BIVAK.navBackdrop().classList.remove('active');
+  if (!document.querySelector('.modal-overlay.active')) BIVAK.lockScroll(false);
 }
 
 function filterByCity(city) {
@@ -473,3 +483,27 @@ function filterByCity(city) {
   var k = BIVAK.el('katalog');
   if (k) k.scrollIntoView({behavior: 'smooth'});
 }
+
+/* ---------------------------------------------------------------------
+   Helper tampilan
+   --------------------------------------------------------------------- */
+
+// Sumber tunggal untuk foto vendor + varian lebar 600px untuk srcset.
+BIVAK.vendorImg = function(v, width) {
+  var src = (v && v.image) ? v.image : 'assets/gear-fallback.jpg';
+  if (width === 600 && /^assets\/vendor-[a-z]+\.jpg$/.test(src)) {
+    return src.replace(/\.jpg$/, '@600.jpg');
+  }
+  return src;
+};
+
+// Pakai toast bila tersedia, alert hanya sebagai jaring pengaman.
+BIVAK.notify = function(type, title, message) {
+  if (typeof window.toast === 'function') { window.toast(type, title, message); return; }
+  alert(title + '\n' + message);
+};
+
+// Kunci scroll body saat modal / menu terbuka supaya latar tidak ikut bergerak.
+BIVAK.lockScroll = function(locked) {
+  document.body.classList.toggle('no-scroll', !!locked);
+};

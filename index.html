@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#08211a">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>RCS.CBS - BIVAK (Bursa Interaktif Vendor Alam & Komunitas)</title>
   <meta name="description" content="Platform Marketplace Vendor Rental Alat Outdoor & Donasi Pelestarian Alam Bawakaraeng serta Kemanusiaan - RCS.CBS BIVAK.">
 
@@ -22,7 +25,7 @@
   <link rel="stylesheet" href="motion.css">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
 </head>
 <body>
 
@@ -31,9 +34,9 @@
     <div class="container">
       <a href="#" class="nav-brand">
         <div class="brand-logos">
-          <img src="assets/logo.png" alt="BIVAK Logo" class="brand-logo">
+          <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
           <span class="coin-trigger" onclick="openAdminPanel()" title="Panel Admin" role="button" tabindex="0">
-            <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Medallion" class="brand-logo coin-logo">
+            <img src="assets/coin.jpg" alt="RCS.CBS Medallion" class="brand-logo coin-logo" width="40" height="40">
             <span class="notification-badge coin-admin-badge" id="coinAdminBadge">0</span>
           </span>
         </div>
@@ -112,11 +115,11 @@
 
       <div class="hero-stats">
         <div class="stat-item">
-          <div class="stat-number"><i class="fa-solid fa-store"></i> <span id="statVendorsCount">48</span>+</div>
+          <div class="stat-number"><i class="fa-solid fa-store"></i> <span id="statVendorsCount">0</span>+</div>
           <div class="stat-label">Vendor Terverifikasi</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number"><i class="fa-solid fa-coins"></i> Rp <span id="statDonationTotal">47.500.000</span></div>
+          <div class="stat-number"><i class="fa-solid fa-coins"></i> Rp <span id="statDonationTotal">0</span></div>
           <div class="stat-label">Donasi Terkumpul</div>
         </div>
         <div class="stat-item">
@@ -265,7 +268,7 @@
           <p style="color:var(--text-muted);font-size:0.9rem">Pindai QRIS di bawah atau transfer ke Rekening RCS.CBS</p>
         </div>
         <div style="text-align:center;padding:1.5rem;background:#fff;border-radius:var(--radius-lg);margin-bottom:1rem">
-          <img src="assets/qris-gopay.png" alt="QRIS GoPay" style="width:200px;height:200px;object-fit:contain" onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;background:#f0fdf4;border:2px dashed #10b981;border-radius:1rem;text-align:center\'><div style=\'font-size:3rem\'>💳</div><p style=\'color:#166534;font-weight:600\'>QRIS GoPay</p><p style=\'font-size:0.85rem;color:#15803d\'>RCS.CBS Bawakaraeng</p></div>'">
+          <img src="assets/qris-gopay.png" alt="QRIS GoPay" width="200" height="200" loading="lazy" style="width:200px;height:200px;object-fit:contain" onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;background:#f0fdf4;border:2px dashed #10b981;border-radius:1rem;text-align:center\'><div style=\'font-size:3rem\'>💳</div><p style=\'color:#166534;font-weight:600\'>QRIS GoPay</p><p style=\'font-size:0.85rem;color:#15803d\'>RCS.CBS Bawakaraeng</p></div>'">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.9rem">
           <div style="padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm)">
@@ -297,7 +300,8 @@
           <input type="text" id="certAdopsiName" class="form-control" placeholder="Nama lengkap untuk sertifikat" oninput="updateCertPreview()">
         </div>
         <div id="certPreview" style="margin-top:1rem;display:none;text-align:center">
-          <canvas id="certCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
+          <canvas id="certCanvas" class="cert-zoom" width="1400" height="990" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
+          <p class="cert-hint">Ketuk sertifikat untuk memperbesar</p>
         </div>
         <button class="btn btn-primary" onclick="downloadAdopsiCert()" style="width:100%;margin-top:1rem" id="btnDownloadCert" disabled>
           <i class="fa-solid fa-download"></i> Unduh Sertifikat (PNG)
@@ -308,7 +312,8 @@
       <!-- Contoh Sertifikat -->
       <div class="form-card" style="margin-top:1.5rem;text-align:center;overflow:visible">
         <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem">Contoh Sertifikat Adopsi Pohon:</p>
-        <canvas id="exampleCertCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
+        <canvas id="exampleCertCanvas" class="cert-zoom" width="1400" height="990" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
+          <p class="cert-hint">Ketuk sertifikat untuk memperbesar</p>
       </div>
     </div>
   </section>
@@ -341,7 +346,7 @@
           </ul>
         </div>
         <div>
-          <img src="assets/hero-bg.png" alt="Aksi Konservasi" style="width: 100%; border-radius: var(--radius-lg); border: 1px solid var(--border-emerald); box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+          <img src="assets/hero-bg.jpg" alt="Aksi Konservasi" width="1600" height="1067" loading="lazy" decoding="async" style="width: 100%; border-radius: var(--radius-lg); border: 1px solid var(--border-emerald); box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
         </div>
       </div>
     </div>
@@ -589,8 +594,8 @@
         <div>
           <div class="nav-brand" style="margin-bottom: 1rem;">
             <div class="brand-logos">
-              <img src="assets/logo.png" alt="BIVAK Logo" class="brand-logo">
-              <img src="assets/rcs-cbs-coin.png" alt="RCS.CBS Coin" class="brand-logo coin-logo">
+              <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
+              <img src="assets/coin.jpg" alt="RCS.CBS Coin" class="brand-logo coin-logo" width="40" height="40">
             </div>
             <div class="brand-text">
               <h1>RCS.CBS - BIVAK</h1>
@@ -631,6 +636,7 @@
   <script src="app.js"></script>
   <script src="shader-hero.js"></script>
   <script src="motion.js"></script>
+  <script src="cert.js"></script>
   <script src="supabase-data.js"></script>
 </body>
 </html>

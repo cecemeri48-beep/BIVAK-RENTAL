@@ -349,13 +349,13 @@ a {
 /* Hero Section */
 .hero {
   position: relative;
-  min-height: 90vh;
+  min-height: 90dvh;
   display: flex;
   align-items: center;
   padding-top: 110px;
   padding-bottom: 4rem;
   background: linear-gradient(to bottom, rgba(7, 12, 11, 0.4), var(--bg-dark)),
-              url('assets/hero-bg.png') center/cover no-repeat;
+              url('assets/hero-bg.jpg') center/cover no-repeat;
   overflow: hidden;
 }
 
@@ -800,7 +800,7 @@ select.form-control {
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 550px;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 40px var(--primary-glow);
   transform: translateY(20px);
@@ -1117,7 +1117,7 @@ footer {
   .hero-description { font-size: 0.9rem; margin-bottom: 1.5rem; }
   
   .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; padding: 0.85rem; margin-top: 1.5rem; }
-  .stat-number { font-size: 1.2rem; }
+  .stat-number { font-size: 1rem; overflow-wrap: anywhere; line-height: 1.2; }
   .stat-label { font-size: 0.72rem; }
   
   .grid-3 { grid-template-columns: 1fr; }
@@ -1126,7 +1126,7 @@ footer {
   .footer-grid { grid-template-columns: 1fr; }
   
   .modal-overlay { padding: 0.5rem; }
-  .modal-container { max-height: 94vh; width: 100%; border-radius: 16px; }
+  .modal-container { max-height: 88dvh; width: 100%; border-radius: 16px; overscroll-behavior: contain; }
   .modal-header { padding: 0.85rem 1rem; }
   .modal-title { font-size: 1.1rem; }
   .modal-body { padding: 1rem 0.85rem; }
@@ -1361,4 +1361,135 @@ html {
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+/* =====================================================================
+   Perbaikan tampilan HP
+   ===================================================================== */
+
+body {
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Dipasang saat modal / menu terbuka agar latar tidak ikut menggulir */
+body.no-scroll {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Tabel admin lebih lebar dari layar; beri pembungkus yang bisa digeser */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Navbar fixed vs notch / home indicator */
+.navbar {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.footer {
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+}
+
+/* Sertifikat: ketuk untuk perbesar */
+canvas.cert-zoom {
+  cursor: zoom-in;
+}
+
+.cert-hint {
+  margin: 0.6rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.cert-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: rgba(3, 12, 9, 0.94);
+  display: flex;
+  align-items: center;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+  cursor: zoom-out;
+}
+
+.cert-lightbox img {
+  width: 200%;
+  max-width: 1600px;
+  height: auto;
+  margin: auto;
+  border-radius: 8px;
+}
+
+@media (min-width: 900px) {
+  .cert-lightbox img { width: 100%; }
+  .cert-hint { display: none; }
+}
+
+/* Latar gelap di belakang menu HP yang terbuka */
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.nav-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  /* iOS memperbesar halaman otomatis kalau font input < 16px.
+     !important dipakai sengaja: aturan class yang ada lebih spesifik
+     daripada selektor elemen, dan ini perbaikan aksesibilitas. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Target sentuh minimum 44px sesuai panduan aksesibilitas */
+  .btn,
+  .vendor-footer .btn,
+  .tab-btn,
+  .tier-btn,
+  .modal-close,
+  .mobile-toggle {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Harga + tombol Detail + WA saling dorong keluar kartu */
+  .vendor-footer {
+    flex-wrap: wrap;
+    row-gap: 0.6rem;
+  }
+
+  .vendor-footer .vendor-price {
+    flex: 1 0 100%;
+  }
+
+  .vendor-cover {
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
+
+  .cert-hint {
+    font-size: 0.74rem;
+  }
 }
