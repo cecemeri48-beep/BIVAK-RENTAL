@@ -930,29 +930,31 @@
 	}
 
 	function drawAdopsiCert(cv, data) {
-		console.log('[CERT] drawAdopsiCert called', { cv: !!cv, width: cv?.width, height: cv?.height, data });
-		if (!cv) { console.error('[CERT] Canvas element not found!'); return }
-		var ctx = cv.getContext('2d')
-		if (!ctx) { console.error('[CERT] Canvas 2D context not available!'); return }
-		var W = cv.width
-		var H = cv.height
-		console.log('[CERT] Canvas size:', W, 'x', H)
-		ctx.clearRect(0, 0, W, H)
-		ctx.textAlign = 'center'
-		ctx.textBaseline = 'alphabetic'
+		try {
+			console.log('[CERT] drawAdopsiCert called', { cv: !!cv, width: cv?.width, height: cv?.height, data });
+			if (!cv) { console.error('[CERT] Canvas element not found!'); return }
+			var ctx = cv.getContext('2d')
+			if (!ctx) { console.error('[CERT] Canvas 2D context not available!'); return }
+			var W = cv.width
+			var H = cv.height
+			console.log('[CERT] Canvas size:', W, 'x', H)
+			ctx.clearRect(0, 0, W, H)
+			ctx.textAlign = 'center'
+			ctx.textBaseline = 'alphabetic'
 
-		// Test basic drawing
-		console.log('[CERT] Testing basic fillRect...')
-		ctx.fillStyle = '#000000'
-		ctx.fillRect(0, 0, 10, 10)
-		console.log('[CERT] Basic fillRect test done')
+			// Test basic drawing
+			console.log('[CERT] Testing basic fillRect...')
+			ctx.fillStyle = '#000000'
+			ctx.fillRect(0, 0, 10, 10)
+			console.log('[CERT] Basic fillRect test done')
 
-		var bg = ctx.createLinearGradient(0, 0, W, H)
-		bg.addColorStop(0, '#0c2a22')
-		bg.addColorStop(0.5, '#123c31')
-		bg.addColorStop(1, '#09201a')
-		ctx.fillStyle = bg
-		ctx.fillRect(0, 0, W, H)
+			var bg = ctx.createLinearGradient(0, 0, W, H)
+			bg.addColorStop(0, '#0c2a22')
+			bg.addColorStop(0.5, '#123c31')
+			bg.addColorStop(1, '#09201a')
+			ctx.fillStyle = bg
+			ctx.fillRect(0, 0, W, H)
+			console.log('[CERT] Background gradient drawn')
 
 		var gl = ctx.createRadialGradient(W / 2, H * 0.30, 60, W / 2, H * 0.30, W * 0.62)
 		gl.addColorStop(0, 'rgba(215,175,55,.22)')
@@ -1131,10 +1133,18 @@
 		ctx.fillText('RCS.CBS', lx, by + 74)
 		ctx.fillText('Bidang Ekosistem', rx, by + 74)
 		_seal(ctx, cx, by + 2, 84)
+		console.log('[CERT] Seal drawn')
 		ctx.fillStyle = 'rgba(223,238,231,.82)'
 		ctx.font = '22px Georgia,serif'
-		ctx.fillText('No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc, cx, H - 92)
-		console.log('[CERT] Certificate drawing complete')
+		var footerText = 'No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc
+		console.log('[CERT] Drawing footer text:', footerText)
+		ctx.fillText(footerText, cx, H - 92)
+		console.log('[CERT] Footer drawn')
+		console.log('[CERT] Certificate drawing complete - all elements rendered')
+		} catch (err) {
+			console.error('[CERT] Error during drawing:', err)
+			console.error('[CERT] Error stack:', err.stack)
+		}
 	}
 
 	function buildAdopsiCert(name, qty, code) {
