@@ -1054,11 +1054,11 @@
 			ctx.fillText('Bidang Ekosistem', W * 0.76, sigY + 30)
 
 			// === SEAL ===
-			var sealY = sigY + 130
-			drawGoldSeal(ctx, cx, sealY, 60)
+			var sealY = sigY + 110
+			drawGoldSeal(ctx, cx, sealY, 55)
 
 			// === FOOTER INFO ===
-			var infoY = H - 90
+			var infoY = H - 85
 			ctx.fillStyle = 'rgba(223,238,231,0.8)'
 			ctx.font = '22px Georgia, serif'
 			var no = data && data.no ? data.no : 'RC-ADP-2026-00001'
