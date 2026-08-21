@@ -297,7 +297,7 @@
           <input type="text" id="certAdopsiName" class="form-control" placeholder="Nama lengkap untuk sertifikat" oninput="updateCertPreview()">
         </div>
         <div id="certPreview" style="margin-top:1rem;display:none;text-align:center">
-          <canvas id="certCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3)"></canvas>
+          <canvas id="certCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
         </div>
         <button class="btn btn-primary" onclick="downloadAdopsiCert()" style="width:100%;margin-top:1rem" id="btnDownloadCert" disabled>
           <i class="fa-solid fa-download"></i> Unduh Sertifikat (PNG)
@@ -306,9 +306,9 @@
       </div>
       
       <!-- Contoh Sertifikat -->
-      <div class="form-card" style="margin-top:1.5rem;text-align:center">
+      <div class="form-card" style="margin-top:1.5rem;text-align:center;overflow:visible">
         <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem">Contoh Sertifikat Adopsi Pohon:</p>
-        <canvas id="exampleCertCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3)"></canvas>
+        <canvas id="exampleCertCanvas" width="2000" height="1414" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
       </div>
     </div>
   </section>
