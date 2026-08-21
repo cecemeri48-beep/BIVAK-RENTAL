@@ -930,12 +930,22 @@
 	}
 
 	function drawAdopsiCert(cv, data) {
+		console.log('[CERT] drawAdopsiCert called', { cv: !!cv, width: cv?.width, height: cv?.height, data });
+		if (!cv) { console.error('[CERT] Canvas element not found!'); return }
 		var ctx = cv.getContext('2d')
+		if (!ctx) { console.error('[CERT] Canvas 2D context not available!'); return }
 		var W = cv.width
 		var H = cv.height
+		console.log('[CERT] Canvas size:', W, 'x', H)
 		ctx.clearRect(0, 0, W, H)
 		ctx.textAlign = 'center'
 		ctx.textBaseline = 'alphabetic'
+
+		// Test basic drawing
+		console.log('[CERT] Testing basic fillRect...')
+		ctx.fillStyle = '#000000'
+		ctx.fillRect(0, 0, 10, 10)
+		console.log('[CERT] Basic fillRect test done')
 
 		var bg = ctx.createLinearGradient(0, 0, W, H)
 		bg.addColorStop(0, '#0c2a22')
@@ -988,18 +998,23 @@
 		}
 
 		var m = 54
+		console.log('[CERT] Drawing outer border...')
 		ctx.strokeStyle = gold()
 		ctx.lineWidth = 9
 		_rr(ctx, m, m, W - 2 * m, H - 2 * m, 26)
 		ctx.stroke()
+		console.log('[CERT] Outer border drawn')
 
 		var m2 = 76
+		console.log('[CERT] Drawing inner border...')
 		ctx.lineWidth = 2.5
 		ctx.strokeStyle = 'rgba(247,224,138,.7)'
 		_rr(ctx, m2, m2, W - 2 * m2, H - 2 * m2, 18)
 		ctx.stroke()
+		console.log('[CERT] Inner border drawn')
 
 		ctx.fillStyle = gold()
+		console.log('[CERT] Drawing diamond corners...')
 		[[m, m], [W - m, m], [m, H - m], [W - m, H - m]].forEach(function(pt) {
 			ctx.save()
 			ctx.translate(pt[0], pt[1])
@@ -1007,10 +1022,12 @@
 			ctx.fillRect(-11, -11, 22, 22)
 			ctx.restore()
 		})
+		console.log('[CERT] Diamond corners drawn')
 
 		var cx = W / 2
 		var ly = 196
 		var lr = 90
+		console.log('[CERT] Drawing logo circle at', cx, ly, 'radius', lr)
 		ctx.beginPath()
 		ctx.arc(cx, ly, lr + 15, 0, Math.PI * 2)
 		ctx.fillStyle = '#0e2c23'
@@ -1020,6 +1037,7 @@
 		ctx.stroke()
 
 		if (_certLogoOK && _certLogo) {
+			console.log('[CERT] Drawing logo image...')
 			ctx.save()
 			ctx.beginPath()
 			ctx.arc(cx, ly, lr, 0, Math.PI * 2)
@@ -1027,25 +1045,31 @@
 			ctx.drawImage(_certLogo, cx - lr, ly - lr, lr * 2, lr * 2)
 			ctx.restore()
 		} else {
+			console.log('[CERT] Logo not loaded, drawing fallback text "RC"')
 			ctx.fillStyle = '#f7e08a'
 			ctx.font = '700 66px Georgia,serif'
 			ctx.textBaseline = 'middle'
 			ctx.fillText('RC', cx, ly)
 			ctx.textBaseline = 'alphabetic'
 		}
+		console.log('[CERT] Logo circle drawn')
 
 		try { ctx.letterSpacing = '5px' } catch (e) {}
 		ctx.fillStyle = 'rgba(247,224,138,.92)'
 		ctx.font = '700 25px Georgia,serif'
+		console.log('[CERT] Drawing "ORGANISASI PENCINTA ALAM" at', cx, ly + lr + 62)
 		ctx.fillText('ORGANISASI PENCINTA ALAM', cx, ly + lr + 62)
 		ctx.fillStyle = '#f7e08a'
 		ctx.font = '800 30px Georgia,serif'
+		console.log('[CERT] Drawing "RCS.CBS" at', cx, ly + lr + 102)
 		ctx.fillText('RCS.CBS', cx, ly + lr + 102)
 		ctx.fillStyle = gold()
 		ctx.font = '900 92px Georgia,serif'
 		try { ctx.letterSpacing = '7px' } catch (e) {}
+		console.log('[CERT] Drawing "SERTIFIKAT ADOPSI POHON" at', cx, ly + lr + 206)
 		ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, ly + lr + 206)
 		try { ctx.letterSpacing = '0px' } catch (e) {}
+		console.log('[CERT] Header text drawn')
 
 		var dy = ly + lr + 252
 		ctx.strokeStyle = 'rgba(247,224,138,.6)'
@@ -1066,11 +1090,13 @@
 		ctx.fillStyle = '#dfeee7'
 		ctx.font = 'italic 30px Georgia,serif'
 		ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, dy + 66)
+		console.log('[CERT] Text "dengan penuh penghargaan" drawn at', cx, dy + 66)
 
 		ctx.fillStyle = '#ffffff'
 		ctx.font = 'italic 800 80px Georgia,serif'
 		var nm = data.name
 		ctx.fillText(nm, cx, dy + 162)
+		console.log('[CERT] Name text drawn:', nm, 'at', cx, dy + 162)
 
 		var nw = Math.min(ctx.measureText(nm).width + 140, W - 260)
 		ctx.strokeStyle = gold()
@@ -1108,6 +1134,7 @@
 		ctx.fillStyle = 'rgba(223,238,231,.82)'
 		ctx.font = '22px Georgia,serif'
 		ctx.fillText('No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc, cx, H - 92)
+		console.log('[CERT] Certificate drawing complete')
 	}
 
 	function buildAdopsiCert(name, qty, code) {
@@ -1270,8 +1297,10 @@
 
 	// Draw example certificate on page load
 	function drawExampleCert() {
+		console.log('[CERT] drawExampleCert called');
 		var exCv = document.getElementById('exampleCertCanvas')
-		if (!exCv) return
+		console.log('[CERT] exampleCertCanvas element:', exCv);
+		if (!exCv) { console.error('[CERT] exampleCertCanvas not found in DOM'); return }
 		var exData = {
 			name: 'Contoh Nama Penerima',
 			qty: 1,
@@ -1279,15 +1308,19 @@
 			no: 'RC-ADP-2026-54321',
 			date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 		}
+		console.log('[CERT] Drawing example cert with data:', exData);
 		// Use the same draw function for consistency
 		drawAdopsiCert(exCv, exData)
 	}
 
+	// Ensure DOM is ready before drawing
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', function() {
+			console.log('[CERT] DOMContentLoaded fired');
 			drawExampleCert()
 		})
 	} else {
+		console.log('[CERT] DOM already ready, drawing immediately');
 		drawExampleCert()
 	}
 
