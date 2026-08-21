@@ -434,12 +434,12 @@
 			decorateAdminPanel()
 			openModal("modalAdmin")
 			toast("success", "Selamat Datang", "Panel admin siap digunakan. Email: " + email)
-			} catch (err) {
-				dbErr(err, "Gagal masuk")
-			} finally {
-				busy(form, false)
-			}
-		})
+		} catch (err) {
+			dbErr(err, "Gagal masuk")
+		} finally {
+			busy(form, false)
+		}
+	})
 	}
 
 	/* ----------------------------------------------------------------------
