@@ -1186,10 +1186,16 @@
 			
 		} catch (err) {
 			console.error('[CERT] Drawing error:', err)
+			console.error('[CERT] Error details:', {
+				name: err.name,
+				message: err.message,
+				stack: err.stack
+			})
 		}
 	}
 
 	function drawGoldSeal(ctx, cx, cy, R, data) {
+		if (!ctx || !cx || !cy || !R) return
 		var pts = 24
 		ctx.beginPath()
 		for (var i = 0; i <= pts * 2; i++) {
