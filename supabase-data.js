@@ -1079,7 +1079,7 @@
 			ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, emblemY + emblemR + 230)
 			
 			// === MAIN CONTENT ===
-			var contentY = emblemY + emblemR + 290
+			var contentY = emblemY + emblemR + 300
 			
 			// Intro text
 			ctx.fillStyle = '#c8dcc8'
@@ -1087,7 +1087,7 @@
 			ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, contentY)
 			
 			// Name with underline
-			var nameY = contentY + 85
+			var nameY = contentY + 100
 			ctx.fillStyle = '#ffffff'
 			ctx.font = 'italic bold 88px Georgia, serif'
 			ctx.fillText(data.name || 'Nama Penerima', cx, nameY)
@@ -1097,48 +1097,37 @@
 			ctx.strokeStyle = '#d4af37'
 			ctx.lineWidth = 3
 			ctx.beginPath()
-			ctx.moveTo(cx - nameWidth/2 - 60, nameY + 35)
-			ctx.lineTo(cx + nameWidth/2 + 60, nameY + 35)
+			ctx.moveTo(cx - nameWidth/2 - 60, nameY + 40)
+			ctx.lineTo(cx + nameWidth/2 + 60, nameY + 40)
 			ctx.stroke()
 			// Small end diamonds
 			[ cx - nameWidth/2 - 60, cx + nameWidth/2 + 60 ].forEach(function(x) {
 				ctx.save()
-				ctx.translate(x, nameY + 35)
+				ctx.translate(x, nameY + 40)
 				ctx.rotate(Math.PI / 4)
 				ctx.fillStyle = '#d4af37'
 				ctx.fillRect(-6, -6, 12, 12)
 				ctx.restore()
 			})
 			
-			// Body text
-			var bodyY = nameY + 110
+			// Body text - START FROM SCRATCH, SIMPLE VERSION
+			var bodyY = nameY + 140
 			ctx.fillStyle = '#b8d4b8'
 			ctx.font = '32px Georgia, serif'
-			var bodyText = 'atas dedikasi dan partisipasinya dalam mengadopsi ' + 
-			              (data.qty || 1) + ' bibit pohon guna pemulihan serta ' +
-			              'pelestarian ekosistem ' + (data.loc || 'Gunung Bawakaraeng') +
-			              '. Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
 			
-			// Text wrap
-			var words = bodyText.split(' ')
-			var line = ''
-			var yy = bodyY
-			var maxWidth = W - 500
-			for (var i = 0; i < words.length; i++) {
-				var testLine = line ? line + ' ' + words[i] : words[i]
-				var testWidth = ctx.measureText(testLine).width
-				if (testWidth > maxWidth && i > 0) {
-					ctx.fillText(line, cx, yy)
-					line = words[i]
-					yy += 48
-				} else {
-					line = testLine
-				}
+			// Simple body text without wrap
+			var bodyLines = [
+				'atas dedikasi dan partisipasinya dalam mengadopsi ' + (data.qty || 1) + ' bibit pohon',
+				'guna pemulihan serta pelestarian ekosistem ' + (data.loc || 'Gunung Bawakaraeng'),
+				'Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
+			]
+			
+			for (var lineIdx = 0; lineIdx < bodyLines.length; lineIdx++) {
+				ctx.fillText(bodyLines[lineIdx], cx, bodyY + (lineIdx * 50))
 			}
-			ctx.fillText(line, cx, yy)
 			
 			// === FOOTER SECTION ===
-			var footerY = H - 240
+			var footerY = H - 280
 			
 			// Signature lines
 			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
@@ -1150,18 +1139,18 @@
 			ctx.stroke()
 			// Right
 			ctx.beginPath()
-			ctx.moveTo(W * 0.76 - 180, footerY)
-			ctx.lineTo(W * 0.76 + 180, footerY)
+			ctx.moveTo(W * 0.76 - 160, footerY)
+			ctx.lineTo(W * 0.76 + 160, footerY)
 			ctx.stroke()
 			
 			// Signature labels
 			ctx.fillStyle = '#f7e08a'
 			ctx.font = 'bold 30px Georgia, serif'
 			ctx.textAlign = 'center'
-			ctx.fillText('Ketua Umum', W * 0.24, footerY + 50)
+			ctx.fillText('Ketua Umum', W * 0.24, footerY + 55)
 			ctx.fillStyle = '#bcd4c9'
 			ctx.font = '24px Georgia, serif'
-			ctx.fillText('RCS.CBS', W * 0.24, footerY + 85)
+			ctx.fillText('RCS.CBS', W * 0.24, footerY + 90)
 			
 			ctx.fillStyle = '#f7e08a'
 			ctx.font = 'bold 30px Georgia, serif'
@@ -1170,14 +1159,14 @@
 			ctx.font = '24px Georgia, serif'
 			ctx.fillText('Bidang Ekosistem', W * 0.76, footerY + 35)
 			
-	// === GOLD SEAL (Stamp) ===
+			// === GOLD SEAL (Stamp) ===
 			var sealX = cx
-			var sealY = footerY + 100
-			var sealR = 70
+			var sealY = footerY + 120
+			var sealR = 65
 			drawGoldSeal(ctx, sealX, sealY, sealR, data)
 			
 			// === BOTTOM INFO BAR ===
-			var infoY = H - 90
+			var infoY = H - 100
 			ctx.fillStyle = 'rgba(223,238,231,0.85)'
 			ctx.font = '24px Georgia, serif'
 			ctx.textAlign = 'center'
@@ -1192,7 +1181,7 @@
 			ctx.font = 'bold 200px Georgia, serif'
 			ctx.textAlign = 'center'
 			ctx.fillStyle = '#d4af37'
-			ctx.fillText('RCS.CBS', cx, H/2 + 50)
+			ctx.fillText('RCS.CBS', cx, H/2 + 80)
 			ctx.restore()
 			
 		} catch (err) {
