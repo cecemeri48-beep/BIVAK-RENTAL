@@ -421,6 +421,12 @@ function updateBadges() {
   var donasiBadge = BIVAK.el('donasiTabBadge');
   if (donasiBadge) donasiBadge.textContent = BIVAK.donations.length;
 
+  var adopsiBadge = BIVAK.el('adopsiTabBadge');
+  if (adopsiBadge) {
+    var pendingAdopsi = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
+    adopsiBadge.textContent = pendingAdopsi
+  }
+
   var statVendors = BIVAK.el('statVendorsCount');
   if (statVendors) statVendors.textContent = BIVAK.vendors.length;
 

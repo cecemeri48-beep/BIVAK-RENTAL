@@ -354,17 +354,27 @@
 		badge.style.display = newCount > 0 ? "inline-flex" : "none"
 	}
 
+	function syncAdopsiBadge() {
+		var badge = document.getElementById("adopsiBadge")
+		if (!badge) return
+		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
+		badge.innerText = pending
+		badge.style.display = pending > 0 ? "inline-flex" : "none"
+	}
+
 	var origUpdateBadges = window.updateBadgesAndStats || window.updateBadges
 	if (typeof origUpdateBadges === "function") {
 		window.updateBadgesAndStats = function () {
 			origUpdateBadges()
 			syncCoinBadge()
 			syncDonasiBadge()
+			syncAdopsiBadge()
 		}
 	} else {
 		window.updateBadgesAndStats = function () {
 			syncCoinBadge()
 			syncDonasiBadge()
+			syncAdopsiBadge()
 		}
 	}
 
@@ -639,6 +649,13 @@
 		if (donasiBadge) {
 			var newDonasi = (_dnRows || []).filter(function(d) { return d.astatus === 'baru' }).length
 			donasiBadge.textContent = newDonasi
+		}
+
+		// Update badge tab adopsi
+		var adopsiBadge = document.getElementById("adopsiTabBadge")
+		if (adopsiBadge) {
+			var newAdopsi = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
+			adopsiBadge.textContent = newAdopsi
 		}
 	}
 
