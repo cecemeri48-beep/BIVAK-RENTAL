@@ -1177,7 +1177,7 @@
       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Belum ada pengajuan adopsi.</td></tr>'
       return
     }
-    tbody.innerHTML = _adoptionRows.map(function(r, i) {
+    var html = _adoptionRows.map(function(r, i) {
 			var isVerified = r.status === 'terverifikasi'
 			var isRejected = r.status === 'ditolak'
 			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
@@ -1199,6 +1199,8 @@
 				'<td style="min-width:180px">' + actions + '</td>' +
 			'</tr>'
 		}).join('')
+		console.log("[BIVAK] Rendering", _adoptionRows.length, "rows, first row has", actions ? "buttons" : "no buttons")
+		tbody.innerHTML = html
 	}
 
   window.approveAdopsi = async function(i) {
