@@ -299,15 +299,21 @@ function switchAdminTab(tabName) {
   if (tabEl) tabEl.style.display = 'block';
 
   // Load data for the selected tab
+  console.log("[BIVAK] switchAdminTab called with:", tabName)
+  console.log("[BIVAK] renderAdopsiAdmin available:", typeof renderAdopsiAdmin)
+  console.log("[BIVAK] window.renderAdopsiAdmin available:", typeof window.renderAdopsiAdmin)
   if (tabName === 'adopsi') {
     if (typeof renderAdopsiAdmin === 'function') {
+      console.log("[BIVAK] Calling renderAdopsiAdmin from local scope")
       renderAdopsiAdmin()
     } else {
-      console.warn("[BIVAK] renderAdopsiAdmin not found, trying window...")
+      console.warn("[BIVAK] renderAdopsiAdmin not found in local scope, trying window...")
       if (typeof window.renderAdopsiAdmin === 'function') {
+        console.log("[BIVAK] Calling renderAdopsiAdmin from window scope")
         window.renderAdopsiAdmin()
       } else {
         console.error("[BIVAK] renderAdopsiAdmin still not available!")
+        console.error("[BIVAK] Available global functions:", Object.keys(window).filter(k => k.includes('render')))
       }
     }
   }
