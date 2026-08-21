@@ -1184,10 +1184,16 @@
 			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
 			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
 			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
-			var actions = isVerified ?
-				'<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>' :
-				'<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
-				'<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
+			var actions
+			if (isVerified) {
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+			} else if (isRejected) {
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+			} else {
+				actions = '<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				          '<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
+			}
+			console.log("[BIVAK] Row", i, "status:", r.status, "has buttons:", !!actions)
 			return '<tr>' +
 				'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.customer_name || '-') + '</td>' +
 				'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.package_name || '-') + '</td>' +
@@ -1196,7 +1202,7 @@
 				'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.whatsapp || '-') + '</td>' +
 				'<td>' + statusBadge + '</td>' +
 				'<td>' + codeDisplay + '</td>' +
-				'<td style="min-width:180px">' + actions + '</td>' +
+				'<td style="min-width:200px">' + actions + '</td>' +
 			'</tr>'
 		}).join('')
 		console.log("[BIVAK] Rendering", _adoptionRows.length, "rows with buttons")
