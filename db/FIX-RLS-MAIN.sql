@@ -287,6 +287,15 @@ CREATE INDEX IF NOT EXISTS idx_bids_auction    ON public.bids (auction_id);
 -- ============================================================================
 -- 9. SEED DATA (opsional - hanya jika kosong)
 -- ============================================================================
+-- Fix: perbesar kolom name jika masih VARCHAR(10)
+DO $$ BEGIN
+    IF (SELECT data_type FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = 'cities' AND column_name = 'name' 
+        AND character_maximum_length = 10) IS NOT NULL THEN
+        ALTER TABLE public.cities ALTER COLUMN name TYPE VARCHAR(100);
+    END IF;
+END $$;
+
 INSERT INTO public.cities (name) VALUES
 ('Makassar'), ('Gowa'), ('Malino'), ('Maros'),
 ('Tana Toraja'), ('Toraja Utara'), ('Palopo'),
