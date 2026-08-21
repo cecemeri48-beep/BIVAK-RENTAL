@@ -1231,31 +1231,31 @@
     }
   }
 
-  window.rejectAdopsi = async function(i) {
-    var r = _adoptionRows[i]
-    console.log("[BIVAK] rejectAdopsi called, index:", i, "row:", r)
-    if (!r) {
-      console.error("[BIVAK] No row found at index", i)
-      toast("error", "Error", "Data adopsi tidak ditemukan.")
-      return
-    }
-    if (!confirm('Tolak pengajuan adopsi ini?')) return
-    console.log("[BIVAK] Rejecting adopsi:", r.id)
-    try {
-      var res = await sbd.from("adoption_requests").update({
-        status: 'ditolak'
-      }).eq("id", r.id)
-      console.log("[BIVAK] Reject result:", res)
-      if (res.error) throw res.error
-      toast("info", "Ditolak", "Pengajuan adopsi telah ditolak.")
-      await loadAdopsiData()
-      renderAdopsiAdmin()
-      updateAdopsiBadge()
-    } catch (err) {
-      console.error("[BIVAK] Reject error:", err)
-      dbErr(err, "Gagal menolak")
-    }
-  }
+  	window.rejectAdopsi = async function(i) {
+		var r = _adoptionRows[i]
+		console.log("[BIVAK] rejectAdopsi called, index:", i, "row:", r)
+		if (!r) {
+			console.error("[BIVAK] No row found at index", i)
+			toast("error", "Error", "Data adopsi tidak ditemukan.")
+			return
+		}
+		if (!confirm('Tolak pengajuan adopsi ini?\n\nPengajuan akan ditandai sebagai DITOLAK.')) return
+		console.log("[BIVAK] Rejecting adopsi:", r.id, r.customer_name)
+		try {
+			var res = await sbd.from("adoption_requests").update({
+				status: 'ditolak'
+			}).eq("id", r.id)
+			console.log("[BIVAK] Reject result:", res)
+			if (res.error) throw res.error
+			toast("info", "Ditolak", "Pengajuan adopsi " + r.customer_name + " telah ditolak.")
+			await loadAdopsiData()
+			renderAdopsiAdmin()
+			updateAdopsiBadge()
+		} catch (err) {
+			console.error("[BIVAK] Reject error:", err)
+			dbErr(err, "Gagal menolak")
+		}
+	}
 
 	window.deleteAdopsi = async function(i) {
 		var r = _adoptionRows[i]
