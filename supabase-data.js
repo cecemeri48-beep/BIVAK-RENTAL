@@ -931,219 +931,160 @@
 
 	function drawAdopsiCert(cv, data) {
 		try {
-			console.log('[CERT] drawAdopsiCert called', { cv: !!cv, width: cv?.width, height: cv?.height, data });
-			if (!cv) { console.error('[CERT] Canvas element not found!'); return }
 			var ctx = cv.getContext('2d')
-			if (!ctx) { console.error('[CERT] Canvas 2D context not available!'); return }
-			var W = cv.width
-			var H = cv.height
-			console.log('[CERT] Canvas size:', W, 'x', H)
+			if (!ctx) return
+			var W = cv.width || 2000
+			var H = cv.height || 1414
+			
+			// Clear canvas
 			ctx.clearRect(0, 0, W, H)
-			ctx.textAlign = 'center'
-			ctx.textBaseline = 'alphabetic'
-
-			// Test basic drawing
-			console.log('[CERT] Testing basic fillRect...')
-			ctx.fillStyle = '#000000'
-			ctx.fillRect(0, 0, 10, 10)
-			console.log('[CERT] Basic fillRect test done')
-
+			
+			// === BACKGROUND ===
 			var bg = ctx.createLinearGradient(0, 0, W, H)
 			bg.addColorStop(0, '#0c2a22')
 			bg.addColorStop(0.5, '#123c31')
 			bg.addColorStop(1, '#09201a')
 			ctx.fillStyle = bg
 			ctx.fillRect(0, 0, W, H)
-			console.log('[CERT] Background gradient drawn')
-
-		var gl = ctx.createRadialGradient(W / 2, H * 0.30, 60, W / 2, H * 0.30, W * 0.62)
-		gl.addColorStop(0, 'rgba(215,175,55,.22)')
-		gl.addColorStop(1, 'rgba(215,175,55,0)')
-		ctx.fillStyle = gl
-		ctx.fillRect(0, 0, W, H)
-
-		ctx.save()
-		ctx.globalAlpha = .05
-		ctx.strokeStyle = '#f7e08a'
-		ctx.lineWidth = 2
-		for (var r = 44; r < W * 0.72; r += 26) {
+			
+			// === OUTER GOLD BORDER ===
+			ctx.strokeStyle = '#d4af37'
+			ctx.lineWidth = 12
+			ctx.strokeRect(60, 60, W - 120, H - 120)
+			
+			// === INNER BORDER ===
+			ctx.strokeStyle = 'rgba(212,175,55,0.6)'
+			ctx.lineWidth = 3
+			ctx.strokeRect(80, 80, W - 160, H - 160)
+			
+			// === LOGO CIRCLE ===
+			var cx = W / 2
+			var logoY = 220
+			var logoR = 80
+			
+			// Circle background
 			ctx.beginPath()
-			ctx.arc(W / 2, H * 0.45, r, 0, Math.PI * 2)
+			ctx.arc(cx, logoY, logoR + 10, 0, Math.PI * 2)
+			ctx.fillStyle = '#0e2c23'
+			ctx.fill()
+			ctx.strokeStyle = '#d4af37'
+			ctx.lineWidth = 4
 			ctx.stroke()
-		}
-		ctx.restore()
-
-		ctx.save()
-		ctx.globalAlpha = .10
-		ctx.fillStyle = '#f7e08a'
-		ctx.beginPath()
-		ctx.moveTo(0, H)
-		ctx.lineTo(0, H * 0.80)
-		ctx.lineTo(W * 0.22, H * 0.66)
-		ctx.lineTo(W * 0.4, H * 0.77)
-		ctx.lineTo(W * 0.58, H * 0.58)
-		ctx.lineTo(W * 0.78, H * 0.72)
-		ctx.lineTo(W, H * 0.62)
-		ctx.lineTo(W, H)
-		ctx.closePath()
-		ctx.fill()
-		ctx.restore()
-
-		function gold() {
-			var g = ctx.createLinearGradient(0, 0, W, 0)
-			g.addColorStop(0, '#8a6d1f')
-			g.addColorStop(0.25, '#f7e08a')
-			g.addColorStop(0.5, '#d4af37')
-			g.addColorStop(0.75, '#f9e79a')
-			g.addColorStop(1, '#8a6d1f')
-			return g
-		}
-
-		var m = 54
-		console.log('[CERT] Drawing outer border...')
-		ctx.strokeStyle = gold()
-		ctx.lineWidth = 9
-		_rr(ctx, m, m, W - 2 * m, H - 2 * m, 26)
-		ctx.stroke()
-		console.log('[CERT] Outer border drawn')
-
-		var m2 = 76
-		console.log('[CERT] Drawing inner border...')
-		ctx.lineWidth = 2.5
-		ctx.strokeStyle = 'rgba(247,224,138,.7)'
-		_rr(ctx, m2, m2, W - 2 * m2, H - 2 * m2, 18)
-		ctx.stroke()
-		console.log('[CERT] Inner border drawn')
-
-		ctx.fillStyle = gold()
-		console.log('[CERT] Drawing diamond corners...')
-		[[m, m], [W - m, m], [m, H - m], [W - m, H - m]].forEach(function(pt) {
-			ctx.save()
-			ctx.translate(pt[0], pt[1])
-			ctx.rotate(Math.PI / 4)
-			ctx.fillRect(-11, -11, 22, 22)
-			ctx.restore()
-		})
-		console.log('[CERT] Diamond corners drawn')
-
-		var cx = W / 2
-		var ly = 196
-		var lr = 90
-		console.log('[CERT] Drawing logo circle at', cx, ly, 'radius', lr)
-		ctx.beginPath()
-		ctx.arc(cx, ly, lr + 15, 0, Math.PI * 2)
-		ctx.fillStyle = '#0e2c23'
-		ctx.fill()
-		ctx.lineWidth = 5
-		ctx.strokeStyle = gold()
-		ctx.stroke()
-
-		if (_certLogoOK && _certLogo) {
-			console.log('[CERT] Drawing logo image...')
-			ctx.save()
-			ctx.beginPath()
-			ctx.arc(cx, ly, lr, 0, Math.PI * 2)
-			ctx.clip()
-			ctx.drawImage(_certLogo, cx - lr, ly - lr, lr * 2, lr * 2)
-			ctx.restore()
-		} else {
-			console.log('[CERT] Logo not loaded, drawing fallback text "RC"')
+			
+			// Logo text fallback
 			ctx.fillStyle = '#f7e08a'
-			ctx.font = '700 66px Georgia,serif'
+			ctx.font = 'bold 60px Georgia, serif'
+			ctx.textAlign = 'center'
 			ctx.textBaseline = 'middle'
-			ctx.fillText('RC', cx, ly)
+			ctx.fillText('RC', cx, logoY)
+			
+			// === HEADER TEXT ===
 			ctx.textBaseline = 'alphabetic'
-		}
-		console.log('[CERT] Logo circle drawn')
-
-		try { ctx.letterSpacing = '5px' } catch (e) {}
-		ctx.fillStyle = 'rgba(247,224,138,.92)'
-		ctx.font = '700 25px Georgia,serif'
-		console.log('[CERT] Drawing "ORGANISASI PENCINTA ALAM" at', cx, ly + lr + 62)
-		ctx.fillText('ORGANISASI PENCINTA ALAM', cx, ly + lr + 62)
-		ctx.fillStyle = '#f7e08a'
-		ctx.font = '800 30px Georgia,serif'
-		console.log('[CERT] Drawing "RCS.CBS" at', cx, ly + lr + 102)
-		ctx.fillText('RCS.CBS', cx, ly + lr + 102)
-		ctx.fillStyle = gold()
-		ctx.font = '900 92px Georgia,serif'
-		try { ctx.letterSpacing = '7px' } catch (e) {}
-		console.log('[CERT] Drawing "SERTIFIKAT ADOPSI POHON" at', cx, ly + lr + 206)
-		ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, ly + lr + 206)
-		try { ctx.letterSpacing = '0px' } catch (e) {}
-		console.log('[CERT] Header text drawn')
-
-		var dy = ly + lr + 252
-		ctx.strokeStyle = 'rgba(247,224,138,.6)'
-		ctx.lineWidth = 2
-		ctx.beginPath()
-		ctx.moveTo(cx - 340, dy)
-		ctx.lineTo(cx - 40, dy)
-		ctx.moveTo(cx + 40, dy)
-		ctx.lineTo(cx + 340, dy)
-		ctx.stroke()
-		ctx.fillStyle = gold()
-		ctx.save()
-		ctx.translate(cx, dy)
-		ctx.rotate(Math.PI / 4)
-		ctx.fillRect(-9, -9, 18, 18)
-		ctx.restore()
-
-		ctx.fillStyle = '#dfeee7'
-		ctx.font = 'italic 30px Georgia,serif'
-		ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, dy + 66)
-		console.log('[CERT] Text "dengan penuh penghargaan" drawn at', cx, dy + 66)
-
-		ctx.fillStyle = '#ffffff'
-		ctx.font = 'italic 800 80px Georgia,serif'
-		var nm = data.name
-		ctx.fillText(nm, cx, dy + 162)
-		console.log('[CERT] Name text drawn:', nm, 'at', cx, dy + 162)
-
-		var nw = Math.min(ctx.measureText(nm).width + 140, W - 260)
-		ctx.strokeStyle = gold()
-		ctx.lineWidth = 3
-		ctx.beginPath()
-		ctx.moveTo(cx - nw / 2, dy + 196)
-		ctx.lineTo(cx + nw / 2, dy + 196)
-		ctx.stroke()
-
-		ctx.fillStyle = '#cfe3da'
-		ctx.font = '30px Georgia,serif'
-		var body = 'atas dedikasi dan partisipasinya dalam mengadopsi ' + data.qty + ' bibit pohon guna pemulihan serta pelestarian ekosistem Gunung Bawakaraeng. Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
-		_wrap(ctx, body, cx, dy + 258, W - 480, 44)
-
-		var by = H - 196
-		ctx.strokeStyle = 'rgba(247,224,138,.7)'
-		ctx.lineWidth = 2
-		var lx = W * 0.24
-		var rx = W * 0.76
-		ctx.beginPath()
-		ctx.moveTo(lx - 150, by)
-		ctx.lineTo(lx + 150, by)
-		ctx.moveTo(rx - 150, by)
-		ctx.lineTo(rx + 150, by)
-		ctx.stroke()
-		ctx.fillStyle = '#f7e08a'
-		ctx.font = '800 27px Georgia,serif'
-		ctx.fillText('Ketua Umum', lx, by + 42)
-		ctx.fillText('Koordinator Konservasi', rx, by + 42)
-		ctx.fillStyle = '#bcd4c9'
-		ctx.font = '22px Georgia,serif'
-		ctx.fillText('RCS.CBS', lx, by + 74)
-		ctx.fillText('Bidang Ekosistem', rx, by + 74)
-		_seal(ctx, cx, by + 2, 84)
-		console.log('[CERT] Seal drawn')
-		ctx.fillStyle = 'rgba(223,238,231,.82)'
-		ctx.font = '22px Georgia,serif'
-		var footerText = 'No. ' + data.no + '    ·    Tanggal: ' + data.date + '    ·    Lokasi: ' + data.loc
-		console.log('[CERT] Drawing footer text:', footerText)
-		ctx.fillText(footerText, cx, H - 92)
-		console.log('[CERT] Footer drawn')
-		console.log('[CERT] Certificate drawing complete - all elements rendered')
+			ctx.fillStyle = '#f7e08a'
+			ctx.font = 'bold 28px Georgia, serif'
+			ctx.fillText('ORGANISASI PENCINTA ALAM', cx, logoY + logoR + 50)
+			
+			ctx.font = 'bold 34px Georgia, serif'
+			ctx.fillText('RCS.CBS', cx, logoY + logoR + 90)
+			
+			ctx.fillStyle = '#d4af37'
+			ctx.font = 'bold 72px Georgia, serif'
+			ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, logoY + logoR + 170)
+			
+			// === DECORATIVE LINE ===
+			var lineY = logoY + logoR + 210
+			ctx.strokeStyle = 'rgba(247,224,138,0.5)'
+			ctx.lineWidth = 2
+			ctx.beginPath()
+			ctx.moveTo(cx - 300, lineY)
+			ctx.lineTo(cx - 50, lineY)
+			ctx.stroke()
+			ctx.beginPath()
+			ctx.moveTo(cx + 50, lineY)
+			ctx.lineTo(cx + 300, lineY)
+			ctx.stroke()
+			
+			// === BODY TEXT ===
+			ctx.fillStyle = '#dfeee7'
+			ctx.font = 'italic 32px Georgia, serif'
+			ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, lineY + 70)
+			
+			// === NAME ===
+			var nameY = lineY + 150
+			ctx.fillStyle = '#ffffff'
+			ctx.font = 'italic bold 80px Georgia, serif'
+			ctx.fillText(data.name || 'Nama Penerima', cx, nameY)
+			
+			// Name underline
+			var nameWidth = ctx.measureText(data.name || 'Nama Penerima').width
+			ctx.strokeStyle = '#d4af37'
+			ctx.lineWidth = 3
+			ctx.beginPath()
+			ctx.moveTo(cx - nameWidth/2 - 50, nameY + 30)
+			ctx.lineTo(cx + nameWidth/2 + 50, nameY + 30)
+			ctx.stroke()
+			
+			// === DESCRIPTION ===
+			var descY = nameY + 100
+			ctx.fillStyle = '#cfe3da'
+			ctx.font = '32px Georgia, serif'
+			var descText = 'atas dedikasi dan partisipasinya dalam mengadopsi ' + 
+			              (data.qty || 1) + ' bibit pohon guna pemulihan serta ' +
+			              'pelestarian ekosistem ' + (data.loc || 'Gunung Bawakaraeng') +
+			              '. Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
+			
+			// Simple text wrap
+			var words = descText.split(' ')
+			var line = ''
+			var yy = descY
+			var maxWidth = W - 500
+			for (var i = 0; i < words.length; i++) {
+				var testLine = line ? line + ' ' + words[i] : words[i]
+				var testWidth = ctx.measureText(testLine).width
+				if (testWidth > maxWidth && i > 0) {
+					ctx.fillText(line, cx, yy)
+					line = words[i]
+					yy += 45
+				} else {
+					line = testLine
+				}
+			}
+			ctx.fillText(line, cx, yy)
+			
+			// === SIGNATURE LINES ===
+			var sigY = H - 200
+			ctx.strokeStyle = 'rgba(247,224,138,0.7)'
+			ctx.lineWidth = 2
+			// Left signature
+			ctx.beginPath()
+			ctx.moveTo(W * 0.24 - 120, sigY)
+			ctx.lineTo(W * 0.24 + 120, sigY)
+			ctx.stroke()
+			ctx.fillStyle = '#f7e08a'
+			ctx.font = 'bold 28px Georgia, serif'
+			ctx.fillText('Ketua Umum', W * 0.24, sigY + 45)
+			ctx.fillStyle = '#bcd4c9'
+			ctx.font = '24px Georgia, serif'
+			ctx.fillText('RCS.CBS', W * 0.24, sigY + 80)
+			
+			// Right signature
+			ctx.fillStyle = '#f7e08a'
+			ctx.font = 'bold 28px Georgia, serif'
+			ctx.fillText('Koordinator Konservasi', W * 0.76, sigY)
+			ctx.fillStyle = '#bcd4c9'
+			ctx.font = '24px Georgia, serif'
+			ctx.fillText('Bidang Ekosistem', W * 0.76, sigY + 35)
+			
+			// === FOOTER ===
+			ctx.fillStyle = 'rgba(223,238,231,0.8)'
+			ctx.font = '24px Georgia, serif'
+			var footer = 'No. ' + (data.no || 'RC-ADP-2026-00001') + '  |  Tanggal: ' + 
+			             (data.date || new Date().toLocaleDateString('id-ID')) + '  |  ' +
+			             (data.loc || 'Kawasan Gunung Bawakaraeng')
+			ctx.fillText(footer, cx, H - 80)
+			
 		} catch (err) {
-			console.error('[CERT] Error during drawing:', err)
-			console.error('[CERT] Error stack:', err.stack)
+			console.error('[CERT] Drawing error:', err)
 		}
 	}
 
