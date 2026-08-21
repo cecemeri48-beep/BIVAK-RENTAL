@@ -57,7 +57,7 @@
           <button class="btn btn-outline btn-block" onclick="closeMobileMenu(); openModal('modalVendor')">
             <i class="fa-solid fa-plus"></i> <span>Pasang Iklan Vendor</span>
           </button>
-          <button class="btn btn-rose btn-block" onclick="closeMobileMenu(); openModal('modalDonasi')">
+          <button class="btn btn-rose btn-block" onclick="donasi()">
             <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi Sekarang</span>
           </button>
         </li>
@@ -67,7 +67,7 @@
         <button class="btn btn-outline desktop-only-action" onclick="openModal('modalVendor')">
           <i class="fa-solid fa-plus"></i> <span>Pasang Iklan</span>
         </button>
-        <button class="btn btn-rose desktop-only-action" onclick="openModal('modalDonasi')">
+        <button class="btn btn-rose desktop-only-action" onclick="donasi()">
           <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi</span>
         </button>
         <button class="mobile-toggle" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
@@ -170,10 +170,10 @@
 
       <!-- Donasi Tier Buttons -->
       <div class="donation-tier-container" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
-        <button class="tier-btn" onclick="selTier(20000)"><i class="fa-solid fa-leaf"></i> Rp 20K</button>
-        <button class="tier-btn on" onclick="selTier(50000)"><i class="fa-solid fa-seedling"></i> Rp 50K</button>
-        <button class="tier-btn" onclick="selTier(100000)"><i class="fa-solid fa-tree"></i> Rp 100K</button>
-        <button class="tier-btn" onclick="selTier(250000)"><i class="fa-solid fa-mountains"></i> Rp 250K</button>
+        <button type="button" class="tier-btn" data-amount="20000" aria-pressed="false" onclick="selTier(20000)"><i class="fa-solid fa-leaf"></i> Rp 20K</button>
+        <button type="button" class="tier-btn on" data-amount="50000" aria-pressed="true" onclick="selTier(50000)"><i class="fa-solid fa-seedling"></i> Rp 50K</button>
+        <button type="button" class="tier-btn" data-amount="100000" aria-pressed="false" onclick="selTier(100000)"><i class="fa-solid fa-tree"></i> Rp 100K</button>
+        <button type="button" class="tier-btn" data-amount="250000" aria-pressed="false" onclick="selTier(250000)"><i class="fa-solid fa-mountains"></i> Rp 250K</button>
       </div>
 
       <!-- CTA Buttons -->
@@ -455,7 +455,8 @@
             </div>
             <div>
               <label class="form-label">Nominal Donasi (Rp) *</label>
-              <input type="number" id="inputDonasiNominal" class="form-control" placeholder="50000" required>
+              <input type="number" id="inputDonasiNominal" class="form-control" placeholder="50000" min="1" required>
+              <p class="form-hint" id="donasiNominalHint">Terisi dari pilihan Anda. Ubah bila perlu.</p>
             </div>
             <div class="form-group-full">
               <label class="form-label">Email (opsional)</label>

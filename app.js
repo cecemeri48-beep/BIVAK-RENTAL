@@ -141,14 +141,35 @@ function openVendorDetail(id) {
 
 function selTier(n) {
   BIVAK.tierSelected = n;
+  // Cocokkan lewat data-amount, bukan teks tombol. Teks tombol berbunyi
+  // "Rp 20K" sedangkan toLocaleString menghasilkan "20.000", sehingga
+  // pencocokan lama tidak pernah kena dan justru menghapus sorotan
+  // dari semua tombol.
   var btns = document.querySelectorAll('.tier-btn');
-  btns.forEach(function(btn) {
-    var isMatch = btn.textContent.indexOf(n.toLocaleString('id-ID')) > -1;
-    btn.classList.toggle('on', isMatch);
-  });
+  for (var i = 0; i < btns.length; i++) {
+    var match = parseInt(btns[i].getAttribute('data-amount'), 10) === n;
+    btns[i].classList.toggle('on', match);
+    btns[i].setAttribute('aria-pressed', match ? 'true' : 'false');
+  }
+  BIVAK.fillDonasiNominal();
 }
 
-function donasi() { openModal('modalDonasi'); }
+// Isi nominal di form donasi dari tier yang sudah dipilih di luar modal,
+// supaya nilainya tidak perlu ditulis ulang.
+BIVAK.fillDonasiNominal = function() {
+  var input = BIVAK.el('inputDonasiNominal');
+  if (input) input.value = BIVAK.tierSelected || '';
+  var hint = BIVAK.el('donasiNominalHint');
+  if (!hint) return;
+  hint.textContent = BIVAK.tierSelected
+    ? 'Terisi dari pilihan Anda: Rp ' + Number(BIVAK.tierSelected).toLocaleString('id-ID') + '. Ubah bila perlu.'
+    : 'Pilih nominal diatas atau isi manual.';
+};
+
+function donasi() {
+  BIVAK.fillDonasiNominal();
+  openModal('modalDonasi');
+}
 
 function handleDonasiSubmit(e) {
   e.preventDefault();

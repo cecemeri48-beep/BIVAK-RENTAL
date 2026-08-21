@@ -301,7 +301,10 @@
 		e.preventDefault()
 		var form = document.getElementById("formDonasi")
 		var nama = val("inputDonasiNama")
-		var nominal = parseInt(val("inputDonasiNominal"), 10) || 0
+		// Nominal sudah dipilih di luar modal, jadi input boleh kosong.
+		var nominal = parseInt(val("inputDonasiNominal"), 10)
+			|| (window.BIVAK && BIVAK.tierSelected)
+			|| 0
 		var email = val("inputDonasiEmail")
 
 		if (!nama || nominal <= 0) {
@@ -352,7 +355,9 @@
 		if (!badge) return
 		var newCount = (_dnRows || []).filter(function(d) { return d.astatus === 'baru' }).length
 		badge.innerText = newCount
-		badge.style.display = newCount > 0 ? "inline-flex" : "none"
+		// Sama seperti badge adopsi: hitungan donasi yang belum diverifikasi
+		// adalah info moderasi, bukan untuk pengunjung umum.
+		badge.style.display = isAdmin && newCount > 0 ? "inline-flex" : "none"
 	}
 
 	function syncAdopsiBadge() {
@@ -360,7 +365,9 @@
 		if (!badge) return
 		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
 		badge.innerText = pending
-		badge.style.display = pending > 0 ? "inline-flex" : "none"
+		// Jumlah adopsi yang menunggu verifikasi adalah info moderasi,
+		// jadi badge ini hanya untuk admin.
+		badge.style.display = isAdmin && pending > 0 ? "inline-flex" : "none"
 	}
 
 	var origUpdateBadges = window.updateBadgesAndStats || window.updateBadges
@@ -460,6 +467,10 @@
 			isAdmin = false
 			closeModal("modalAdmin")
 			await loadPublicData()
+			// Sembunyikan badge admin segera setelah sesi berakhir
+			syncCoinBadge()
+			syncDonasiBadge()
+			syncAdopsiBadge()
 			toast("info", "Keluar", "Sesi admin diakhiri.")
 		})
 
@@ -948,7 +959,10 @@
 		if (!badge) return
 		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
 		badge.innerText = pending
-		badge.style.display = pending > 0 ? "inline-flex" : "none"
+		// Digerbangi isAdmin juga: fungsi ini menulis ke badge yang sama
+		// seperti syncAdopsiBadge, jadi kalau tidak ikut digerbangi badge
+		// akan muncul lagi setiap data adopsi dimuat.
+		badge.style.display = isAdmin && pending > 0 ? "inline-flex" : "none"
 	}
 
 		/* ----------------------------------------------------------------------
