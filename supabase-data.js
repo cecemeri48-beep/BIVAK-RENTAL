@@ -1165,8 +1165,8 @@
 	/* ----------------------------------------------------------------------
 	   16. Admin Panel — Adopsi Tab
 	   ---------------------------------------------------------------------- */
-  function renderAdopsiAdmin() {
-    console.log("[BIVAK] renderAdopsiAdmin called, _adoptionRows:", _adoptionRows)
+	function renderAdopsiAdmin() {
+		console.log("[BIVAK] renderAdopsiAdmin called, _adoptionRows:", _adoptionRows)
     var tbody = document.getElementById("tableAdopsiBody")
     console.log("[BIVAK] tableAdopsiBody element:", tbody)
     if (!tbody) {
@@ -1301,17 +1301,18 @@
 		badge.style.display = pending > 0 ? "inline-flex" : "none"
 	}
 
-	/* ----------------------------------------------------------------------
-	   17. Boot
-	   ---------------------------------------------------------------------- */
-	async function boot() {
-		try {
-			await loadPublicData()
-			console.info("[BIVAK] Terhubung ke Supabase (email-only admin).")
-		} catch (err) {
-			dbErr(err, "Gagal memuat data dari database")
+		/* ----------------------------------------------------------------------
+		   17. Boot
+		   ---------------------------------------------------------------------- */
+		async function boot() {
+			try {
+				await loadPublicData()
+				await loadAdopsiData()
+				console.info("[BIVAK] Terhubung ke Supabase (email-only admin).")
+			} catch (err) {
+				dbErr(err, "Gagal memuat data dari database")
+			}
 		}
-	}
 
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", boot)
