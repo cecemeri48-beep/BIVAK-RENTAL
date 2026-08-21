@@ -299,8 +299,17 @@ function switchAdminTab(tabName) {
   if (tabEl) tabEl.style.display = 'block';
 
   // Load data for the selected tab
-  if (tabName === 'adopsi' && typeof renderAdopsiAdmin === 'function') {
-    renderAdopsiAdmin()
+  if (tabName === 'adopsi') {
+    if (typeof renderAdopsiAdmin === 'function') {
+      renderAdopsiAdmin()
+    } else {
+      console.warn("[BIVAK] renderAdopsiAdmin not found, trying window...")
+      if (typeof window.renderAdopsiAdmin === 'function') {
+        window.renderAdopsiAdmin()
+      } else {
+        console.error("[BIVAK] renderAdopsiAdmin still not available!")
+      }
+    }
   }
 }
 
