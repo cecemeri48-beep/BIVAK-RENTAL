@@ -1199,7 +1199,7 @@
 				'<td style="min-width:180px">' + actions + '</td>' +
 			'</tr>'
 		}).join('')
-		console.log("[BIVAK] Rendering", _adoptionRows.length, "rows, first row has", actions ? "buttons" : "no buttons")
+		console.log("[BIVAK] Rendering", _adoptionRows.length, "rows with buttons")
 		tbody.innerHTML = html
 	}
 
