@@ -186,6 +186,18 @@
         </a>
       </div>
 
+      <button type="button" class="collapse-toggle" aria-expanded="false"
+              aria-controls="donasiPanel"
+              data-open="Lihat Donatur &amp; Alokasi Dana" data-close="Tutup Donatur &amp; Alokasi Dana"
+              onclick="toggleSection('donasiPanel', this)">
+        <span class="collapse-label">
+          <i class="fa-solid fa-users"></i>
+          <span class="collapse-label-text">Lihat Donatur &amp; Alokasi Dana</span>
+        </span>
+        <i class="fa-solid fa-chevron-down collapse-chevron"></i>
+      </button>
+      <div class="collapse-body" id="donasiPanel">
+
       <!-- Donor Leaderboard -->
       <div class="sh"><span class="bar" style="background:#f43f5e"></span><h3>Donatur Bawakaraeng</h3></div>
       <div class="form-card" style="background:rgba(255,255,255,.03);border:1px solid var(--border-glass)">
@@ -199,6 +211,7 @@
       <div class="sh"><span class="bar" style="background:#10b981"></span><h3>Ke mana dana disalurkan?</h3></div>
       <div class="form-card alloc" id="allocList"></div>
       <p class="note">Laporan keuangan lengkap dipublikasikan tiap kuartal oleh RCS.CBS.</p>
+      </div><!-- /donasiPanel -->
     </div>
   </section>
 
@@ -206,7 +219,18 @@
   <section id="adopsi" class="section" style="background: linear-gradient(135deg, rgba(8,185,111,0.08), rgba(16,185,129,0.04));">
     <div class="container">
       <div class="sh"><span class="bar" style="background:#10b981"></span><h3><i class="fa-solid fa-seedling"></i> Adopsi Pohon Bawakaraeng</h3></div>
-      <p style="color: var(--text-muted); margin-bottom: 2rem;">Danai satu pohon untuk direstorasi di lahan kritis Bawakaraeng. Dapatkan sertifikat digital setelah verifikasi.</p>
+      <p style="color: var(--text-muted); margin-bottom: 1.25rem;">Danai satu pohon untuk direstorasi di lahan kritis Bawakaraeng. Dapatkan sertifikat digital setelah verifikasi.</p>
+      <button type="button" class="collapse-toggle" aria-expanded="false"
+              aria-controls="adopsiPanel"
+              data-open="Lihat Paket, Form &amp; Sertifikat" data-close="Tutup Paket, Form &amp; Sertifikat"
+              onclick="toggleSection('adopsiPanel', this)">
+        <span class="collapse-label">
+          <i class="fa-solid fa-seedling"></i>
+          <span class="collapse-label-text">Lihat Paket, Form &amp; Sertifikat</span>
+        </span>
+        <i class="fa-solid fa-chevron-down collapse-chevron"></i>
+      </button>
+      <div class="collapse-body" id="adopsiPanel">
 
       <!-- Paket Adopsi -->
       <div class="adopsi-packages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
@@ -315,6 +339,7 @@
         <canvas id="exampleCertCanvas" class="cert-zoom" width="1400" height="990" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
           <p class="cert-hint">Ketuk sertifikat untuk memperbesar</p>
       </div>
+      </div><!-- /adopsiPanel -->
     </div>
   </section>
 

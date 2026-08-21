@@ -568,3 +568,60 @@ BIVAK.notify = function(type, title, message) {
 BIVAK.lockScroll = function(locked) {
   document.body.classList.toggle('no-scroll', !!locked);
 };
+
+
+/* ==========================================================================
+   Panel tergulung: Donasi & Adopsi
+   ==========================================================================
+   Di HP kedua panel tertutup secara bawaan supaya scroll jauh lebih pendek.
+   Di layar lebar panel dibuka agar tampilan desktop tidak terasa kosong.
+   ========================================================================== */
+window.toggleSection = function (id, btn, forceOpen) {
+  var panel = document.getElementById(id);
+  if (!panel) return false;
+
+  var open = (typeof forceOpen === 'boolean')
+    ? forceOpen
+    : !panel.classList.contains('open');
+
+  if (open) panel.classList.add('open');
+  else panel.classList.remove('open');
+
+  var b = btn || document.querySelector('[aria-controls=' + id + ']');
+  if (b) {
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    var teks = b.querySelector('.collapse-label-text');
+    if (teks) {
+      var label = open ? b.getAttribute('data-close') : b.getAttribute('data-open');
+      if (label) teks.textContent = label;
+    }
+  }
+  return open;
+};
+
+BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel'];
+
+// Buka panel otomatis bila pengguna melompat ke section itu dari menu,
+// supaya klik menu tidak berujung pada bagian yang tampak kosong.
+function openPanelFromHash() {
+  var peta = { donasi: 'donasiPanel', adopsi: 'adopsiPanel' };
+  var kunci = (location.hash || '').replace('#', '');
+  var id = peta[kunci];
+  if (id) window.toggleSection(id, null, true);
+}
+
+function initCollapsibles() {
+  var hp = window.matchMedia('(max-width: 640px)').matches;
+  for (var i = 0; i < BIVAK.collapsiblePanels.length; i++) {
+    window.toggleSection(BIVAK.collapsiblePanels[i], null, !hp);
+  }
+  openPanelFromHash();
+}
+
+window.addEventListener('hashchange', openPanelFromHash);
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCollapsibles);
+} else {
+  initCollapsibles();
+}

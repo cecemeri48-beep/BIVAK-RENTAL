@@ -1501,3 +1501,87 @@ canvas.cert-zoom {
   line-height: 1.4;
   color: var(--text-dim);
 }
+
+/* ==========================================================================
+   Panel tergulung (accordion) untuk section panjang
+   ==========================================================================
+   Bagian Donasi dan Adopsi sebelumnya menampilkan seluruh materinya
+   sekaligus, sehingga scroll di HP sangat panjang. Sekarang materi detail
+   disembunyikan sampai tombol "Lihat" ditekan. Progres donasi dan tombol
+   "Donasi Sekarang" sengaja TIDAK digulung agar berdonasi tetap satu ketukan.
+   ========================================================================== */
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.8rem 1.05rem;
+  margin: 0.5rem 0 0.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-emerald);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.05));
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.collapse-toggle:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(16, 185, 129, 0.1));
+  border-color: var(--primary-emerald);
+}
+
+.collapse-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+}
+
+.collapse-label i { color: var(--primary-emerald); }
+
+.collapse-chevron {
+  flex-shrink: 0;
+  color: var(--primary-emerald);
+  transition: transform var(--transition-normal);
+}
+
+.collapse-toggle[aria-expanded="true"] .collapse-chevron {
+  transform: rotate(180deg);
+}
+
+/* Tertutup secara bawaan; dibuka dengan menambah kelas .open.
+   Memakai display:none, bukan grid 0fr: dengan grid, hanya BARIS PERTAMA
+   yang ikut dikecilkan, sedangkan anak elemen berikutnya membuat baris
+   implisit setinggi kontennya -- panel jadi tidak benar-benar menggulung. */
+.collapse-body {
+  display: none;
+}
+
+.collapse-body.open {
+  display: block;
+  margin-top: 0.85rem;
+  animation: collapseIn var(--transition-normal) ease-out;
+}
+
+@keyframes collapseIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tanpa JavaScript, materi tetap bisa dibaca (tidak terkunci tersembunyi) */
+.no-js .collapse-body { display: block; }
+.no-js .collapse-toggle { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-body.open { animation: none; }
+  .collapse-chevron { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .collapse-toggle { font-size: 0.86rem; padding: 0.75rem 0.85rem; }
+}

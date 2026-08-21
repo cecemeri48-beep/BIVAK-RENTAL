@@ -524,21 +524,93 @@
 	/* ----------------------------------------------------------------------
 	   12. Donasi Admin Actions — dari database LAMA
 	   ---------------------------------------------------------------------- */
-	window.donasiApprove = async function (i, st) {
-		var r = _dnRows[i]
-		if (!r) return
+/* ----------------------------------------------------------------------
+	   11b. Aksi admin: acuan baris stabil + kunci klik-ganda
+	   ----------------------------------------------------------------------
+	   Tombol setujui/tolak dulu mengirim INDEKS array, mis. donasiApprove(3).
+	   Indeks itu bergeser setiap data dimuat ulang -- dan data SELALU dimuat
+	   ulang setelah tiap aksi, juga saat ada baris baru masuk. Akibatnya klik
+	   bisa mengenai baris lain atau baris yang sudah tidak ada, sehingga
+	   terasa "macet" dan baru berhasil setelah dipencet berulang. Sekarang
+	   tombol mengirim ID baris, sama seperti tombol vendor yang memang sudah
+	   benar sejak awal.
+	   ---------------------------------------------------------------------- */
+
+	var _rowBusy = {}
+
+	// Cari baris berdasarkan ID. Indeks masih diterima sebagai jalur mundur
+	// untuk app.js yang memanggil dengan indeks saat Supabase tidak aktif.
+	function rowByRef(rows, ref) {
+		rows = rows || []
+		for (var k = 0; k < rows.length; k++) {
+			if (rows[k] && String(rows[k].id) === String(ref)) return rows[k]
+		}
+		if (typeof ref === "number" && ref >= 0 && ref < rows.length) return rows[ref]
+		return null
+	}
+
+	// Kunci satu baris selama request berjalan sekaligus memberi umpan balik
+	// pada tombolnya. Mengembalikan null bila aksi baris itu masih berjalan,
+	// jadi tap ganda di HP tidak lagi mengirim dua update sekaligus.
+	function beginRowAction(key, btn) {
+		if (_rowBusy[key]) return null
+		_rowBusy[key] = true
+		var prev = null
+		if (btn && btn.tagName) {
+			prev = btn.innerHTML
+			btn.disabled = true
+			btn.setAttribute("aria-busy", "true")
+			btn.style.opacity = "0.55"
+			btn.style.cursor = "wait"
+			btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'
+		}
+		return function endRowAction() {
+			delete _rowBusy[key]
+			if (btn && btn.tagName && btn.parentNode) {
+				btn.disabled = false
+				btn.removeAttribute("aria-busy")
+				btn.style.opacity = ""
+				btn.style.cursor = ""
+				if (prev !== null) btn.innerHTML = prev
+			}
+		}
+	}
+
+	// Supabase .update()/.delete() tanpa .select() mengembalikan data null dan
+	// TIDAK menandai error walau 0 baris terkena, misalnya ketika diblokir
+	// RLS. Dulu UI tetap bilang "berhasil" padahal tidak ada yang berubah.
+	function affectedCount(res) {
+		if (res && res.error) throw res.error
+		return (res && res.data && res.data.length) || 0
+	}
+
+	function rowGone(reloader) {
+		toast("error", "Data Sudah Berubah", "Baris itu tidak ada lagi di daftar. Daftar dimuat ulang, silakan ulangi.")
+		return reloader()
+	}
+
+	window.donasiApprove = async function (ref, st, btn) {
 		if (!sbd) {
 			toast("error", "Database Donasi Tidak Tersedia", "")
 			return
 		}
+		var r = rowByRef(_dnRows, ref)
+		if (!r) return rowGone(function () { return loadPublicData({ alsoAdminTables: true }) })
+		var end = beginRowAction("donasi:" + r.id, btn)
+		if (!end) return
 		try {
-			var res = await sbd.from("donasi").update({ astatus: st }).eq("id", r.id)
-			if (res.error) throw res.error
+			var res = await sbd.from("donasi").update({ astatus: st }).eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Tersimpan", "Server menolak perubahan, status tidak berubah. Cek izin RLS tabel donasi.")
+				return
+			}
 			toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui. Nama akan tampil di leaderboard.' : 'Donasi ditolak.')
 			await loadPublicData({ alsoAdminTables: true })
 			if (typeof renderDonation === 'function') renderDonation()
 		} catch (err) {
 			dbErr(err, "Aksi donasi gagal")
+		} finally {
+			end()
 		}
 	}
 
@@ -649,8 +721,8 @@
 						'<td>' + when + '</td>' +
 						'<td>' + stBadge + '</td>' +
 						'<td>' +
-							'<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
-							'<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+							'<button class="btn btn-primary" onclick="donasiApprove(\'' + r.id + '\',\'disetujui\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
+							'<button class="btn btn-outline" onclick="donasiApprove(\'' + r.id + '\',\'ditolak\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
 						'</td>' +
 					'</tr>'
 				}).join('')
@@ -851,12 +923,12 @@
 			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
 			var actions
 			if (isVerified) {
-				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
 			} else if (isRejected) {
-				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
 			} else {
-				actions = '<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
-				          '<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
+				actions = '<button class="btn btn-primary" onclick="approveAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				          '<button class="btn btn-outline" onclick="rejectAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
 			}
 			return '<tr>' +
 				'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.customer_name || '-') + '</td>' +
@@ -872,67 +944,94 @@
 		tbody.innerHTML = html
 	}
 
-  window.approveAdopsi = async function(i) {
-    var r = _adoptionRows[i]
-    if (!r) {
-      console.error("[BIVAK] No row found at index", i)
-      toast("error", "Error", "Data adopsi tidak ditemukan.")
+  window.approveAdopsi = async function(ref, btn) {
+    if (!sbd) {
+      toast("error", "Database Tidak Tersedia", "")
       return
     }
+    var r = rowByRef(_adoptionRows, ref)
+    if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+    var end = beginRowAction("adopsi:" + r.id, btn)
+    if (!end) return
     var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
     try {
       var res = await sbd.from("adoption_requests").update({
         status: 'terverifikasi',
         adoption_code: code,
         verified_at: new Date().toISOString()
-      }).eq("id", r.id)
-      if (res.error) throw res.error
+      }).eq("id", r.id).select("id")
+      if (affectedCount(res) === 0) {
+        toast("error", "Tidak Tersimpan", "Server menolak perubahan. Cek izin RLS tabel adoption_requests.")
+        return
+      }
       toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
       await loadAdopsiData()
       renderAdopsiAdmin()
       updateAdopsiBadge()
     } catch (err) {
-      console.error("[BIVAK] Approve error:", err)
       dbErr(err, "Gagal memverifikasi")
+    } finally {
+      end()
     }
   }
 
-  	window.rejectAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		if (!r) {
-			console.error("[BIVAK] No row found at index", i)
-			toast("error", "Error", "Data adopsi tidak ditemukan.")
+  	window.rejectAdopsi = async function(ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Tidak Tersedia", "")
 			return
 		}
+		var r = rowByRef(_adoptionRows, ref)
+		if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+		// Dicek sebelum confirm() supaya dialog tidak muncul dua kali
+		// ketika tombol keburu ditekan lagi.
+		if (_rowBusy["adopsi:" + r.id]) return
 		if (!confirm('Tolak pengajuan adopsi ini?\n\nPengajuan akan ditandai sebagai DITOLAK.')) return
+		var end = beginRowAction("adopsi:" + r.id, btn)
+		if (!end) return
 		try {
 			var res = await sbd.from("adoption_requests").update({
 				status: 'ditolak'
-			}).eq("id", r.id)
-			if (res.error) throw res.error
+			}).eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Tersimpan", "Server menolak perubahan, status tetap. Cek izin RLS tabel adoption_requests.")
+				return
+			}
 			toast("info", "Ditolak", "Pengajuan adopsi " + r.customer_name + " telah ditolak.")
 			await loadAdopsiData()
 			renderAdopsiAdmin()
 			updateAdopsiBadge()
 		} catch (err) {
-			console.error("[BIVAK] Reject error:", err)
 			dbErr(err, "Gagal menolak")
+		} finally {
+			end()
 		}
 	}
 
-	window.deleteAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		if (!r) return
+	window.deleteAdopsi = async function(ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Tidak Tersedia", "")
+			return
+		}
+		var r = rowByRef(_adoptionRows, ref)
+		if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+		if (_rowBusy["adopsi:" + r.id]) return
 		if (!confirm('Hapus pengajuan adopsi ini? Tindakan permanen.')) return
+		var end = beginRowAction("adopsi:" + r.id, btn)
+		if (!end) return
 		try {
-			var res = await sbd.from("adoption_requests").delete().eq("id", r.id)
-			if (res.error) throw res.error
+			var res = await sbd.from("adoption_requests").delete().eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Terhapus", "Server menolak penghapusan. Cek izin RLS tabel adoption_requests.")
+				return
+			}
 			toast("success", "Dihapus", "Pengajuan adopsi telah dihapus.")
 			await loadAdopsiData()
 			renderAdopsiAdmin()
 			updateAdopsiBadge()
 		} catch (err) {
 			dbErr(err, "Gagal menghapus")
+		} finally {
+			end()
 		}
 	}
 
