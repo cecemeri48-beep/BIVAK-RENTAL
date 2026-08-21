@@ -932,265 +932,142 @@
 	function drawAdopsiCert(cv, data) {
 		try {
 			var ctx = cv.getContext('2d')
-			if (!ctx) return
+			if (!ctx) {
+				console.error('[CERT] No 2D context')
+				return
+			}
 			var W = cv.width || 2000
 			var H = cv.height || 1414
-			
+			console.log('[CERT] Canvas:', W, 'x', H)
+
 			// Clear canvas
 			ctx.clearRect(0, 0, W, H)
-			
-			// === PREMIUM BACKGROUND ===
+
+			// === BACKGROUND ===
 			var bg = ctx.createLinearGradient(0, 0, W, H)
 			bg.addColorStop(0, '#0a1f17')
-			bg.addColorStop(0.3, '#0d2818')
 			bg.addColorStop(0.5, '#112e1c')
-			bg.addColorStop(0.7, '#0d2818')
 			bg.addColorStop(1, '#081a12')
 			ctx.fillStyle = bg
 			ctx.fillRect(0, 0, W, H)
-			
-			// Subtle radial glow
-			var glow = ctx.createRadialGradient(W/2, H*0.35, 0, W/2, H*0.35, W*0.7)
-			glow.addColorStop(0, 'rgba(212,175,55,0.08)')
-			glow.addColorStop(0.5, 'rgba(212,175,55,0.03)')
-			glow.addColorStop(1, 'rgba(0,0,0,0)')
-			ctx.fillStyle = glow
-			ctx.fillRect(0, 0, W, H)
-			
-			// === ORNATE BORDER FRAME ===
-			// Outer thick gold
-			ctx.strokeStyle = '#b8860b'
-			ctx.lineWidth = 18
-			ctx.strokeRect(45, 45, W - 90, H - 90)
-			
-			// Mid gold
+
+			// === BORDER ===
 			ctx.strokeStyle = '#d4af37'
-			ctx.lineWidth = 6
-			ctx.strokeRect(70, 70, W - 140, H - 140)
-			
-			// Inner delicate line
-			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
-			ctx.lineWidth = 2
-			ctx.strokeRect(85, 85, W - 170, H - 170)
-			
-			// === CORNER ORNAMENTS ===
-			var corners = [[70, 70], [W-70, 70], [70, H-70], [W-70, H-70]]
-			corners.forEach(function(cor) {
-				ctx.save()
-				ctx.translate(cor[0], cor[1])
-				ctx.strokeStyle = '#d4af37'
-				ctx.lineWidth = 3
-				// Corner scroll
-				ctx.beginPath()
-				ctx.moveTo(0, 40)
-				ctx.quadraticCurveTo(0, 0, 40, 0)
-				ctx.stroke()
-				ctx.beginPath()
-				ctx.moveTo(0, 25)
-				ctx.quadraticCurveTo(0, 0, 25, 0)
-				ctx.stroke()
-				// Diamond
-				ctx.fillStyle = '#d4af37'
-				ctx.beginPath()
-				ctx.moveTo(0, 12)
-				ctx.lineTo(12, 0)
-				ctx.lineTo(0, -12)
-				ctx.lineTo(-12, 0)
-				ctx.closePath()
-				ctx.fill()
-				ctx.restore()
-			})
-			
-			// === DECORATIVE HEADER BAR ===
-			var headerBarY = 140
-			ctx.fillStyle = 'rgba(212,175,55,0.15)'
-			ctx.fillRect(150, headerBarY, W - 300, 3)
-			
-			// === EMBLEM / SEAL AREA ===
+			ctx.lineWidth = 15
+			ctx.strokeRect(50, 50, W - 100, H - 100)
+			ctx.strokeStyle = 'rgba(212,175,55,0.5)'
+			ctx.lineWidth = 3
+			ctx.strokeRect(75, 75, W - 150, H - 150)
+
+			// === CENTER POINTS ===
 			var cx = W / 2
-			var emblemY = 240
-			var emblemR = 95
-			
-			// Outer ring with pattern
+			var cy = H / 2
+
+			// === LOGO ===
+			var logoY = 250
 			ctx.beginPath()
-			ctx.arc(cx, emblemY, emblemR + 20, 0, Math.PI * 2)
-			ctx.strokeStyle = 'rgba(184,134,11,0.4)'
-			ctx.lineWidth = 2
-			ctx.stroke()
-			
-			// Main circle
-			ctx.beginPath()
-			ctx.arc(cx, emblemY, emblemR, 0, Math.PI * 2)
-			var emblemBg = ctx.createRadialGradient(cx - 20, emblemY - 20, 0, cx, emblemY, emblemR)
-			emblemBg.addColorStop(0, '#1a3a2a')
-			emblemBg.addColorStop(1, '#0a1f17')
-			ctx.fillStyle = emblemBg
+			ctx.arc(cx, logoY, 85, 0, Math.PI * 2)
+			ctx.fillStyle = '#0e2c23'
 			ctx.fill()
 			ctx.strokeStyle = '#d4af37'
-			ctx.lineWidth = 5
+			ctx.lineWidth = 4
 			ctx.stroke()
-			
-			// Inner decorative ring
-			ctx.beginPath()
-			ctx.arc(cx, emblemY, emblemR - 12, 0, Math.PI * 2)
-			ctx.strokeStyle = 'rgba(212,175,55,0.5)'
-			ctx.lineWidth = 1.5
-			ctx.stroke()
-			
-			// Logo text
 			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 72px Georgia, serif'
+			ctx.font = 'bold 64px Georgia, serif'
 			ctx.textAlign = 'center'
 			ctx.textBaseline = 'middle'
-			ctx.fillText('RC', cx, emblemY)
-			
-			// === TITLE SECTION ===
+			ctx.fillText('RC', cx, logoY)
+
+			// === TITLE ===
 			ctx.textBaseline = 'alphabetic'
 			ctx.fillStyle = '#f7e08a'
-			ctx.font = '500 28px Georgia, serif'
-			ctx.fillText('ORGANISASI PENCINTA ALAM', cx, emblemY + emblemR + 65)
-			
+			ctx.font = '26px Georgia, serif'
+			ctx.fillText('ORGANISASI PENCINTA ALAM', cx, logoY + 110)
+
 			ctx.fillStyle = '#d4af37'
-			ctx.font = 'bold 38px Georgia, serif'
-			ctx.fillText('RCS.CBS', cx, emblemY + emblemR + 110)
-			
-			// Ornate divider
-			ctx.strokeStyle = 'rgba(212,175,55,0.6)'
-			ctx.lineWidth = 1
-			ctx.beginPath()
-			ctx.moveTo(cx - 280, emblemY + emblemR + 140)
-			ctx.lineTo(cx - 60, emblemY + emblemR + 140)
-			ctx.stroke()
-			ctx.beginPath()
-			ctx.moveTo(cx + 60, emblemY + emblemR + 140)
-			ctx.lineTo(cx + 280, emblemY + emblemR + 140)
-			ctx.stroke()
-			// Center diamond
+			ctx.font = 'bold 36px Georgia, serif'
+			ctx.fillText('RCS.CBS', cx, logoY + 150)
+
 			ctx.fillStyle = '#d4af37'
-			ctx.save()
-			ctx.translate(cx, emblemY + emblemR + 140)
-			ctx.rotate(Math.PI / 4)
-			ctx.fillRect(-8, -8, 16, 16)
-			ctx.restore()
-			
-			// Main title
-			ctx.fillStyle = '#d4af37'
-			ctx.font = 'bold 88px Georgia, serif'
-			ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, emblemY + emblemR + 230)
-			
-			// === MAIN CONTENT ===
-			var contentY = emblemY + emblemR + 300
-			
-			// Intro text
+			ctx.font = 'bold 80px Georgia, serif'
+			ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, logoY + 240)
+
+			// === INTRO ===
+			var introY = logoY + 300
 			ctx.fillStyle = '#c8dcc8'
-			ctx.font = 'italic 34px Georgia, serif'
-			ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, contentY)
-			
-			// Name with underline
-			var nameY = contentY + 100
+			ctx.font = 'italic 32px Georgia, serif'
+			ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, introY)
+
+			// === NAME ===
+			var nameY = introY + 80
 			ctx.fillStyle = '#ffffff'
-			ctx.font = 'italic bold 88px Georgia, serif'
-			ctx.fillText(data.name || 'Nama Penerima', cx, nameY)
-			
-			// Elegant name underline
-			var nameWidth = ctx.measureText(data.name || 'Nama Penerima').width
+			ctx.font = 'italic bold 84px Georgia, serif'
+			var nameText = data && data.name ? data.name : 'Nama Penerima'
+			ctx.fillText(nameText, cx, nameY)
+
+			// Name underline
+			var nameW = ctx.measureText(nameText).width
 			ctx.strokeStyle = '#d4af37'
 			ctx.lineWidth = 3
 			ctx.beginPath()
-			ctx.moveTo(cx - nameWidth/2 - 60, nameY + 40)
-			ctx.lineTo(cx + nameWidth/2 + 60, nameY + 40)
+			ctx.moveTo(cx - nameW/2 - 50, nameY + 35)
+			ctx.lineTo(cx + nameW/2 + 50, nameY + 35)
 			ctx.stroke()
-			// Small end diamonds
-			[ cx - nameWidth/2 - 60, cx + nameWidth/2 + 60 ].forEach(function(x) {
-				ctx.save()
-				ctx.translate(x, nameY + 40)
-				ctx.rotate(Math.PI / 4)
-				ctx.fillStyle = '#d4af37'
-				ctx.fillRect(-6, -6, 12, 12)
-				ctx.restore()
-			})
-			
-			// Body text - START FROM SCRATCH, SIMPLE VERSION
-			var bodyY = nameY + 140
+
+			// === BODY ===
+			var bodyY = nameY + 120
 			ctx.fillStyle = '#b8d4b8'
-			ctx.font = '32px Georgia, serif'
-			
-			// Simple body text without wrap
-			var bodyLines = [
-				'atas dedikasi dan partisipasinya dalam mengadopsi ' + (data.qty || 1) + ' bibit pohon',
-				'guna pemulihan serta pelestarian ekosistem ' + (data.loc || 'Gunung Bawakaraeng'),
-				'Kontribusi ini menjadi warisan hijau yang bernilai bagi generasi mendatang.'
-			]
-			
-			for (var lineIdx = 0; lineIdx < bodyLines.length; lineIdx++) {
-				ctx.fillText(bodyLines[lineIdx], cx, bodyY + (lineIdx * 50))
-			}
-			
-			// === FOOTER SECTION ===
-			var footerY = H - 280
-			
-			// Signature lines
+			ctx.font = '30px Georgia, serif'
+			var qty = data && data.qty ? data.qty : 1
+			var loc = data && data.loc ? data.loc : 'Gunung Bawakaraeng'
+			ctx.fillText('atas dedikasi dalam mengadopsi ' + qty + ' bibit pohon', cx, bodyY)
+			ctx.fillText('guna pelestarian ekosistem ' + loc, cx, bodyY + 45)
+			ctx.fillText('Kontribusi ini warisan hijau bagi generasi mendatang.', cx, bodyY + 90)
+
+			// === SIGNATURES ===
+			var sigY = H - 250
 			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
 			ctx.lineWidth = 2
 			// Left
 			ctx.beginPath()
-			ctx.moveTo(W * 0.24 - 140, footerY)
-			ctx.lineTo(W * 0.24 + 140, footerY)
+			ctx.moveTo(W * 0.24 - 130, sigY)
+			ctx.lineTo(W * 0.24 + 130, sigY)
 			ctx.stroke()
+			ctx.fillStyle = '#f7e08a'
+			ctx.font = 'bold 28px Georgia, serif'
+			ctx.fillText('Ketua Umum', W * 0.24, sigY + 50)
+			ctx.fillStyle = '#bcd4c9'
+			ctx.font = '22px Georgia, serif'
+			ctx.fillText('RCS.CBS', W * 0.24, sigY + 80)
+
 			// Right
+			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
 			ctx.beginPath()
-			ctx.moveTo(W * 0.76 - 160, footerY)
-			ctx.lineTo(W * 0.76 + 160, footerY)
+			ctx.moveTo(W * 0.76 - 150, sigY)
+			ctx.lineTo(W * 0.76 + 150, sigY)
 			ctx.stroke()
-			
-			// Signature labels
 			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 30px Georgia, serif'
-			ctx.textAlign = 'center'
-			ctx.fillText('Ketua Umum', W * 0.24, footerY + 55)
+			ctx.font = 'bold 28px Georgia, serif'
+			ctx.fillText('Koordinator Konservasi', W * 0.76, sigY)
 			ctx.fillStyle = '#bcd4c9'
-			ctx.font = '24px Georgia, serif'
-			ctx.fillText('RCS.CBS', W * 0.24, footerY + 90)
-			
-			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 30px Georgia, serif'
-			ctx.fillText('Koordinator Konservasi', W * 0.76, footerY)
-			ctx.fillStyle = '#bcd4c9'
-			ctx.font = '24px Georgia, serif'
-			ctx.fillText('Bidang Ekosistem', W * 0.76, footerY + 35)
-			
-			// === GOLD SEAL (Stamp) ===
-			var sealX = cx
-			var sealY = footerY + 120
-			var sealR = 65
-			drawGoldSeal(ctx, sealX, sealY, sealR, data)
-			
-			// === BOTTOM INFO BAR ===
-			var infoY = H - 100
-			ctx.fillStyle = 'rgba(223,238,231,0.85)'
-			ctx.font = '24px Georgia, serif'
-			ctx.textAlign = 'center'
-			var footerInfo = 'No. ' + (data.no || 'RC-ADP-2026-00001') + '   |   Tanggal: ' + 
-			              (data.date || new Date().toLocaleDateString('id-ID')) + '   |   ' +
-			              (data.loc || 'Kawasan Gunung Bawakaraeng')
-			ctx.fillText(footerInfo, cx, infoY)
-			
-			// === SUBTLE WATERMARK ===
-			ctx.save()
-			ctx.globalAlpha = 0.03
-			ctx.font = 'bold 200px Georgia, serif'
-			ctx.textAlign = 'center'
-			ctx.fillStyle = '#d4af37'
-			ctx.fillText('RCS.CBS', cx, H/2 + 80)
-			ctx.restore()
-			
+			ctx.font = '22px Georgia, serif'
+			ctx.fillText('Bidang Ekosistem', W * 0.76, sigY + 30)
+
+			// === SEAL ===
+			var sealY = sigY + 130
+			drawGoldSeal(ctx, cx, sealY, 60)
+
+			// === FOOTER INFO ===
+			var infoY = H - 90
+			ctx.fillStyle = 'rgba(223,238,231,0.8)'
+			ctx.font = '22px Georgia, serif'
+			var no = data && data.no ? data.no : 'RC-ADP-2026-00001'
+			var date = data && data.date ? data.date : new Date().toLocaleDateString('id-ID')
+			ctx.fillText('No. ' + no + '   |   Tanggal: ' + date + '   |   ' + loc, cx, infoY)
+
 		} catch (err) {
-			console.error('[CERT] Drawing error:', err)
-			console.error('[CERT] Error details:', {
-				name: err.name,
-				message: err.message,
-				stack: err.stack
-			})
+			console.error('[CERT] Error:', err.message)
+			console.error(err.stack)
 		}
 	}
 
