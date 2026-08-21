@@ -300,7 +300,16 @@ function switchAdminTab(tabName) {
 
   // Load data for the selected tab
   if (tabName === 'adopsi' && typeof renderAdopsiAdmin === 'function') {
-    renderAdopsiAdmin();
+    if (typeof loadAdopsiData === 'function') {
+      loadAdopsiData().then(function() {
+        renderAdopsiAdmin()
+      }).catch(function(e) {
+        console.warn("[BIVAK] Adopsi tab load error:", e)
+        renderAdopsiAdmin()
+      })
+    } else {
+      renderAdopsiAdmin()
+    }
   }
 }
 
