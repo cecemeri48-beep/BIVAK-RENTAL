@@ -1185,18 +1185,18 @@
 			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
 			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
 			var actions = isVerified ?
-				'<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-trash"></i></button>' :
-				'<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
-				'<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e"><i class="fa-solid fa-xmark"></i></button>'
+				'<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>' :
+				'<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				'<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i></button>'
 			return '<tr>' +
-				'<td>' + BIVAK.escape(r.customer_name || '-') + '</td>' +
-				'<td>' + BIVAK.escape(r.package_name || '-') + '</td>' +
+				'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.customer_name || '-') + '</td>' +
+				'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.package_name || '-') + '</td>' +
 				'<td>' + (r.quantity || '-') + ' bibit</td>' +
 				'<td>Rp ' + (Number(r.amount || 0).toLocaleString('id-ID')) + '</td>' +
-				'<td>' + BIVAK.escape(r.whatsapp || '-') + '</td>' +
+				'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.whatsapp || '-') + '</td>' +
 				'<td>' + statusBadge + '</td>' +
 				'<td>' + codeDisplay + '</td>' +
-				'<td>' + actions + '</td>' +
+				'<td style="min-width:180px">' + actions + '</td>' +
 			'</tr>'
 		}).join('')
 	}
