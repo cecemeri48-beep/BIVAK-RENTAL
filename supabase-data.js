@@ -140,9 +140,13 @@
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
-		// Only use local assets — external Unsplash URLs cause ERR_UNKNOWN_URL_SCHEME
-		var img = row.image_url || "assets/gear-fallback.jpg"
-		if (img && img.indexOf("unsplash") !== -1) {
+		// URL eksternal (Unsplash) memicu ERR_UNKNOWN_URL_SCHEME, dan memaksa
+		// semuanya ke satu gambar fallback membuat semua vendor tampak sama.
+		// Jadi placeholder generik diganti foto per-kota.
+		var img = row.image_url || ""
+		if (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img)) {
+			img = BIVAK.photoForVendor(row.name, row.city)
+		} else if (!img) {
 			img = "assets/gear-fallback.jpg"
 		}
 		return {
@@ -273,7 +277,7 @@
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: "assets/gear-fallback.jpg",
+				image_url: BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
 				status: "pending",
 				is_verified: false,
 			})

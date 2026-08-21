@@ -488,9 +488,49 @@ function filterByCity(city) {
    Helper tampilan
    --------------------------------------------------------------------- */
 
+// Daftar foto vendor yang tersedia di assets/.
+BIVAK.vendorPhotos = ['makassar', 'gowa', 'malino', 'maros', 'toraja', 'palopo'];
+
+// Foto placeholder lama/generik yang harus diganti foto per-kota.
+BIVAK.isGenericPhoto = function(src) {
+  if (!src) return true;
+  if (src.indexOf('unsplash') !== -1) return true;
+  return /assets\/(gear-tent|gear-carrier|gear-fallback|hero-bg)/.test(src);
+};
+
+// Pilih foto berdasarkan kota. Kota tak dikenal dipetakan secara
+// deterministik ke salah satu foto, supaya tidak ada dua vendor
+// berurutan yang memakai gambar sama.
+BIVAK.photoForVendor = function(name, city) {
+  var key = String(city || '').toLowerCase();
+  var map = [
+    ['makassar', 'makassar'], ['gowa', 'gowa'], ['sungguminasa', 'gowa'],
+    ['malino', 'malino'], ['maros', 'maros'], ['rammang', 'maros'],
+    ['toraja', 'toraja'], ['tator', 'toraja'], ['rantepao', 'toraja'],
+    ['palopo', 'palopo'], ['luwu', 'palopo']
+  ];
+  for (var i = 0; i < map.length; i++) {
+    if (key.indexOf(map[i][0]) !== -1) return 'assets/vendor-' + map[i][1] + '.jpg';
+  }
+  // FNV-1a: stabil antar-reload dan menyebar jauh lebih rata daripada
+  // hash shift-kurang, supaya kota tak dikenal tidak menumpuk di satu foto.
+  var seed = String(name || '') + key;
+  var h = 2166136261;
+  for (var j = 0; j < seed.length; j++) {
+    h ^= seed.charCodeAt(j);
+    h = (h * 16777619) >>> 0;
+  }
+  return 'assets/vendor-' + BIVAK.vendorPhotos[h % BIVAK.vendorPhotos.length] + '.jpg';
+};
+
 // Sumber tunggal untuk foto vendor + varian lebar 600px untuk srcset.
 BIVAK.vendorImg = function(v, width) {
-  var src = (v && v.image) ? v.image : 'assets/gear-fallback.jpg';
+  var src = (v && v.image) ? v.image : '';
+  // Apa pun sumber datanya (hardcoded / Supabase / vendor baru), foto
+  // generik selalu diganti foto per-kota supaya tidak seragam.
+  if (BIVAK.isGenericPhoto(src)) {
+    src = BIVAK.photoForVendor(v && v.name, v && v.city);
+  }
   if (width === 600 && /^assets\/vendor-[a-z]+\.jpg$/.test(src)) {
     return src.replace(/\.jpg$/, '@600.jpg');
   }
