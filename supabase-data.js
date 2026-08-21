@@ -1165,14 +1165,19 @@
 	/* ----------------------------------------------------------------------
 	   16. Admin Panel — Adopsi Tab
 	   ---------------------------------------------------------------------- */
-	function renderAdopsiAdmin() {
-		var tbody = document.getElementById("tableAdopsiBody")
-		if (!tbody) return
-		if (!_adoptionRows || _adoptionRows.length === 0) {
-			tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Belum ada pengajuan adopsi.</td></tr>'
-			return
-		}
-		tbody.innerHTML = _adoptionRows.map(function(r, i) {
+  function renderAdopsiAdmin() {
+    console.log("[BIVAK] renderAdopsiAdmin called, _adoptionRows:", _adoptionRows)
+    var tbody = document.getElementById("tableAdopsiBody")
+    console.log("[BIVAK] tableAdopsiBody element:", tbody)
+    if (!tbody) {
+      console.error("[BIVAK] tableAdopsiBody not found in DOM")
+      return
+    }
+    if (!_adoptionRows || _adoptionRows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Belum ada pengajuan adopsi.</td></tr>'
+      return
+    }
+    tbody.innerHTML = _adoptionRows.map(function(r, i) {
 			var isVerified = r.status === 'terverifikasi'
 			var isRejected = r.status === 'ditolak'
 			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
@@ -1196,43 +1201,59 @@
 		}).join('')
 	}
 
-	window.approveAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		if (!r) return
-		var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
-		try {
-			var res = await sbd.from("adoption_requests").update({
-				status: 'terverifikasi',
-				adoption_code: code,
-				verified_at: new Date().toISOString()
-			}).eq("id", r.id)
-			if (res.error) throw res.error
-			toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
-			await loadAdopsiData()
-			renderAdopsiAdmin()
-			updateAdopsiBadge()
-		} catch (err) {
-			dbErr(err, "Gagal memverifikasi")
-		}
-	}
+  window.approveAdopsi = async function(i) {
+    var r = _adoptionRows[i]
+    console.log("[BIVAK] approveAdopsi called, index:", i, "row:", r)
+    if (!r) {
+      console.error("[BIVAK] No row found at index", i)
+      toast("error", "Error", "Data adopsi tidak ditemukan.")
+      return
+    }
+    var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
+    console.log("[BIVAK] Approving adopsi:", r.id, "code:", code)
+    try {
+      var res = await sbd.from("adoption_requests").update({
+        status: 'terverifikasi',
+        adoption_code: code,
+        verified_at: new Date().toISOString()
+      }).eq("id", r.id)
+      console.log("[BIVAK] Update result:", res)
+      if (res.error) throw res.error
+      toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
+      await loadAdopsiData()
+      renderAdopsiAdmin()
+      updateAdopsiBadge()
+    } catch (err) {
+      console.error("[BIVAK] Approve error:", err)
+      dbErr(err, "Gagal memverifikasi")
+    }
+  }
 
-	window.rejectAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		if (!r) return
-		if (!confirm('Tolak pengajuan adopsi ini?')) return
-		try {
-			var res = await sbd.from("adoption_requests").update({
-				status: 'ditolak'
-			}).eq("id", r.id)
-			if (res.error) throw res.error
-			toast("info", "Ditolak", "Pengajuan adopsi telah ditolak.")
-			await loadAdopsiData()
-			renderAdopsiAdmin()
-			updateAdopsiBadge()
-		} catch (err) {
-			dbErr(err, "Gagal menolak")
-		}
-	}
+  window.rejectAdopsi = async function(i) {
+    var r = _adoptionRows[i]
+    console.log("[BIVAK] rejectAdopsi called, index:", i, "row:", r)
+    if (!r) {
+      console.error("[BIVAK] No row found at index", i)
+      toast("error", "Error", "Data adopsi tidak ditemukan.")
+      return
+    }
+    if (!confirm('Tolak pengajuan adopsi ini?')) return
+    console.log("[BIVAK] Rejecting adopsi:", r.id)
+    try {
+      var res = await sbd.from("adoption_requests").update({
+        status: 'ditolak'
+      }).eq("id", r.id)
+      console.log("[BIVAK] Reject result:", res)
+      if (res.error) throw res.error
+      toast("info", "Ditolak", "Pengajuan adopsi telah ditolak.")
+      await loadAdopsiData()
+      renderAdopsiAdmin()
+      updateAdopsiBadge()
+    } catch (err) {
+      console.error("[BIVAK] Reject error:", err)
+      dbErr(err, "Gagal menolak")
+    }
+  }
 
 	window.deleteAdopsi = async function(i) {
 		var r = _adoptionRows[i]
@@ -1250,19 +1271,27 @@
 		}
 	}
 
-	async function loadAdopsiData() {
-		if (!sbd) {
-			_adoptionRows = []
-			return
-		}
-		try {
-			var res = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
-			_adoptionRows = (res.data || [])
-		} catch (e) {
-			console.warn("[BIVAK] Adopsi load error:", e.message)
-			_adoptionRows = []
-		}
-	}
+  async function loadAdopsiData() {
+    if (!sbd) {
+      console.warn("[BIVAK] sbd (donasi client) not initialized")
+      _adoptionRows = []
+      return
+    }
+    try {
+      console.log("[BIVAK] Loading adoption data from Pintu Angin DB...")
+      var res = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
+      console.log("[BIVAK] Adoption data loaded:", res)
+      _adoptionRows = (res.data || [])
+      console.log("[BIVAK] _adoptionRows count:", _adoptionRows.length)
+      if (_adoptionRows.length > 0) {
+        console.log("[BIVAK] First row sample:", _adoptionRows[0])
+      }
+    } catch (e) {
+      console.error("[BIVAK] Adopsi load error:", e)
+      console.error("[BIVAK] Error details:", JSON.stringify(e))
+      _adoptionRows = []
+    }
+  }
 
 	function updateAdopsiBadge() {
 		var badge = document.getElementById("adopsiBadge")
