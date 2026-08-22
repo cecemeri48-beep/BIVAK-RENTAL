@@ -195,7 +195,40 @@
 
       <!-- Dana Alokasi -->
       <div class="sh"><span class="bar" style="background:#10b981"></span><h3>Ke mana dana disalurkan?</h3></div>
-      <div class="form-card alloc" id="allocList"></div>
+      <div class="form-card alloc" id="allocList" style="display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-tree" style="color:#10b981;margin-right:6px"></i>Reboisasi & Bibit Pohon Endemik</span>
+            <span style="color:#10b981">60%</span>
+          </div>
+          <div class="quota"><i style="width:60%;background:linear-gradient(90deg,#10b981,#059669)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Pembelian bibit, penanaman rutin, dan perawatan pohon di lahan kritis Bawakaraeng.</p>
+        </div>
+        <div>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-shield-halved" style="color:#06b6d4;margin-right:6px"></i>Patroli & Keamanan Jalur</span>
+            <span style="color:#06b6d4">20%</span>
+          </div>
+          <div class="quota"><i style="width:20%;background:linear-gradient(90deg,#06b6d4,#0284c7)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Operasional patroli jalur Pintu Angin, pencegahan kebakaran, dan dukungan tim SAR.</p>
+        </div>
+        <div>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-graduation-cap" style="color:#f59e0b;margin-right:6px"></i>Edukasi Lingkungan</span>
+            <span style="color:#f59e0b">10%</span>
+          </div>
+          <div class="quota"><i style="width:10%;background:linear-gradient(90deg,#f59e0b,#d97706)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Kampanye sadar sampah, pelatihan KPA, dan edukasi pendaki pemula.</p>
+        </div>
+        <div>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-people-group" style="color:#f43f5e;margin-right:6px"></i>Operasional Relawan</span>
+            <span style="color:#f43f5e">10%</span>
+          </div>
+          <div class="quota"><i style="width:10%;background:linear-gradient(90deg,#f43f5e,#e11d48)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Logistik, transportasi, dan konsumsi relawan saat aksi lapangan.</p>
+        </div>
+      </div>
       <p class="note">Laporan keuangan lengkap dipublikasikan tiap kuartal oleh RCS.CBS.</p>
       </div><!-- /donasiPanel -->
     </div>
@@ -227,7 +260,7 @@
           <div style="font-size:1.25rem;font-weight:800;color:#10b981;margin-top:0.5rem">Rp 25.000</div>
         </div>
         <div class="adopsi-card form-card" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s" onclick="selectAdopsiPackage('pohon', 100000, 'Pohon')" id="pkg-pohon">
-          <div style="font-size:2rem;margin-bottom:0.5rem">🌳</div>
+          <div style="font-size:2rem;margin-bottom:0.5rem">��</div>
           <h4 style="color:#fff;margin-bottom:0.25rem">Paket Pohon</h4>
           <p style="color:var(--text-muted);font-size:0.85rem">1 Pohon + Perawatan 1 Thn</p>
           <div style="font-size:1.25rem;font-weight:800;color:#10b981;margin-top:0.5rem">Rp 100.000</div>
@@ -356,8 +389,31 @@
             </li>
           </ul>
         </div>
-        <div>
-          <img src="assets/hero-bg.jpg" alt="Aksi Konservasi" width="1600" height="1067" loading="lazy" decoding="async" style="width: 100%; border-radius: var(--radius-lg); border: 1px solid var(--border-emerald); box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+        <div style="display:flex;flex-direction:column;gap:0.9rem">
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-seedling"></i></div>
+            <div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">1 Donasi = 1 Bibit Pohon</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Setiap donasi langsung dikonversi jadi penanaman bibit endemik Bawakaraeng.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-handshake-angle"></i></div>
+            <div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">100% Transparan</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Laporan penyaluran donasi dipublikasikan dan bisa dicek siapa saja.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-mountain-sun"></i></div>
+            <div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">Bersama KPA & Komunitas Lokal</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Aksi reboisasi dikerjakan rutin bareng relawan di jalur Pintu Angin.</div>
+            </div>
+          </div>
+          <button class="btn btn-rose btn-block" onclick="donasi()" style="margin-top:0.25rem">
+            <i class="fa-solid fa-hand-holding-heart"></i> <span>Ikut Berdonasi</span>
+          </button>
         </div>
       </div>
     </div>
