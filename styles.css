@@ -1183,6 +1183,10 @@ footer {
   
   .nav-menu { top: 68px; max-height: calc(100vh - 68px); }
 
+  /* Sembunyikan tombol Pintu Angin di navbar HP — versi lebar sudah ada di drawer menu,
+     supaya tombol hamburger tidak terdorong keluar layar */
+  .nav-actions .btn-pintuangin { display: none; }
+
   .hero { padding-top: 85px; padding-bottom: 2.5rem; }
   .hero-title { font-size: 1.7rem; line-height: 1.25; }
   .hero-description { font-size: 0.9rem; margin-bottom: 1.5rem; }
