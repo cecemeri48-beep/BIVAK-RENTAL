@@ -346,6 +346,78 @@ a {
   background: #10b981;
 }
 
+/* Tombol CTA Pintu Angin — animasi glow + pulse */
+.btn-pintuangin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border: none;
+  border-radius: var(--radius-full, 999px);
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  background-size: 200% 200%;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
+  animation: paGlow 2.2s ease-in-out infinite, paGradient 4s ease infinite;
+  transition: transform 0.2s ease;
+}
+
+.btn-pintuangin:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 0 28px rgba(16, 185, 129, 0.85), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.btn-pintuangin:active {
+  transform: scale(0.97);
+}
+
+.btn-pintuangin i {
+  animation: paWiggle 1.6s ease-in-out infinite;
+}
+
+/* Cincin radar yang terus memancar */
+.btn-pintuangin::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid rgba(16, 185, 129, 0.7);
+  animation: paRing 2.2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes paGlow {
+  0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.45), 0 4px 14px rgba(0, 0, 0, 0.4); }
+  50%      { box-shadow: 0 0 30px rgba(16, 185, 129, 0.9), 0 4px 14px rgba(0, 0, 0, 0.4); }
+}
+
+@keyframes paGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+@keyframes paRing {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+@keyframes paWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-12deg); }
+  75%      { transform: rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-pintuangin, .btn-pintuangin i, .btn-pintuangin::after { animation: none; }
+}
+
 /* Hero Section */
 .hero {
   position: relative;
