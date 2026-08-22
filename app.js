@@ -253,6 +253,17 @@ function donasiApprove(i, st) {
   BIVAK.notify(st === 'disetujui' ? "success" : "info", st === 'disetujui' ? "Donasi Disetujui" : "Donasi Ditolak", "Status donasi berhasil diperbarui.");
 }
 
+function donasiDeleteLocal(i) {
+  if (i < 0 || i >= BIVAK.donations.length) return;
+  var d = BIVAK.donations[i];
+  if (!confirm('Hapus permanen donasi dari "' + (d.nama || 'Donatur') + '"? Tindakan ini tidak bisa dibatalkan.')) return;
+  BIVAK.donations.splice(i, 1);
+  BIVAK.save();
+  renderAdminTables();
+  updateBadges();
+  BIVAK.notify("info", "Donasi Dihapus", "Data donasi telah dihapus dari daftar.");
+}
+
 function handleVendorSubmit(e) {
   e.preventDefault();
 
@@ -381,7 +392,8 @@ function renderAdminTables() {
           '<td>' + stBadge + '</td>' +
           '<td>' +
             '<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
-            '<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+            '<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button> ' +
+            '<button class="btn btn-outline" onclick="donasiDeleteLocal(' + i + ')" title="Hapus donasi" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-trash"></i></button>' +
           '</td>' +
         '</tr>';
       }).join('');

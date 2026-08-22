@@ -614,6 +614,32 @@
 		}
 	}
 
+	window.donasiDelete = async function (ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Donasi Tidak Tersedia", "")
+			return
+		}
+		var r = rowByRef(_dnRows, ref)
+		if (!r) return rowGone(function () { return loadPublicData({ alsoAdminTables: true }) })
+		if (!confirm('Hapus permanen donasi dari "' + (r.nama || 'Donatur') + '" sebesar Rp ' + (Number(r.amt || 0)).toLocaleString('id-ID') + '? Tindakan ini tidak bisa dibatalkan.')) return
+		var end = beginRowAction("donasi:" + r.id, btn)
+		if (!end) return
+		try {
+			var res = await sbd.from("donasi").delete().eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Terhapus", "Server menolak penghapusan. Cek izin RLS tabel donasi (policy DELETE).")
+				return
+			}
+			toast("success", "Donasi Dihapus", "Data donasi berhasil dihapus permanen.")
+			await loadPublicData({ alsoAdminTables: true })
+			if (typeof renderDonation === 'function') renderDonation()
+		} catch (err) {
+			dbErr(err, "Hapus donasi gagal")
+		} finally {
+			end()
+		}
+	}
+
 	/* ----------------------------------------------------------------------
 	   13. Render donasi leaderboard
 	   ---------------------------------------------------------------------- */
@@ -722,7 +748,8 @@
 						'<td>' + stBadge + '</td>' +
 						'<td>' +
 							'<button class="btn btn-primary" onclick="donasiApprove(\'' + r.id + '\',\'disetujui\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
-							'<button class="btn btn-outline" onclick="donasiApprove(\'' + r.id + '\',\'ditolak\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+							'<button class="btn btn-outline" onclick="donasiApprove(\'' + r.id + '\',\'ditolak\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button> ' +
+							'<button class="btn btn-outline" onclick="donasiDelete(\'' + r.id + '\', this)" title="Hapus donasi" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-trash"></i></button>' +
 						'</td>' +
 					'</tr>'
 				}).join('')
