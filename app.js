@@ -83,7 +83,7 @@ function renderVendors(filteredList) {
         '<div class="vendor-footer">' +
           '<div class="vendor-price">Sewa Mulai <span>' + BIVAK.rupiah(v.minPrice || 15000) + '/hr</span></div>' +
           '<div style="display:flex;gap:0.5rem">' +
-            '<button class="btn btn-outline" onclick="openVendorDetail(' + v.id + ')" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-solid fa-eye"></i> Detail</button>' +
+            '<button class="btn btn-outline" onclick="openVendorDetail(' + v.id + ')" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-solid fa-eye"></i> <span class="btn-label-detail">Lihat</span></button>' +
             '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20menemukan%20vendor%20Anda%20di%20BIVAK" target="_blank" class="btn btn-whatsapp" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-brands fa-whatsapp"></i> WA</a>' +
           '</div>' +
         '</div>' +
