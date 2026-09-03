@@ -1,7 +1,7 @@
 /* ==========================================================================
    BIVAK v4 - Lapisan Data Supabase (Email-only Admin)
    --------------------------------------------------------------------------
-   - Admin login TANPA password — cukup email, cek tabel admins
+   - Admin login pakai email + password Supabase Auth, lalu cek tabel admins
    - Donasi ambil dari database lama (pintu angin)
    - Vendors & settings dari database baru
    ========================================================================== */
@@ -102,23 +102,26 @@
 		: null
 
 	/* ----------------------------------------------------------------------
-	   2. Status admin — TANPA password
+	   2. Status admin — email + password
 	   ---------------------------------------------------------------------- */
 	var isAdmin = false
 
-	// Cek admin berdasarkan email langsung dari tabel admins
-	async function checkAdminByEmail(email) {
+	// Cek admin berdasarkan user login Supabase Auth atau email
+	async function checkAdminUser(user, email) {
 		if (!email) return false
 		email = email.trim().toLowerCase()
 		try {
-			// Use limit(1) instead of single() for better compatibility
-			var res = await sb.from("admins").select("id").eq("email", email).limit(1)
+			var q = sb.from("admins").select("email,user_id").ilike("email", email).limit(1)
+			var res = await q
 			var data = res.data || []
 			if (res.error) {
 				console.warn("[BIVAK] Admin query error:", res.error.message)
 				return false
 			}
-			return data.length > 0
+			if (!data.length) return false
+			// Jika user_id di tabel admins kosong, email cukup. Jika ada, wajib cocok dengan user yang login.
+			if (data[0].user_id && user && user.id) return data[0].user_id === user.id
+			return true
 		} catch (err) {
 			console.warn("[BIVAK] Admin check exception:", err.message)
 			return false
@@ -387,7 +390,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   9. Login Admin — TANPA PASSWORD
+	   9. Login Admin — EMAIL + PASSWORD
 	   ---------------------------------------------------------------------- */
 	function buildLoginModal() {
 		if (document.getElementById("modalAdminLogin")) return
@@ -398,16 +401,18 @@
 			'<div class="modal-container" style="max-width:420px;">',
 			'<div class="modal-header">',
 			'<div><h3 style="color:#fff;font-size:1.15rem;" id="loginModalTitle">Masuk sebagai Admin</h3>',
-			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Panel approval vendor & donasi BIVAK</p></div>',
+			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Login aman pakai Supabase Auth</p></div>',
 			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
 			'</div><div class="modal-body">',
 			'<form id="formAdminLogin">',
 			'<div class="input-group"><label>Email Admin</label>',
 			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
+			'<div class="input-group"><label>Password</label>',
+			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="Password admin"></div>',
 			'<button class="btn btn-primary" type="submit" id="btnLoginSubmit" style="width:100%;margin-top:.5rem;">Masuk</button>',
 			'</form>',
 			'<p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text-muted);">',
-			'Cukup masukkan email yang terdaftar di tabel admins.',
+			'Masukkan email dan password akun admin Supabase.',
 			'</p></div></div>',
 		].join("")
 		document.body.appendChild(wrap)
@@ -416,23 +421,29 @@
 			e.preventDefault()
 			var form = e.currentTarget
 			var email = val("inputAdminEmail")
+			var password = val("inputAdminPassword")
 
-			if (!email) {
-				toast("error", "Email Kosong", "Masukkan email admin Anda.")
+			if (!email || !password) {
+				toast("error", "Data Login Kosong", "Masukkan email dan password admin.")
 				return
 			}
 
-			busy(form, true, "Memeriksa...")
+			busy(form, true, "Masuk...")
 			try {
-				var isAdminRow = await checkAdminByEmail(email)
+				var login = await sb.auth.signInWithPassword({ email: email, password: password })
+				if (login.error) throw login.error
+
+				var user = login.data && login.data.user
+				var isAdminRow = await checkAdminUser(user, email)
 
 				if (!isAdminRow) {
-					toast("error", "Bukan Admin", "Email ini belum terdaftar di tabel admins.")
+					await sb.auth.signOut()
+					toast("error", "Bukan Admin", "Akun ini belum terdaftar di tabel admins.")
 					form.reset()
 					return
 				}
 
-			// Admin valid — langsung masuk!
+			// Admin valid — masuk
 			isAdmin = true
 			form.reset()
 			closeModal("modalAdminLogin")

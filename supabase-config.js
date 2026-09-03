@@ -4,7 +4,7 @@
    Database utama BIVAK: sqxwhfdarnzypicoamzl
    Database donasi (pintu angin): ncoueeeskzslldppsbvx
    
-   Admin login TANPA password — cukup masukkan email.
+   Admin login pakai email + password Supabase Auth.
    ========================================================================== */
 
 window.BIVAK_SUPABASE = {
