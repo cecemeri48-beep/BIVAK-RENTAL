@@ -89,17 +89,20 @@
 	}
 
 	// Database utama: vendors, settings, admins
-	var sb = window.supabase.createClient(mainCfg.url, mainCfg.anonKey, {
+	// Pakai singleton supaya tidak muncul warning Multiple GoTrueClient
+	var sb = window.bivakDb || window.supabase.createClient(mainCfg.url, mainCfg.anonKey, {
 		auth: { storageKey: "bivak-main-auth" }
 	})
 	window.bivakDb = sb
 
 	// Database donasi (pintu angin)
-	var sbd = donasiCfg.url && donasiCfg.anonKey
-		? window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey, {
-				auth: { storageKey: "bivak-donasi-auth" }
-			})
-		: null
+	var sbd = null
+	if (donasiCfg.url && donasiCfg.anonKey) {
+		sbd = window.bivakDonasiDb || window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey, {
+			auth: { storageKey: "bivak-donasi-auth" }
+		})
+		window.bivakDonasiDb = sbd
+	}
 
 	/* ----------------------------------------------------------------------
 	   2. Status admin — email + password
@@ -1109,7 +1112,7 @@
 			try {
 				await loadPublicData()
 				await loadAdopsiData()
-				console.info("[BIVAK] Terhubung ke Supabase (email-only admin).")
+				console.info("[BIVAK] Boot selesai. Jika data kosong, cek Supabase Project URL / koneksi DNS.")
 			} catch (err) {
 				dbErr(err, "Gagal memuat data dari database")
 			}
