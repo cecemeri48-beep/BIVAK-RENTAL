@@ -429,6 +429,15 @@ function removeActiveVendor(i) {
   updateBadges();
 }
 
+
+function goMobileSection(id) {
+  var target = document.getElementById(id);
+  if (!target) return;
+  closeMobileMenu();
+  var y = target.getBoundingClientRect().top + window.pageYOffset - 76;
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+}
+
 function openModal(id) {
   var m = BIVAK.el(id);
   if (!m) return;

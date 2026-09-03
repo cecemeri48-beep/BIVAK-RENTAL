@@ -447,21 +447,27 @@
         <div class="section-subtitle"><i class="fa-solid fa-circle-info"></i> Alur Kerja Platform</div>
         <h2 class="section-title">Cara Bergabung</h2>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
-          <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.2); color: var(--primary-emerald); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">1</div>
-          <h3 style="color: #fff; margin-bottom: 0.5rem;">Isi Form Vendor</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Daftarkan rental Anda dan tunggu approval admin.</p>
+      <div class="platform-flow">
+        <div class="flow-card flow-vendor">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h3>Isi Form Vendor</h3>
+            <p>Daftarkan rental, admin cek data, lalu tampil di katalog.</p>
+          </div>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
-          <div style="width: 50px; height: 50px; background: rgba(244, 63, 94, 0.2); color: #f43f5e; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">2</div>
-          <h3 style="color: #fff; margin-bottom: 0.5rem;">Donasi Konservasi</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Pilih nominal, transfer, dan kirim konfirmasi.</p>
+        <div class="flow-card flow-donasi">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h3>Donasi Konservasi</h3>
+            <p>Pilih nominal, transfer, lalu kirim konfirmasi.</p>
+          </div>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; text-align: center;">
-          <div style="width: 50px; height: 50px; background: rgba(6, 182, 212, 0.2); color: var(--accent-sky); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto; font-weight: 800;">3</div>
-          <h3 style="color: #fff; margin-bottom: 0.5rem;">Nama di Leaderboard</h3>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Setelah divalidasi, nama tampil publik.</p>
+        <div class="flow-card flow-publik">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h3>Nama Tampil Publik</h3>
+            <p>Setelah validasi, dukungan muncul di leaderboard.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -678,10 +684,10 @@
 
   <!-- Footer -->
   <nav class="mobile-bottom-nav" aria-label="Navigasi cepat mobile">
-    <a href="#vendors"><i class="fa-solid fa-store"></i><span>Vendor</span></a>
+    <button type="button" onclick="goMobileSection('vendors')"><i class="fa-solid fa-store"></i><span>Vendor</span></button>
     <button type="button" onclick="donasi()"><i class="fa-solid fa-heart"></i><span>Donasi</span></button>
     <button type="button" onclick="openModal('modalVendor')"><i class="fa-solid fa-plus"></i><span>Daftar</span></button>
-    <button type="button" onclick="openAdminLogin()"><i class="fa-solid fa-user-shield"></i><span>Admin</span></button>
+    <button type="button" onclick="openAdminPanel()"><i class="fa-solid fa-user-shield"></i><span>Admin</span></button>
   </nav>
 
   <footer>

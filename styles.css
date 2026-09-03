@@ -2032,3 +2032,166 @@ canvas.cert-zoom {
   #vendorGridContainer .vendor-title { font-size: .8rem; }
   #vendorGridContainer .vendor-footer > div:last-child { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   Alur platform lebih compact dan menarik
+   ========================================================================== */
+.platform-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.flow-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  min-height: 138px;
+  padding: 1.15rem;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(18, 32, 28, .86), rgba(7, 12, 11, .78));
+  border: 1px solid var(--border-glass);
+  overflow: hidden;
+}
+
+.flow-card::before {
+  content: '';
+  position: absolute;
+  inset: -45% -25% auto auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(16,185,129,.24), transparent 62%);
+  pointer-events: none;
+}
+
+.flow-donasi::before { background: radial-gradient(circle, rgba(244,63,94,.24), transparent 62%); }
+.flow-publik::before { background: radial-gradient(circle, rgba(6,182,212,.24), transparent 62%); }
+
+.flow-number {
+  position: relative;
+  z-index: 1;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, .16);
+  color: var(--primary-emerald);
+  border: 1px solid rgba(16, 185, 129, .3);
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.flow-donasi .flow-number { background: rgba(244,63,94,.14); color: #fb7185; border-color: rgba(244,63,94,.34); }
+.flow-publik .flow-number { background: rgba(6,182,212,.14); color: var(--accent-sky); border-color: rgba(6,182,212,.34); }
+
+.flow-content { position: relative; z-index: 1; }
+.flow-content h3 { color: #fff; margin-bottom: .35rem; font-size: 1.02rem; line-height: 1.25; }
+.flow-content p { color: var(--text-muted); font-size: .86rem; line-height: 1.45; margin: 0; }
+
+@media (max-width: 640px) {
+  /* Rapatkan jarak antar panel/section di tampilan mobile */
+  .section { padding-top: 1.65rem; padding-bottom: 1.65rem; }
+  .section-header { margin-bottom: 1rem; }
+  .section-title { font-size: 1.38rem; }
+  .section-description { margin-top: .45rem; }
+  #vendors.section { padding-bottom: 1.35rem; }
+  #donasi.section,
+  #adopsi.section,
+  #dampak.section,
+  #panduan.section { padding-top: 1.35rem; }
+
+  #panduan .section-header { text-align: left; }
+  #panduan .section-subtitle { margin-left: 0; }
+
+  .platform-flow {
+    grid-template-columns: 1fr;
+    gap: .65rem;
+  }
+
+  .flow-card {
+    min-height: 0;
+    align-items: center;
+    gap: .75rem;
+    padding: .85rem;
+    border-radius: 16px;
+  }
+
+  .flow-number {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 12px;
+    font-size: .94rem;
+  }
+
+  .flow-content h3 {
+    font-size: .94rem;
+    margin-bottom: .18rem;
+  }
+
+  .flow-content p {
+    font-size: .78rem;
+    line-height: 1.35;
+  }
+}
+
+/* ==========================================================================
+   Bottom nav: lebih native, halus, tidak terlalu template/PWA
+   ========================================================================== */
+@media (max-width: 640px) {
+  .mobile-bottom-nav {
+    left: max(1rem, env(safe-area-inset-left));
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: calc(.8rem + var(--app-safe-bottom));
+    height: 58px;
+    padding: .35rem;
+    gap: .15rem;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(18, 27, 24, .86), rgba(7, 12, 11, .92));
+    border: 1px solid rgba(255,255,255,.11);
+    box-shadow: 0 10px 30px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter: blur(20px) saturate(1.2);
+  }
+
+  .mobile-bottom-nav a,
+  .mobile-bottom-nav button {
+    position: relative;
+    gap: .14rem;
+    color: rgba(226,232,240,.72);
+    font-size: .64rem;
+    font-weight: 650;
+    letter-spacing: -.01em;
+    border-radius: 15px;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-bottom-nav i {
+    font-size: 1.05rem;
+    color: rgba(16,185,129,.92);
+    filter: none;
+  }
+
+  .mobile-bottom-nav a:hover,
+  .mobile-bottom-nav button:hover,
+  .mobile-bottom-nav a:focus-visible,
+  .mobile-bottom-nav button:focus-visible {
+    outline: none;
+    background: rgba(255,255,255,.06);
+    color: #fff;
+  }
+
+  .mobile-bottom-nav a:active,
+  .mobile-bottom-nav button:active {
+    background: rgba(16,185,129,.13);
+    transform: translateY(1px) scale(.98);
+  }
+
+  .mobile-bottom-nav button:nth-child(2) i { color: #fb7185; }
+  .mobile-bottom-nav button:nth-child(3) i { color: #34d399; }
+  .mobile-bottom-nav button:nth-child(4) i { color: #7dd3fc; }
+}
