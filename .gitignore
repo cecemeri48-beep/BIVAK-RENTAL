@@ -1,8 +1,21 @@
 # BIVAK v4 - Donasi Pintu Angin
+
+# Secrets & config
 .env.local
+.env*
+
+# Node
 node_modules/
+
+# Vercel
 .vercel/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
 
-.vercel
+# Database SQL files (all in db/)
+*.sql
