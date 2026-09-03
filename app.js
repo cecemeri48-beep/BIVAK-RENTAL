@@ -612,7 +612,7 @@ window.toggleSection = function (id, btn, forceOpen) {
   return open;
 };
 
-BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel'];
+BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel', 'impactPanel'];
 
 // Buka panel otomatis bila pengguna melompat ke section itu dari menu,
 // supaya klik menu tidak berujung pada bagian yang tampak kosong.

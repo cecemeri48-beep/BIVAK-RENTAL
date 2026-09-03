@@ -381,6 +381,17 @@
           <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
             RCS.CBS - BIVAK hadir sebagai jembatan kolaborasi antara vendor, pegiat alam, dan komunitas pecinta alam untuk melestarikan keasrian alam Gunung Bawakaraeng.
           </p>
+          <button class="collapse-toggle impact-mobile-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="impactPanel"
+                  data-open="Lihat detail misi sosial"
+                  data-close="Sembunyikan detail misi sosial"
+                  onclick="toggleSection('impactPanel', this)">
+            <span class="collapse-label"><i class="fa-solid fa-leaf"></i><span class="collapse-label-text">Lihat detail misi sosial</span></span>
+            <i class="fa-solid fa-chevron-down collapse-chevron"></i>
+          </button>
+          <div class="impact-details collapse-body" id="impactPanel">
           <ul class="impact-list">
             <li class="impact-item">
               <div class="impact-icon"><i class="fa-solid fa-tree"></i></div>
@@ -398,7 +409,7 @@
             </li>
           </ul>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0.9rem">
+        <div class="impact-benefits" style="display:flex;flex-direction:column;gap:0.9rem">
           <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
             <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-seedling"></i></div>
             <div>
@@ -424,6 +435,7 @@
             <i class="fa-solid fa-hand-holding-heart"></i> <span>Ikut Berdonasi</span>
           </button>
         </div>
+        </div><!-- /impactPanel -->
       </div>
     </div>
   </section>

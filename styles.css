@@ -1864,3 +1864,171 @@ canvas.cert-zoom {
 }
 
 @media (min-width: 641px) { .mobile-bottom-nav { display: none; } }
+
+/* ==========================================================================
+   Mobile vendor grid + compact social mission
+   ========================================================================== */
+.impact-mobile-toggle { display: none; }
+
+@media (min-width: 641px) {
+  #impactPanel.collapse-body { display: contents; }
+}
+
+@media (max-width: 640px) {
+  /* Vendor tampil 2 kolom agar beberapa kartu langsung terlihat tanpa scroll panjang */
+  #vendorGridContainer.grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+
+  #vendorGridContainer .vendor-card {
+    border-radius: 16px;
+  }
+
+  #vendorGridContainer .vendor-cover {
+    height: auto;
+    aspect-ratio: 1 / .72;
+  }
+
+  #vendorGridContainer .vendor-body {
+    padding: .72rem;
+    gap: .48rem;
+  }
+
+  #vendorGridContainer .vendor-header {
+    display: block;
+    margin-bottom: .35rem;
+  }
+
+  #vendorGridContainer .vendor-title {
+    font-size: .86rem;
+    line-height: 1.22;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.1em;
+  }
+
+  #vendorGridContainer .vendor-rating {
+    width: fit-content;
+    margin-top: .38rem;
+    font-size: .7rem;
+    padding: .14rem .36rem;
+  }
+
+  #vendorGridContainer .vendor-address {
+    font-size: .72rem;
+    line-height: 1.25;
+    margin-bottom: .2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  #vendorGridContainer .gear-tags {
+    gap: .28rem;
+    margin-bottom: .35rem;
+  }
+
+  #vendorGridContainer .tag {
+    font-size: .64rem;
+    padding: .24rem .36rem;
+  }
+
+  #vendorGridContainer .tag:nth-child(n+3) { display: none; }
+
+  #vendorGridContainer .vendor-footer {
+    gap: .48rem;
+    padding-top: .55rem;
+  }
+
+  #vendorGridContainer .vendor-price {
+    font-size: .66rem;
+  }
+
+  #vendorGridContainer .vendor-price span {
+    font-size: .82rem;
+  }
+
+  #vendorGridContainer .vendor-footer > div:last-child {
+    grid-template-columns: 1fr 1fr;
+    gap: .4rem !important;
+  }
+
+  #vendorGridContainer .vendor-footer .btn,
+  #vendorGridContainer .btn-whatsapp,
+  #vendorGridContainer .btn-outline {
+    min-height: 38px;
+    padding: .42rem .35rem !important;
+    font-size: .72rem !important;
+    border-radius: 10px;
+  }
+
+  #vendorGridContainer .location-badge,
+  #vendorGridContainer .verified-badge {
+    top: .45rem;
+    font-size: .58rem;
+    padding: .16rem .38rem;
+  }
+
+  #vendorGridContainer .location-badge { left: .45rem; }
+  #vendorGridContainer .verified-badge { right: .45rem; }
+  #vendorGridContainer .verified-badge { max-width: 34px; overflow: hidden; }
+  #vendorGridContainer .verified-badge i { margin-right: .15rem; }
+
+  /* Misi sosial: ringkas di mobile, detail dibuka bila dibutuhkan */
+  .impact-banner {
+    padding: 1.1rem !important;
+    gap: .9rem !important;
+  }
+
+  .impact-banner h2 {
+    font-size: 1.35rem !important;
+    line-height: 1.2;
+    margin-bottom: .7rem !important;
+  }
+
+  .impact-banner p {
+    font-size: .86rem;
+    line-height: 1.5;
+    margin-bottom: .85rem !important;
+  }
+
+  .impact-mobile-toggle { display: flex; }
+  #impactPanel.collapse-body.open { display: contents; }
+
+  .impact-list {
+    gap: .7rem;
+    margin-top: .8rem;
+  }
+
+  .impact-item {
+    gap: .7rem;
+  }
+
+  .impact-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    font-size: 1rem;
+  }
+
+  .impact-benefits {
+    gap: .65rem !important;
+    margin-top: .75rem;
+  }
+
+  .impact-benefits > div {
+    padding: .8rem !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  #vendorGridContainer.grid-3 { gap: .6rem; }
+  #vendorGridContainer .vendor-body { padding: .62rem; }
+  #vendorGridContainer .vendor-title { font-size: .8rem; }
+  #vendorGridContainer .vendor-footer > div:last-child { grid-template-columns: 1fr; }
+}
