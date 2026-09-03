@@ -67,7 +67,7 @@ function renderVendors(filteredList) {
   container.innerHTML = list.map(function(v) {
     return '<div class="vendor-card">' +
       '<div class="vendor-cover">' +
-        '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'assets/gear-fallback.jpg\'">' +
+        '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">' +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>' : '') +
       '</div>' +
@@ -567,6 +567,7 @@ BIVAK.vendorImg = function(v, width) {
   if (width === 600 && /^assets\/vendor-[a-z]+\.jpg$/.test(src)) {
     return src.replace(/\.jpg$/, '@600.jpg');
   }
+  if (!src) return BIVAK.photoForVendor(v && v.name, v && v.city);
   return src;
 };
 

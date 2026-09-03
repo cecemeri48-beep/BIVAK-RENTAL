@@ -150,10 +150,8 @@
 		// semuanya ke satu gambar fallback membuat semua vendor tampak sama.
 		// Jadi placeholder generik diganti foto per-kota.
 		var img = row.image_url || ""
-		if (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img)) {
-			img = BIVAK.photoForVendor(row.name, row.city)
-		} else if (!img) {
-			img = "assets/gear-fallback.jpg"
+		if (!img || img.charAt(0) === "<" || img.indexOf(">") !== -1 || (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img))) {
+			img = (window.BIVAK && BIVAK.photoForVendor) ? BIVAK.photoForVendor(row.name, row.city) : "assets/gear-fallback.jpg"
 		}
 		return {
 			id: nextId(), dbId: row.id, name: row.name, city: row.city,

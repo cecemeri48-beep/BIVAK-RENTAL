@@ -1660,3 +1660,207 @@ canvas.cert-zoom {
 @media (max-width: 640px) {
   .collapse-toggle { font-size: 0.86rem; padding: 0.75rem 0.85rem; }
 }
+
+
+/* ==========================================================================
+   Mobile App Polish - BIVAK
+   ========================================================================== */
+@media (max-width: 640px) {
+  html, body { overflow-x: hidden; }
+  body { -webkit-tap-highlight-color: transparent; }
+
+  .container { width: 100%; padding-left: 1rem; padding-right: 1rem; }
+  section { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+
+  .hero {
+    min-height: auto;
+    padding-top: 86px;
+    text-align: left;
+  }
+  .hero .container { padding-left: 1rem; padding-right: 1rem; }
+  .hero-badge { font-size: .78rem; padding: .45rem .7rem; }
+  .hero-actions { display: grid; grid-template-columns: 1fr; gap: .75rem; }
+  .hero-actions .btn { width: 100%; min-height: 46px; justify-content: center; }
+
+  .search-filter-card {
+    position: sticky;
+    top: 72px;
+    z-index: 20;
+    padding: .75rem;
+    border-radius: 18px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  }
+
+  .vendor-card {
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.22);
+  }
+  .vendor-card:hover { transform: none; }
+  .vendor-cover { height: 210px; background: #111; }
+  .vendor-body { padding: 1rem; gap: .85rem; }
+  .vendor-header { gap: .5rem; }
+  .vendor-title { font-size: 1.05rem; line-height: 1.25; }
+  .vendor-rating { font-size: .82rem; }
+  .vendor-address { font-size: .86rem; line-height: 1.35; }
+  .gear-tags { gap: .4rem; }
+  .tag { font-size: .72rem; padding: .35rem .5rem; }
+  .vendor-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .85rem;
+  }
+  .vendor-footer > div:last-child {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem !important;
+  }
+  .vendor-footer .btn,
+  .btn-whatsapp,
+  .btn-outline {
+    min-height: 44px;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  .location-badge, .verified-badge {
+    font-size: .68rem;
+    max-width: calc(50% - 1rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .modal-container {
+    width: min(100%, 430px);
+    max-height: 92dvh;
+    border-radius: 22px 22px 0 0;
+    margin-top: auto;
+  }
+  .modal-overlay { align-items: flex-end; }
+  input, select, textarea, .form-control { font-size: 16px; min-height: 46px; }
+}
+
+@media (max-width: 390px) {
+  .container { padding-left: .85rem; padding-right: .85rem; }
+  .hero-title { font-size: 1.48rem; }
+  .vendor-cover { height: 190px; }
+  .vendor-body { padding: .9rem; }
+  .vendor-footer > div:last-child { grid-template-columns: 1fr; }
+}
+
+
+/* ==========================================================================
+   Kekinian UX Polish - glass cards, app-like mobile, friendly taps
+   ========================================================================== */
+:root {
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.vendor-card, .form-card, .donation-progress-card, .auction-card {
+  box-shadow: 0 10px 35px rgba(0,0,0,.18);
+}
+
+.btn {
+  min-height: 42px;
+  touch-action: manipulation;
+}
+.btn:focus-visible, .form-control:focus-visible, .tab-btn:focus-visible {
+  outline: 3px solid rgba(16,185,129,.35);
+  outline-offset: 2px;
+}
+
+.vendor-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.02), rgba(0,0,0,.55));
+  pointer-events: none;
+}
+.location-badge, .verified-badge { z-index: 2; }
+
+@media (max-width: 640px) {
+  body { padding-bottom: calc(76px + var(--app-safe-bottom)); }
+
+  .navbar {
+    backdrop-filter: blur(18px);
+    background: rgba(6, 12, 10, .82);
+  }
+  .nav-menu.active {
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 18px 35px rgba(0,0,0,.35);
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1.3rem;
+    height: 120px;
+    border-radius: 28px;
+    background: radial-gradient(circle at 30% 30%, rgba(16,185,129,.22), transparent 60%), rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.08);
+    pointer-events: none;
+  }
+  .hero-tag { margin-top: .25rem; }
+
+  .section-header {
+    text-align: left;
+    margin-bottom: 1.25rem;
+  }
+  .section-title { font-size: 1.55rem; line-height: 1.18; }
+  .section-subtitle { font-size: .92rem; }
+
+  .grid-3 { gap: 1rem; }
+  .vendor-card { overflow: hidden; border: 1px solid rgba(255,255,255,.1); }
+  .vendor-cover img { filter: saturate(1.05) contrast(1.02); }
+  .vendor-price span { display: block; margin-top: .15rem; font-size: 1.05rem; }
+
+  .search-filter-card .btn { min-height: 48px; }
+  .filter-group label { font-size: .75rem; letter-spacing: .02em; }
+
+  .tier-options, .adopsi-packages { grid-template-columns: 1fr 1fr !important; gap: .75rem !important; }
+  .tier-btn, .adopsi-card { min-height: 54px; border-radius: 16px !important; }
+
+  .donation-cta { display: grid !important; grid-template-columns: 1fr !important; gap: .75rem !important; }
+  .donation-cta .btn { width: 100%; min-width: 0 !important; }
+
+  .modal-close { min-width: 44px; min-height: 44px; }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    left: .75rem;
+    right: .75rem;
+    bottom: calc(.65rem + var(--app-safe-bottom));
+    height: 62px;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .25rem;
+    padding: .45rem;
+    border-radius: 22px;
+    background: rgba(7, 12, 11, .9);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 18px 45px rgba(0,0,0,.45);
+    backdrop-filter: blur(18px);
+  }
+  .mobile-bottom-nav a, .mobile-bottom-nav button {
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .18rem;
+    font-size: .68rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 16px;
+    min-width: 0;
+  }
+  .mobile-bottom-nav i { font-size: 1rem; color: var(--primary-emerald); }
+  .mobile-bottom-nav a:active, .mobile-bottom-nav button:active { background: rgba(16,185,129,.12); transform: scale(.98); }
+}
+
+@media (min-width: 641px) { .mobile-bottom-nav { display: none; } }
