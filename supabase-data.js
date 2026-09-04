@@ -1,7 +1,7 @@
 /* ==========================================================================
    BIVAK v4 - Lapisan Data Supabase (Email-only Admin)
    --------------------------------------------------------------------------
-   - Admin login TANPA password — cukup email, cek tabel admins
+   - Admin login pakai email + password Supabase Auth, lalu cek tabel admins
    - Donasi ambil dari database lama (pintu angin)
    - Vendors & settings dari database baru
    ========================================================================== */
@@ -89,38 +89,42 @@
 	}
 
 	// Database utama: vendors, settings, admins
-	var sb = window.supabase.createClient(mainCfg.url, mainCfg.anonKey, {
+	// Pakai singleton supaya tidak muncul warning Multiple GoTrueClient
+	var sb = window.bivakDb || window.supabase.createClient(mainCfg.url, mainCfg.anonKey, {
 		auth: { storageKey: "bivak-main-auth" }
 	})
 	window.bivakDb = sb
 
 	// Database donasi (pintu angin)
-	var sbd = donasiCfg.url && donasiCfg.anonKey
-		? window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey, {
-				auth: { storageKey: "bivak-donasi-auth" }
-			})
-		: null
+	var sbd = null
+	if (donasiCfg.url && donasiCfg.anonKey) {
+		sbd = window.bivakDonasiDb || window.supabase.createClient(donasiCfg.url, donasiCfg.anonKey, {
+			auth: { storageKey: "bivak-donasi-auth" }
+		})
+		window.bivakDonasiDb = sbd
+	}
 
 	/* ----------------------------------------------------------------------
-	   2. Status admin — TANPA password
+	   2. Status admin — email + password
 	   ---------------------------------------------------------------------- */
 	var isAdmin = false
 
-	// Cek admin berdasarkan email langsung dari tabel admins
-	async function checkAdminByEmail(email) {
+	// Cek admin berdasarkan user login Supabase Auth atau email
+	async function checkAdminUser(user, email) {
 		if (!email) return false
 		email = email.trim().toLowerCase()
-		console.log("[BIVAK] Checking admin:", email)
 		try {
-			// Use limit(1) instead of single() for better compatibility
-			var res = await sb.from("admins").select("id").eq("email", email).limit(1)
-			console.log("[BIVAK] Admin check result:", res)
+			var q = sb.from("admins").select("email,user_id").ilike("email", email).limit(1)
+			var res = await q
 			var data = res.data || []
 			if (res.error) {
 				console.warn("[BIVAK] Admin query error:", res.error.message)
 				return false
 			}
-			return data.length > 0
+			if (!data.length) return false
+			// Jika user_id di tabel admins kosong, email cukup. Jika ada, wajib cocok dengan user yang login.
+			if (data[0].user_id && user && user.id) return data[0].user_id === user.id
+			return true
 		} catch (err) {
 			console.warn("[BIVAK] Admin check exception:", err.message)
 			return false
@@ -142,10 +146,12 @@
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
-		// Only use local assets — external Unsplash URLs cause ERR_UNKNOWN_URL_SCHEME
-		var img = row.image_url || "assets/gear-tent.png"
-		if (img && img.indexOf("unsplash") !== -1) {
-			img = "assets/gear-tent.png"
+		// URL eksternal (Unsplash) memicu ERR_UNKNOWN_URL_SCHEME, dan memaksa
+		// semuanya ke satu gambar fallback membuat semua vendor tampak sama.
+		// Jadi placeholder generik diganti foto per-kota.
+		var img = row.image_url || ""
+		if (!img || img.charAt(0) === "<" || img.indexOf(">") !== -1 || (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img))) {
+			img = (window.BIVAK && BIVAK.photoForVendor) ? BIVAK.photoForVendor(row.name, row.city) : "assets/gear-fallback.jpg"
 		}
 		return {
 			id: nextId(), dbId: row.id, name: row.name, city: row.city,
@@ -179,7 +185,6 @@
 
 		// Load vendors dari database baru
 		var vRes = await sb.from("vendors").select("*").eq("status", "approved").order("created_at", { ascending: false })
-		console.log("[BIVAK] Vendors query:", vRes)
 		if (vRes.error) {
 			console.warn("[BIVAK] Tabel vendors:", vRes.error.message)
 			console.warn("[BIVAK] Error details:", JSON.stringify(vRes.error))
@@ -276,7 +281,7 @@
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: "assets/gear-tent.png",
+				image_url: BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
 				status: "pending",
 				is_verified: false,
 			})
@@ -300,7 +305,10 @@
 		e.preventDefault()
 		var form = document.getElementById("formDonasi")
 		var nama = val("inputDonasiNama")
-		var nominal = parseInt(val("inputDonasiNominal"), 10) || 0
+		// Nominal sudah dipilih di luar modal, jadi input boleh kosong.
+		var nominal = parseInt(val("inputDonasiNominal"), 10)
+			|| (window.BIVAK && BIVAK.tierSelected)
+			|| 0
 		var email = val("inputDonasiEmail")
 
 		if (!nama || nominal <= 0) {
@@ -351,7 +359,9 @@
 		if (!badge) return
 		var newCount = (_dnRows || []).filter(function(d) { return d.astatus === 'baru' }).length
 		badge.innerText = newCount
-		badge.style.display = newCount > 0 ? "inline-flex" : "none"
+		// Sama seperti badge adopsi: hitungan donasi yang belum diverifikasi
+		// adalah info moderasi, bukan untuk pengunjung umum.
+		badge.style.display = isAdmin && newCount > 0 ? "inline-flex" : "none"
 	}
 
 	function syncAdopsiBadge() {
@@ -359,7 +369,9 @@
 		if (!badge) return
 		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
 		badge.innerText = pending
-		badge.style.display = pending > 0 ? "inline-flex" : "none"
+		// Jumlah adopsi yang menunggu verifikasi adalah info moderasi,
+		// jadi badge ini hanya untuk admin.
+		badge.style.display = isAdmin && pending > 0 ? "inline-flex" : "none"
 	}
 
 	var origUpdateBadges = window.updateBadgesAndStats || window.updateBadges
@@ -379,7 +391,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   9. Login Admin — TANPA PASSWORD
+	   9. Login Admin — EMAIL + PASSWORD
 	   ---------------------------------------------------------------------- */
 	function buildLoginModal() {
 		if (document.getElementById("modalAdminLogin")) return
@@ -390,16 +402,18 @@
 			'<div class="modal-container" style="max-width:420px;">',
 			'<div class="modal-header">',
 			'<div><h3 style="color:#fff;font-size:1.15rem;" id="loginModalTitle">Masuk sebagai Admin</h3>',
-			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Panel approval vendor & donasi BIVAK</p></div>',
+			'<p style="color:var(--text-muted);font-size:.83rem;margin-top:.2rem;" id="loginModalSubtitle">Login aman pakai Supabase Auth</p></div>',
 			'<button class="modal-close" type="button" onclick="closeModal(\'modalAdminLogin\')">&times;</button>',
 			'</div><div class="modal-body">',
 			'<form id="formAdminLogin">',
 			'<div class="input-group"><label>Email Admin</label>',
 			'<input class="form-control" type="email" id="inputAdminEmail" autocomplete="username" required placeholder="admin@bivak.id"></div>',
+			'<div class="input-group"><label>Password</label>',
+			'<input class="form-control" type="password" id="inputAdminPassword" autocomplete="current-password" required placeholder="Password admin"></div>',
 			'<button class="btn btn-primary" type="submit" id="btnLoginSubmit" style="width:100%;margin-top:.5rem;">Masuk</button>',
 			'</form>',
 			'<p style="text-align:center;margin-top:1rem;font-size:.82rem;color:var(--text-muted);">',
-			'Cukup masukkan email yang terdaftar di tabel admins.',
+			'Masukkan email dan password akun admin Supabase.',
 			'</p></div></div>',
 		].join("")
 		document.body.appendChild(wrap)
@@ -408,23 +422,29 @@
 			e.preventDefault()
 			var form = e.currentTarget
 			var email = val("inputAdminEmail")
+			var password = val("inputAdminPassword")
 
-			if (!email) {
-				toast("error", "Email Kosong", "Masukkan email admin Anda.")
+			if (!email || !password) {
+				toast("error", "Data Login Kosong", "Masukkan email dan password admin.")
 				return
 			}
 
-			busy(form, true, "Memeriksa...")
+			busy(form, true, "Masuk...")
 			try {
-				var isAdminRow = await checkAdminByEmail(email)
+				var login = await sb.auth.signInWithPassword({ email: email, password: password })
+				if (login.error) throw login.error
+
+				var user = login.data && login.data.user
+				var isAdminRow = await checkAdminUser(user, email)
 
 				if (!isAdminRow) {
-					toast("error", "Bukan Admin", "Email ini belum terdaftar di tabel admins.")
+					await sb.auth.signOut()
+					toast("error", "Bukan Admin", "Akun ini belum terdaftar di tabel admins.")
 					form.reset()
 					return
 				}
 
-			// Admin valid — langsung masuk!
+			// Admin valid — masuk
 			isAdmin = true
 			form.reset()
 			closeModal("modalAdminLogin")
@@ -459,6 +479,10 @@
 			isAdmin = false
 			closeModal("modalAdmin")
 			await loadPublicData()
+			// Sembunyikan badge admin segera setelah sesi berakhir
+			syncCoinBadge()
+			syncDonasiBadge()
+			syncAdopsiBadge()
 			toast("info", "Keluar", "Sesi admin diakhiri.")
 		})
 
@@ -512,21 +536,119 @@
 	/* ----------------------------------------------------------------------
 	   12. Donasi Admin Actions — dari database LAMA
 	   ---------------------------------------------------------------------- */
-	window.donasiApprove = async function (i, st) {
-		var r = _dnRows[i]
-		if (!r) return
+/* ----------------------------------------------------------------------
+	   11b. Aksi admin: acuan baris stabil + kunci klik-ganda
+	   ----------------------------------------------------------------------
+	   Tombol setujui/tolak dulu mengirim INDEKS array, mis. donasiApprove(3).
+	   Indeks itu bergeser setiap data dimuat ulang -- dan data SELALU dimuat
+	   ulang setelah tiap aksi, juga saat ada baris baru masuk. Akibatnya klik
+	   bisa mengenai baris lain atau baris yang sudah tidak ada, sehingga
+	   terasa "macet" dan baru berhasil setelah dipencet berulang. Sekarang
+	   tombol mengirim ID baris, sama seperti tombol vendor yang memang sudah
+	   benar sejak awal.
+	   ---------------------------------------------------------------------- */
+
+	var _rowBusy = {}
+
+	// Cari baris berdasarkan ID. Indeks masih diterima sebagai jalur mundur
+	// untuk app.js yang memanggil dengan indeks saat Supabase tidak aktif.
+	function rowByRef(rows, ref) {
+		rows = rows || []
+		for (var k = 0; k < rows.length; k++) {
+			if (rows[k] && String(rows[k].id) === String(ref)) return rows[k]
+		}
+		if (typeof ref === "number" && ref >= 0 && ref < rows.length) return rows[ref]
+		return null
+	}
+
+	// Kunci satu baris selama request berjalan sekaligus memberi umpan balik
+	// pada tombolnya. Mengembalikan null bila aksi baris itu masih berjalan,
+	// jadi tap ganda di HP tidak lagi mengirim dua update sekaligus.
+	function beginRowAction(key, btn) {
+		if (_rowBusy[key]) return null
+		_rowBusy[key] = true
+		var prev = null
+		if (btn && btn.tagName) {
+			prev = btn.innerHTML
+			btn.disabled = true
+			btn.setAttribute("aria-busy", "true")
+			btn.style.opacity = "0.55"
+			btn.style.cursor = "wait"
+			btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'
+		}
+		return function endRowAction() {
+			delete _rowBusy[key]
+			if (btn && btn.tagName && btn.parentNode) {
+				btn.disabled = false
+				btn.removeAttribute("aria-busy")
+				btn.style.opacity = ""
+				btn.style.cursor = ""
+				if (prev !== null) btn.innerHTML = prev
+			}
+		}
+	}
+
+	// Supabase .update()/.delete() tanpa .select() mengembalikan data null dan
+	// TIDAK menandai error walau 0 baris terkena, misalnya ketika diblokir
+	// RLS. Dulu UI tetap bilang "berhasil" padahal tidak ada yang berubah.
+	function affectedCount(res) {
+		if (res && res.error) throw res.error
+		return (res && res.data && res.data.length) || 0
+	}
+
+	function rowGone(reloader) {
+		toast("error", "Data Sudah Berubah", "Baris itu tidak ada lagi di daftar. Daftar dimuat ulang, silakan ulangi.")
+		return reloader()
+	}
+
+	window.donasiApprove = async function (ref, st, btn) {
 		if (!sbd) {
 			toast("error", "Database Donasi Tidak Tersedia", "")
 			return
 		}
+		var r = rowByRef(_dnRows, ref)
+		if (!r) return rowGone(function () { return loadPublicData({ alsoAdminTables: true }) })
+		var end = beginRowAction("donasi:" + r.id, btn)
+		if (!end) return
 		try {
-			var res = await sbd.from("donasi").update({ astatus: st }).eq("id", r.id)
-			if (res.error) throw res.error
+			var res = await sbd.from("donasi").update({ astatus: st }).eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Tersimpan", "Server menolak perubahan, status tidak berubah. Cek izin RLS tabel donasi.")
+				return
+			}
 			toast("success", "Berhasil", st === 'disetujui' ? 'Donasi disetujui. Nama akan tampil di leaderboard.' : 'Donasi ditolak.')
 			await loadPublicData({ alsoAdminTables: true })
 			if (typeof renderDonation === 'function') renderDonation()
 		} catch (err) {
 			dbErr(err, "Aksi donasi gagal")
+		} finally {
+			end()
+		}
+	}
+
+	window.donasiDelete = async function (ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Donasi Tidak Tersedia", "")
+			return
+		}
+		var r = rowByRef(_dnRows, ref)
+		if (!r) return rowGone(function () { return loadPublicData({ alsoAdminTables: true }) })
+		if (!confirm('Hapus permanen donasi dari "' + (r.nama || 'Donatur') + '" sebesar Rp ' + (Number(r.amt || 0)).toLocaleString('id-ID') + '? Tindakan ini tidak bisa dibatalkan.')) return
+		var end = beginRowAction("donasi:" + r.id, btn)
+		if (!end) return
+		try {
+			var res = await sbd.from("donasi").delete().eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Terhapus", "Server menolak penghapusan. Cek izin RLS tabel donasi (policy DELETE).")
+				return
+			}
+			toast("success", "Donasi Dihapus", "Data donasi berhasil dihapus permanen.")
+			await loadPublicData({ alsoAdminTables: true })
+			if (typeof renderDonation === 'function') renderDonation()
+		} catch (err) {
+			dbErr(err, "Hapus donasi gagal")
+		} finally {
+			end()
 		}
 	}
 
@@ -637,8 +759,9 @@
 						'<td>' + when + '</td>' +
 						'<td>' + stBadge + '</td>' +
 						'<td>' +
-							'<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
-							'<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+							'<button class="btn btn-primary" onclick="donasiApprove(\'' + r.id + '\',\'disetujui\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
+							'<button class="btn btn-outline" onclick="donasiApprove(\'' + r.id + '\',\'ditolak\', this)" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button> ' +
+							'<button class="btn btn-outline" onclick="donasiDelete(\'' + r.id + '\', this)" title="Hapus donasi" style="padding:0.3rem 0.5rem;font-size:0.75rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-trash"></i></button>' +
 						'</td>' +
 					'</tr>'
 				}).join('')
@@ -766,26 +889,32 @@
 	}
 
 	window.updateCertPreview = function(adopsiData) {
-		var name = document.getElementById('certAdopsiName').value.trim()
+		var nameEl = document.getElementById('certAdopsiName')
 		var preview = document.getElementById('certPreview')
 		var btn = document.getElementById('btnDownloadCert')
-		if (window._validAdopsiCode && name) {
-			preview.style.display = 'block'
-			btn.disabled = false
-			var cv = document.getElementById('certCanvas')
-			if (cv) {
-				var data = {
-					name: name,
-					qty: adopsiData ? adopsiData.quantity : 1,
-					loc: 'Kawasan Gunung Bawakaraeng',
-					no: adopsiData ? adopsiData.adoption_code : 'RC-ADP-2026-00001',
-					date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-				}
-				drawAdopsiCert(cv, data)
-			}
-		} else {
+		if (!nameEl || !preview || !btn) return
+		var name = nameEl.value.trim()
+		if (!window._validAdopsiCode || !name) {
 			preview.style.display = 'none'
 			btn.disabled = true
+			return
+		}
+		preview.style.display = 'block'
+		btn.disabled = false
+		var cv = document.getElementById('certCanvas')
+		if (cv && window.BivakCert) BivakCert.render(cv, _certData(name, adopsiData))
+	}
+
+	// Satu tempat untuk menyusun isi sertifikat, dipakai preview & unduhan
+	function _certData(name, row) {
+		var valid = window._validAdopsiCode || {}
+		row = row || valid
+		return {
+			name: name,
+			qty: row.quantity || valid.quantity || 1,
+			loc: 'Kawasan Gunung Bawakaraeng',
+			no: row.adoption_code || valid.adoption_code || 'RC-ADP-2026-00001',
+			date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 		}
 	}
 
@@ -794,381 +923,28 @@
 			toast("error", "Kode Tidak Valid", "Masukkan kode adopsi yang sudah diverifikasi.")
 			return
 		}
-		var name = document.getElementById('certAdopsiName').value.trim()
+		var nameEl = document.getElementById('certAdopsiName')
+		var name = nameEl ? nameEl.value.trim() : ''
 		if (!name) {
 			toast("error", "Lengkapi Nama", "Isi nama penerima sertifikat dulu ya.")
 			return
 		}
-		var qty = window._validAdopsiCode.quantity
-		var code = window._validAdopsiCode.adoption_code
-
-		// Create high-res canvas for download
-		var hiCv = document.createElement('canvas')
-		hiCv.width = 2000
-		hiCv.height = 1414
-		var data = {
-			name: name,
-			qty: qty,
-			loc: 'Kawasan Gunung Bawakaraeng',
-			no: code,
-			date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+		if (!window.BivakCert) {
+			toast("error", "Belum Siap", "Modul sertifikat gagal dimuat. Coba muat ulang halaman.")
+			return
 		}
-		// Draw on high-res canvas
-		drawAdopsiCert(hiCv, data)
-
-		// Download as PNG
-		hiCv.toBlob(function(b) {
-			var u = URL.createObjectURL(b)
-			var a = document.createElement('a')
-			a.href = u
-			a.download = 'Sertifikat-Adopsi-' + name.replace(/[^\w\- ]+/g, '').replace(/ +/g, '-') + '.png'
-			document.body.appendChild(a)
-			a.click()
-			setTimeout(function() {
-				document.body.removeChild(a)
-				URL.revokeObjectURL(u)
-			}, 1500)
-			toast("success", "Sertifikat Berhasil!", 'File PNG resolusi tinggi berhasil diunduh.')
-		}, 'image/png')
-	}
-
-	/* ----------------------------------------------------------------------
-	   Certificate Drawing Functions (Cloned from Pintu Angin)
-	   ---------------------------------------------------------------------- */
-	var _certLogo = null, _certLogoOK = false, _certNo = '', _certNoName = '', _lastCertData = null
-
-	function _loadCertLogo(cb) {
-		if (_certLogoOK) { if (cb) cb(); return }
-		if (!_certLogo) {
-			_certLogo = new Image()
-			_certLogo.onload = function() { _certLogoOK = true; if (cb) cb() }
-			_certLogo.onerror = function() { _certLogoOK = false; if (cb) cb() }
-			_certLogo.src = 'assets/logo.png'
-		} else if (cb) {
-			_certLogo.addEventListener('load', cb)
-		}
-	}
-
-	function _certGenNo(name) {
-		var d = new Date()
-		var seed = 2166136261
-		var str = (name || 'x') + '|' + d.toDateString()
-		for (var i = 0; i < str.length; i++) {
-			seed ^= str.charCodeAt(i)
-			seed = (seed * 16777619) >>> 0
-		}
-		var n = (seed % 90000) + 10000
-		return 'RC-ADP-' + d.getFullYear() + '-' + n
-	}
-
-	function _rr(ctx, x, y, w, h, r) {
-		ctx.beginPath()
-		ctx.moveTo(x + r, y)
-		ctx.arcTo(x + w, y, x + w, y + h, r)
-		ctx.arcTo(x + w, y + h, x, y + h, r)
-		ctx.arcTo(x, y + h, x, y, r)
-		ctx.arcTo(x, y, x + w, y, r)
-		ctx.closePath()
-	}
-
-	function _wrap(ctx, text, cx, y, maxW, lh) {
-		var words = text.split(' ')
-		var line = ''
-		var yy = y
-		for (var i = 0; i < words.length; i++) {
-			var t = line ? line + ' ' + words[i] : words[i]
-			if (ctx.measureText(t).width > maxW && line) {
-				ctx.fillText(line, cx, yy)
-				line = words[i]
-				yy += lh
-			} else {
-				line = t
-			}
-		}
-		if (line) ctx.fillText(line, cx, yy)
-		return yy
-	}
-
-	function _pine(ctx, cx, by, h, col) {
-		ctx.save()
-		ctx.fillStyle = '#5a3d1e'
-		ctx.fillRect(cx - h * 0.05, by - h * 0.02, h * 0.10, h * 0.20)
-		ctx.fillStyle = col
-		var w = h * 0.82
-		for (var i = 0; i < 3; i++) {
-			var ty = by - i * h * 0.28
-			var tw = w * (1 - i * 0.22)
-			ctx.beginPath()
-			ctx.moveTo(cx, ty - h * 0.44)
-			ctx.lineTo(cx - tw / 2, ty)
-			ctx.lineTo(cx + tw / 2, ty)
-			ctx.closePath()
-			ctx.fill()
-		}
-		ctx.restore()
-	}
-
-	function _seal(ctx, cx, cy, R) {
-		var pts = 22
-		ctx.beginPath()
-		for (var i = 0; i <= pts * 2; i++) {
-			var a = Math.PI * i / pts
-			var rr = (i % 2 === 0) ? R : R * 0.86
-			var x = cx + Math.cos(a) * rr
-			var y = cy + Math.sin(a) * rr
-			if (i === 0) ctx.moveTo(x, y)
-			else ctx.lineTo(x, y)
-		}
-		ctx.closePath()
-		var sg = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, 4, cx, cy, R)
-		sg.addColorStop(0, '#fbeaa0')
-		sg.addColorStop(0.55, '#d4af37')
-		sg.addColorStop(1, '#8a6d1f')
-		ctx.fillStyle = sg
-		ctx.fill()
-		ctx.beginPath()
-		ctx.arc(cx, cy, R * 0.72, 0, Math.PI * 2)
-		ctx.strokeStyle = 'rgba(60,42,10,.5)'
-		ctx.lineWidth = 3
-		ctx.stroke()
-		_pine(ctx, cx, cy + R * 0.34, R * 0.62, '#15402e')
-	}
-
-	function drawAdopsiCertToCanvas(cv, data) {
-		// Create offscreen canvas for high-res drawing
-		var offCanvas = document.createElement('canvas')
-		offCanvas.width = 2000
-		offCanvas.height = 1414
-		drawAdopsiCert(offCanvas, data)
-
-		// Draw scaled to preview canvas
-		var ctx = cv.getContext('2d')
-		ctx.clearRect(0, 0, cv.width, cv.height)
-		ctx.drawImage(offCanvas, 0, 0, cv.width, cv.height)
-	}
-
-	function drawAdopsiCert(cv, data) {
-		try {
-			var ctx = cv.getContext('2d')
-			if (!ctx) {
-				console.error('[CERT] No 2D context')
-				return
-			}
-			var W = cv.width || 2000
-			var H = cv.height || 1414
-			console.log('[CERT] Canvas:', W, 'x', H)
-
-			// Clear canvas
-			ctx.clearRect(0, 0, W, H)
-
-			// === BACKGROUND ===
-			var bg = ctx.createLinearGradient(0, 0, W, H)
-			bg.addColorStop(0, '#0a1f17')
-			bg.addColorStop(0.5, '#112e1c')
-			bg.addColorStop(1, '#081a12')
-			ctx.fillStyle = bg
-			ctx.fillRect(0, 0, W, H)
-
-			// === BORDER ===
-			ctx.strokeStyle = '#d4af37'
-			ctx.lineWidth = 15
-			ctx.strokeRect(50, 50, W - 100, H - 100)
-			ctx.strokeStyle = 'rgba(212,175,55,0.5)'
-			ctx.lineWidth = 3
-			ctx.strokeRect(75, 75, W - 150, H - 150)
-
-			// === CENTER POINTS ===
-			var cx = W / 2
-			var cy = H / 2
-
-			// === LOGO ===
-			var logoY = 250
-			ctx.beginPath()
-			ctx.arc(cx, logoY, 85, 0, Math.PI * 2)
-			ctx.fillStyle = '#0e2c23'
-			ctx.fill()
-			ctx.strokeStyle = '#d4af37'
-			ctx.lineWidth = 4
-			ctx.stroke()
-			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 64px Georgia, serif'
-			ctx.textAlign = 'center'
-			ctx.textBaseline = 'middle'
-			ctx.fillText('RC', cx, logoY)
-
-			// === TITLE ===
-			ctx.textBaseline = 'alphabetic'
-			ctx.fillStyle = '#f7e08a'
-			ctx.font = '26px Georgia, serif'
-			ctx.fillText('ORGANISASI PENCINTA ALAM', cx, logoY + 110)
-
-			ctx.fillStyle = '#d4af37'
-			ctx.font = 'bold 36px Georgia, serif'
-			ctx.fillText('RCS.CBS', cx, logoY + 150)
-
-			ctx.fillStyle = '#d4af37'
-			ctx.font = 'bold 80px Georgia, serif'
-			ctx.fillText('SERTIFIKAT ADOPSI POHON', cx, logoY + 240)
-
-			// === INTRO ===
-			var introY = logoY + 300
-			ctx.fillStyle = '#c8dcc8'
-			ctx.font = 'italic 32px Georgia, serif'
-			ctx.fillText('dengan penuh penghargaan diberikan kepada', cx, introY)
-
-			// === NAME ===
-			var nameY = introY + 80
-			ctx.fillStyle = '#ffffff'
-			ctx.font = 'italic bold 84px Georgia, serif'
-			var nameText = data && data.name ? data.name : 'Nama Penerima'
-			ctx.fillText(nameText, cx, nameY)
-
-			// Name underline
-			var nameW = ctx.measureText(nameText).width
-			ctx.strokeStyle = '#d4af37'
-			ctx.lineWidth = 3
-			ctx.beginPath()
-			ctx.moveTo(cx - nameW/2 - 50, nameY + 35)
-			ctx.lineTo(cx + nameW/2 + 50, nameY + 35)
-			ctx.stroke()
-
-			// === BODY ===
-			var bodyY = nameY + 120
-			ctx.fillStyle = '#b8d4b8'
-			ctx.font = '30px Georgia, serif'
-			var qty = data && data.qty ? data.qty : 1
-			var loc = data && data.loc ? data.loc : 'Gunung Bawakaraeng'
-			ctx.fillText('atas dedikasi dalam mengadopsi ' + qty + ' bibit pohon', cx, bodyY)
-			ctx.fillText('guna pelestarian ekosistem ' + loc, cx, bodyY + 45)
-			ctx.fillText('Kontribusi ini warisan hijau bagi generasi mendatang.', cx, bodyY + 90)
-
-			// === SIGNATURES ===
-			var sigY = H - 250
-			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
-			ctx.lineWidth = 2
-			// Left
-			ctx.beginPath()
-			ctx.moveTo(W * 0.24 - 130, sigY)
-			ctx.lineTo(W * 0.24 + 130, sigY)
-			ctx.stroke()
-			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 28px Georgia, serif'
-			ctx.fillText('Ketua Umum', W * 0.24, sigY + 50)
-			ctx.fillStyle = '#bcd4c9'
-			ctx.font = '22px Georgia, serif'
-			ctx.fillText('RCS.CBS', W * 0.24, sigY + 80)
-
-			// Right
-			ctx.strokeStyle = 'rgba(212,175,55,0.7)'
-			ctx.beginPath()
-			ctx.moveTo(W * 0.76 - 150, sigY)
-			ctx.lineTo(W * 0.76 + 150, sigY)
-			ctx.stroke()
-			ctx.fillStyle = '#f7e08a'
-			ctx.font = 'bold 28px Georgia, serif'
-			ctx.fillText('Koordinator Konservasi', W * 0.76, sigY)
-			ctx.fillStyle = '#bcd4c9'
-			ctx.font = '22px Georgia, serif'
-			ctx.fillText('Bidang Ekosistem', W * 0.76, sigY + 30)
-
-			// === SEAL ===
-			var sealY = sigY + 110
-			drawGoldSeal(ctx, cx, sealY, 55)
-
-			// === FOOTER INFO ===
-			var infoY = H - 85
-			ctx.fillStyle = 'rgba(223,238,231,0.8)'
-			ctx.font = '22px Georgia, serif'
-			var no = data && data.no ? data.no : 'RC-ADP-2026-00001'
-			var date = data && data.date ? data.date : new Date().toLocaleDateString('id-ID')
-			ctx.fillText('No. ' + no + '   |   Tanggal: ' + date + '   |   ' + loc, cx, infoY)
-
-		} catch (err) {
-			console.error('[CERT] Error:', err.message)
-			console.error(err.stack)
-		}
-	}
-
-	function drawGoldSeal(ctx, cx, cy, R, data) {
-		if (!ctx || !cx || !cy || !R) return
-		var pts = 24
-		ctx.beginPath()
-		for (var i = 0; i <= pts * 2; i++) {
-			var a = Math.PI * i / pts
-			var rr = (i % 2 === 0) ? R : R * 0.88
-			var x = cx + Math.cos(a) * rr
-			var y = cy + Math.sin(a) * rr
-			if (i === 0) ctx.moveTo(x, y)
-			else ctx.lineTo(x, y)
-		}
-		ctx.closePath()
-		var sg = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, 4, cx, cy, R)
-		sg.addColorStop(0, '#fbeaa0')
-		sg.addColorStop(0.55, '#d4af37')
-		sg.addColorStop(1, '#8a6d1f')
-		ctx.fillStyle = sg
-		ctx.fill()
-		ctx.beginPath()
-		ctx.arc(cx, cy, R * 0.75, 0, Math.PI * 2)
-		ctx.strokeStyle = 'rgba(60,42,10,.6)'
-		ctx.lineWidth = 3
-		ctx.stroke()
-		// Inner tree
-		ctx.fillStyle = '#15402e'
-		ctx.beginPath()
-		ctx.moveTo(cx, cy - R * 0.5)
-		ctx.lineTo(cx - R * 0.35, cy + R * 0.3)
-		ctx.lineTo(cx + R * 0.35, cy + R * 0.3)
-		ctx.closePath()
-		ctx.fill()
-		ctx.fillRect(cx - R * 0.06, cy + R * 0.3, R * 0.12, R * 0.25)
-		// Text around seal
-		ctx.fillStyle = '#f7e08a'
-		ctx.font = 'bold 14px Georgia, serif'
-		ctx.textAlign = 'center'
-		ctx.fillText('RCS.CBS', cx, cy + R * 0.55)
-		ctx.font = '11px Georgia, serif'
-		ctx.fillStyle = '#e8d5a0'
-		ctx.fillText('KONSERVASI', cx, cy + R * 0.7)
-	}
-
-	function buildAdopsiCert(name, qty, code) {
-		var cv = document.getElementById('certCanvas')
-		if (!cv) return
-
-		var loc = 'Kawasan Gunung Bawakaraeng'
-		var no = _certGenNo(name)
-		var date = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-		_lastCertData = { name: name || 'Sahabat Konservasi', qty: qty || 1, loc: loc, no: no, date: date }
-
-		drawAdopsiCert(cv, _lastCertData)
-		_loadCertLogo(function() {
-			drawAdopsiCert(cv, _lastCertData)
+		var safe = name.replace(/[^\w\- ]+/g, '').replace(/ +/g, '-')
+		BivakCert.download(_certData(name, window._validAdopsiCode), 'Sertifikat-Adopsi-' + safe + '.png', function(err) {
+			if (err) toast("error", "Gagal Mengunduh", err.message)
+			else toast("success", "Sertifikat Berhasil!", "File PNG resolusi tinggi berhasil diunduh.")
 		})
-
-		// Download as PNG
-		cv.toBlob(function(b) {
-			var u = URL.createObjectURL(b)
-			var a = document.createElement('a')
-			a.href = u
-			a.download = 'Sertifikat-Adopsi-' + name.replace(/[^\w\- ]+/g, '').replace(/ +/g, '-') + '.png'
-			document.body.appendChild(a)
-			a.click()
-			setTimeout(function() {
-				document.body.removeChild(a)
-				URL.revokeObjectURL(u)
-			}, 1500)
-			toast("success", "Sertifikat Berhasil!", 'File PNG resolusi tinggi berhasil diunduh.')
-		}, 'image/png')
 	}
 
 	/* ----------------------------------------------------------------------
 	   16. Admin Panel — Adopsi Tab
 	   ---------------------------------------------------------------------- */
 	function renderAdopsiAdmin() {
-		console.log("[BIVAK] renderAdopsiAdmin called, _adoptionRows:", _adoptionRows)
     var tbody = document.getElementById("tableAdopsiBody")
-    console.log("[BIVAK] tableAdopsiBody element:", tbody)
     if (!tbody) {
       console.error("[BIVAK] tableAdopsiBody not found in DOM")
       return
@@ -1186,14 +962,13 @@
 			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
 			var actions
 			if (isVerified) {
-				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
 			} else if (isRejected) {
-				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
+				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'
 			} else {
-				actions = '<button class="btn btn-primary" onclick="approveAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
-				          '<button class="btn btn-outline" onclick="rejectAdopsi(' + i + ')" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
+				actions = '<button class="btn btn-primary" onclick="approveAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;white-space:nowrap"><i class="fa-solid fa-check"></i> Verifikasi</button> ' +
+				          '<button class="btn btn-outline" onclick="rejectAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-xmark"></i> Tolak</button>'
 			}
-			console.log("[BIVAK] Row", i, "status:", r.status, "has buttons:", !!actions)
 			return '<tr>' +
 				'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.customer_name || '-') + '</td>' +
 				'<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + BIVAK.escape(r.package_name || '-') + '</td>' +
@@ -1205,77 +980,97 @@
 				'<td style="min-width:200px">' + actions + '</td>' +
 			'</tr>'
 		}).join('')
-		console.log("[BIVAK] Rendering", _adoptionRows.length, "rows with buttons")
 		tbody.innerHTML = html
 	}
 
-  window.approveAdopsi = async function(i) {
-    var r = _adoptionRows[i]
-    console.log("[BIVAK] approveAdopsi called, index:", i, "row:", r)
-    if (!r) {
-      console.error("[BIVAK] No row found at index", i)
-      toast("error", "Error", "Data adopsi tidak ditemukan.")
+  window.approveAdopsi = async function(ref, btn) {
+    if (!sbd) {
+      toast("error", "Database Tidak Tersedia", "")
       return
     }
+    var r = rowByRef(_adoptionRows, ref)
+    if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+    var end = beginRowAction("adopsi:" + r.id, btn)
+    if (!end) return
     var code = 'POH-' + Math.random().toString(36).substring(2, 7).toUpperCase()
-    console.log("[BIVAK] Approving adopsi:", r.id, "code:", code)
     try {
       var res = await sbd.from("adoption_requests").update({
         status: 'terverifikasi',
         adoption_code: code,
         verified_at: new Date().toISOString()
-      }).eq("id", r.id)
-      console.log("[BIVAK] Update result:", res)
-      if (res.error) throw res.error
+      }).eq("id", r.id).select("id")
+      if (affectedCount(res) === 0) {
+        toast("error", "Tidak Tersimpan", "Server menolak perubahan. Cek izin RLS tabel adoption_requests.")
+        return
+      }
       toast("success", "Kode Diterbitkan!", 'Kode adopsi: ' + code)
       await loadAdopsiData()
       renderAdopsiAdmin()
       updateAdopsiBadge()
     } catch (err) {
-      console.error("[BIVAK] Approve error:", err)
       dbErr(err, "Gagal memverifikasi")
+    } finally {
+      end()
     }
   }
 
-  	window.rejectAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		console.log("[BIVAK] rejectAdopsi called, index:", i, "row:", r)
-		if (!r) {
-			console.error("[BIVAK] No row found at index", i)
-			toast("error", "Error", "Data adopsi tidak ditemukan.")
+  	window.rejectAdopsi = async function(ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Tidak Tersedia", "")
 			return
 		}
+		var r = rowByRef(_adoptionRows, ref)
+		if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+		// Dicek sebelum confirm() supaya dialog tidak muncul dua kali
+		// ketika tombol keburu ditekan lagi.
+		if (_rowBusy["adopsi:" + r.id]) return
 		if (!confirm('Tolak pengajuan adopsi ini?\n\nPengajuan akan ditandai sebagai DITOLAK.')) return
-		console.log("[BIVAK] Rejecting adopsi:", r.id, r.customer_name)
+		var end = beginRowAction("adopsi:" + r.id, btn)
+		if (!end) return
 		try {
 			var res = await sbd.from("adoption_requests").update({
 				status: 'ditolak'
-			}).eq("id", r.id)
-			console.log("[BIVAK] Reject result:", res)
-			if (res.error) throw res.error
+			}).eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Tersimpan", "Server menolak perubahan, status tetap. Cek izin RLS tabel adoption_requests.")
+				return
+			}
 			toast("info", "Ditolak", "Pengajuan adopsi " + r.customer_name + " telah ditolak.")
 			await loadAdopsiData()
 			renderAdopsiAdmin()
 			updateAdopsiBadge()
 		} catch (err) {
-			console.error("[BIVAK] Reject error:", err)
 			dbErr(err, "Gagal menolak")
+		} finally {
+			end()
 		}
 	}
 
-	window.deleteAdopsi = async function(i) {
-		var r = _adoptionRows[i]
-		if (!r) return
+	window.deleteAdopsi = async function(ref, btn) {
+		if (!sbd) {
+			toast("error", "Database Tidak Tersedia", "")
+			return
+		}
+		var r = rowByRef(_adoptionRows, ref)
+		if (!r) return rowGone(async function () { await loadAdopsiData(); renderAdopsiAdmin() })
+		if (_rowBusy["adopsi:" + r.id]) return
 		if (!confirm('Hapus pengajuan adopsi ini? Tindakan permanen.')) return
+		var end = beginRowAction("adopsi:" + r.id, btn)
+		if (!end) return
 		try {
-			var res = await sbd.from("adoption_requests").delete().eq("id", r.id)
-			if (res.error) throw res.error
+			var res = await sbd.from("adoption_requests").delete().eq("id", r.id).select("id")
+			if (affectedCount(res) === 0) {
+				toast("error", "Tidak Terhapus", "Server menolak penghapusan. Cek izin RLS tabel adoption_requests.")
+				return
+			}
 			toast("success", "Dihapus", "Pengajuan adopsi telah dihapus.")
 			await loadAdopsiData()
 			renderAdopsiAdmin()
 			updateAdopsiBadge()
 		} catch (err) {
 			dbErr(err, "Gagal menghapus")
+		} finally {
+			end()
 		}
 	}
 
@@ -1286,13 +1081,9 @@
       return
     }
     try {
-      console.log("[BIVAK] Loading adoption data from Pintu Angin DB...")
       var res = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
-      console.log("[BIVAK] Adoption data loaded:", res)
       _adoptionRows = (res.data || [])
-      console.log("[BIVAK] _adoptionRows count:", _adoptionRows.length)
       if (_adoptionRows.length > 0) {
-        console.log("[BIVAK] First row sample:", _adoptionRows[0])
       }
     } catch (e) {
       console.error("[BIVAK] Adopsi load error:", e)
@@ -1306,7 +1097,10 @@
 		if (!badge) return
 		var pending = (_adoptionRows || []).filter(function(r) { return r.status === 'menunggu_bukti' }).length
 		badge.innerText = pending
-		badge.style.display = pending > 0 ? "inline-flex" : "none"
+		// Digerbangi isAdmin juga: fungsi ini menulis ke badge yang sama
+		// seperti syncAdopsiBadge, jadi kalau tidak ikut digerbangi badge
+		// akan muncul lagi setiap data adopsi dimuat.
+		badge.style.display = isAdmin && pending > 0 ? "inline-flex" : "none"
 	}
 
 		/* ----------------------------------------------------------------------
@@ -1316,7 +1110,7 @@
 			try {
 				await loadPublicData()
 				await loadAdopsiData()
-				console.info("[BIVAK] Terhubung ke Supabase (email-only admin).")
+				console.info("[BIVAK] Boot selesai. Jika data kosong, cek Supabase Project URL / koneksi DNS.")
 			} catch (err) {
 				dbErr(err, "Gagal memuat data dari database")
 			}
@@ -1328,32 +1122,22 @@
 		boot()
 	}
 
-	// Draw example certificate on page load
+	// Contoh sertifikat di bagian Adopsi Pohon
 	function drawExampleCert() {
-		console.log('[CERT] drawExampleCert called');
 		var exCv = document.getElementById('exampleCertCanvas')
-		console.log('[CERT] exampleCertCanvas element:', exCv);
-		if (!exCv) { console.error('[CERT] exampleCertCanvas not found in DOM'); return }
-		var exData = {
+		if (!exCv || !window.BivakCert) return
+		BivakCert.render(exCv, {
 			name: 'Contoh Nama Penerima',
 			qty: 1,
 			loc: 'Kawasan Gunung Bawakaraeng',
 			no: 'RC-ADP-2026-54321',
 			date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-		}
-		console.log('[CERT] Drawing example cert with data:', exData);
-		// Use the same draw function for consistency
-		drawAdopsiCert(exCv, exData)
+		})
 	}
 
-	// Ensure DOM is ready before drawing
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', function() {
-			console.log('[CERT] DOMContentLoaded fired');
-			drawExampleCert()
-		})
+		document.addEventListener('DOMContentLoaded', drawExampleCert)
 	} else {
-		console.log('[CERT] DOM already ready, drawing immediately');
 		drawExampleCert()
 	}
 
