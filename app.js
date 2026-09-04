@@ -313,7 +313,7 @@ function donasiDeleteLocal(i) {
   BIVAK.notify("info", "Donasi Dihapus", "Data donasi telah dihapus dari daftar.");
 }
 
-function handleVendorSubmit(e) {
+window.handleVendorSubmit = function(e) {
   e.preventDefault();
   console.log('[DEBUG] handleVendorSubmit called');
 
@@ -387,7 +387,7 @@ function handleVendorSubmit(e) {
   }
 }
 
-function finishVendorSubmit(vendor) {
+window.finishVendorSubmit = function(vendor) {
   console.log('[DEBUG] finishVendorSubmit called with:', vendor);
   BIVAK.pendingVendors.push(vendor);
   BIVAK.save();
@@ -441,7 +441,7 @@ function switchAdminTab(tabName) {
   }
 }
 
-function renderAdminTables() {
+window.renderAdminTables = function() {
   console.log('[DEBUG] renderAdminTables called, pendingVendors count:', BIVAK.pendingVendors.length);
   var pendingBody = BIVAK.el('tablePendingVendorsBody');
   console.log('[DEBUG] pendingBody element:', pendingBody ? 'FOUND' : 'NULL');
@@ -522,7 +522,7 @@ function renderAdminTables() {
   }
 }
 
-function approveVendor(i) {
+window.approveVendor = function(i) {
   var item = BIVAK.pendingVendors.splice(i, 1)[0];
   if (!item) return;
   BIVAK.vendors.unshift(item);
@@ -533,7 +533,7 @@ function approveVendor(i) {
   BIVAK.notify("success", "Vendor Disetujui", "Vendor kini tampil di daftar publik.");
 }
 
-function rejectVendor(i) {
+window.rejectVendor = function(i) {
   BIVAK.pendingVendors.splice(i, 1);
   BIVAK.save();
   renderAdminTables();
