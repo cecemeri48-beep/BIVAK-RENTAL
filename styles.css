@@ -1278,7 +1278,30 @@ html {
 /* ==========================================================================
    Coin Admin Button
    ========================================================================== */
+.btn-admin-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: transform var(--transition-fast), background 0.2s;
+}
+
+.btn-admin-icon:hover {
+  background: rgba(245, 158, 11, 0.15);
+}
+
 .coin-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--accent-amber);
+  box-shadow: 0 0 12px var(--accent-amber-glow);
   transition: transform var(--transition-fast);
 }
 
@@ -2905,14 +2928,6 @@ html {
 .input-group .form-control {
   display: block;
   width: 100%;
-}
-
-/* Button Icon */
-.btn-admin-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
 }
 
 /* Quota & Progress */
