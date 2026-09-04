@@ -723,14 +723,14 @@ window.toggleSection = function (id, btn, forceOpen) {
 
 BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel', 'impactPanel'];
 
-function openPanelFromHash() {
+window.openPanelFromHash = function() {
   var peta = { donasi: 'donasiPanel', adopsi: 'adopsiPanel' };
   var kunci = (location.hash || '').replace('#', '');
   var id = peta[kunci];
   if (id) window.toggleSection(id, null, true);
 }
 
-function initCollapsibles() {
+window.initCollapsibles = function() {
   var hp = window.matchMedia('(max-width: 640px)').matches;
   for (var i = 0; i < BIVAK.collapsiblePanels.length; i++) {
     window.toggleSection(BIVAK.collapsiblePanels[i], null, !hp);
