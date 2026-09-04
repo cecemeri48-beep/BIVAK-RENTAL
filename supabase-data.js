@@ -203,8 +203,8 @@
 			_adoptionRows = []
 		}
 
-		try { renderVendors(vendorsData); } catch(e) { console.warn("[BIVAK] renderVendors error:", e.message); }
-		try { updateBadges(); } catch(e) { console.warn("[BIVAK] updateBadges error:", e.message); }
+		try { renderVendors(vendorsData); } catch(e) {}
+		try { updateBadges(); } catch(e) {}
 		if (typeof renderDonation === 'function') renderDonation()
 		updateAdopsiBadge()
 

@@ -25,7 +25,7 @@ var BIVAK = {
       if (p) this.pendingVendors = JSON.parse(p);
       var d = localStorage.getItem('bivak_donations');
       if (d) this.donations = JSON.parse(d);
-    } catch(e) { console.error('Load error:', e); }
+    } catch(e) {}
   },
 
   save: function() {
@@ -33,7 +33,7 @@ var BIVAK = {
       localStorage.setItem('bivak_vendors', JSON.stringify(this.vendors));
       localStorage.setItem('bivak_pending', JSON.stringify(this.pendingVendors));
       localStorage.setItem('bivak_donations', JSON.stringify(this.donations));
-    } catch(e) { console.error('Save error:', e); }
+    } catch(e) {}
   },
 
   rupiah: function(num) {
