@@ -15,6 +15,9 @@
 - Sesi admin dipulihkan dan logout memutus sesi Supabase.
 - Properti `verified` dipetakan dengan benar untuk kartu vendor.
 - Ditambahkan migrasi aman `db/FIX-VENDOR-APPROVAL.sql`.
+- Pendaftaran baru dipaksa masuk status `pending` oleh trigger database.
+- Vendor publik wajib `approved` sekaligus `is_verified = true`.
+- Baris yang telanjur `approved` tanpa verifikasi dikembalikan ke antrean.
 
 ## Cara menerapkan
 

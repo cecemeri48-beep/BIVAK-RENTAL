@@ -183,7 +183,9 @@
 		options = options || {}
 		seq = 1
 
-		var vRes = await sb.from("vendors").select("*").eq("status", "approved").order("created_at", { ascending: false })
+		// Vendor publik wajib sudah approved DAN verified. Ini mencegah baris
+		// yang salah status tetapi belum pernah di-approve tampil sebagai aktif.
+		var vRes = await sb.from("vendors").select("*").eq("status", "approved").eq("is_verified", true).order("created_at", { ascending: false })
 		if (vRes.error) {
 			vendorsData = []
 		} else {

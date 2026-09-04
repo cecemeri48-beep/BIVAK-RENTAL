@@ -33,6 +33,33 @@ GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
 
+-- Paksa semua pendaftaran baru masuk antrean. Nama trigger diawali "zz"
+-- supaya dijalankan setelah trigger BEFORE INSERT lama jika masih ada.
+CREATE OR REPLACE FUNCTION public.force_new_vendor_pending()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $fn$
+BEGIN
+  NEW.status := 'pending';
+  NEW.is_verified := false;
+  RETURN NEW;
+END;
+$fn$;
+
+DROP TRIGGER IF EXISTS zz_force_new_vendor_pending ON public.vendors;
+CREATE TRIGGER zz_force_new_vendor_pending
+BEFORE INSERT ON public.vendors
+FOR EACH ROW
+EXECUTE FUNCTION public.force_new_vendor_pending();
+
+-- Kembalikan pengajuan yang telanjur berstatus approved tanpa verifikasi
+-- ke antrean admin. Approval normal selalu mengisi is_verified = true.
+UPDATE public.vendors
+SET status = 'pending', updated_at = now()
+WHERE status = 'approved' AND coalesce(is_verified, false) = false;
+
 -- Bersihkan seluruh nama policy vendor yang pernah dipakai paket lama.
 DROP POLICY IF EXISTS "Public Read Approved Vendors" ON public.vendors;
 DROP POLICY IF EXISTS "Public Insert Vendor Request" ON public.vendors;
@@ -45,7 +72,7 @@ DROP POLICY IF EXISTS "vendors_delete_admin" ON public.vendors;
 
 CREATE POLICY "Public Read Approved Vendors"
 ON public.vendors FOR SELECT TO anon, authenticated
-USING (status = 'approved');
+USING (status = 'approved' AND is_verified = true);
 
 CREATE POLICY "Public Insert Vendor Request"
 ON public.vendors FOR INSERT TO anon, authenticated
