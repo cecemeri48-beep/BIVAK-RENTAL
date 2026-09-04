@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor images build 2026-09-05-v4")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v5")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -151,7 +151,15 @@
 	function mapVendor(row) {
 		var logo = row.logo_url || ""
 		var collage = row.collage_url || ""
+		if (typeof row.image_url === "string" && row.image_url.indexOf("bivak-media:") === 0) {
+			try {
+				var packedMedia = JSON.parse(row.image_url.slice(12))
+				logo = logo || packedMedia.logo || ""
+				collage = collage || packedMedia.collage || ""
+			} catch (ignore) {}
+		}
 		var img = collage || row.image_url || logo || ""
+		if (img.indexOf("bivak-media:") === 0) img = collage || logo || ""
 		if (!img || img.charAt(0) === "<" || img.indexOf(">") !== -1 || (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img))) {
 			img = (window.BIVAK && BIVAK.photoForVendor) ? BIVAK.photoForVendor(row.name, row.city) : "assets/gear-fallback.jpg"
 		}
@@ -289,6 +297,35 @@
 		return publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : ""
 	}
 
+	function compressVendorImage(file, maxWidth, maxHeight, quality) {
+		return new Promise(function(resolve, reject) {
+			if (!file) return resolve("")
+			var reader = new FileReader()
+			reader.onerror = function() { reject(new Error("Gagal membaca file gambar.")) }
+			reader.onload = function(ev) {
+				var image = new Image()
+				image.onerror = function() { reject(new Error("File gambar tidak dapat diproses.")) }
+				image.onload = function() {
+					var scale = Math.min(1, maxWidth / image.width, maxHeight / image.height)
+					var canvas = document.createElement("canvas")
+					canvas.width = Math.max(1, Math.round(image.width * scale))
+					canvas.height = Math.max(1, Math.round(image.height * scale))
+					var ctx = canvas.getContext("2d")
+					ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+					resolve(canvas.toDataURL("image/jpeg", quality || 0.78))
+				}
+				image.src = ev.target.result
+			}
+			reader.readAsDataURL(file)
+		})
+	}
+
+	async function packedVendorMedia(logoFile, collageFile) {
+		var logoData = await compressVendorImage(logoFile, 420, 420, 0.8)
+		var collageData = await compressVendorImage(collageFile, 1100, 760, 0.76)
+		return "bivak-media:" + JSON.stringify({ logo: logoData, collage: collageData })
+	}
+
 	/* ----------------------------------------------------------------------
 	   6. Vendor Submit
 	   ---------------------------------------------------------------------- */
@@ -303,25 +340,47 @@
 
 		busy(form, true, "Mengunggah gambar...")
 		try {
-			var logoUrl = await uploadVendorImage(logoFile, "logo")
-			var collageUrl = await uploadVendorImage(collageFile, "collage")
-			var res = await sb.from("vendors").insert({
+			var logoUrl = ""
+			var collageUrl = ""
+			var packedMedia = ""
+			try {
+				logoUrl = await uploadVendorImage(logoFile, "logo")
+				collageUrl = await uploadVendorImage(collageFile, "collage")
+			} catch (storageErr) {
+				// Tetap kirim pengajuan bila bucket Storage belum siap. Gambar
+				// diperkecil dan disimpan pada kolom image_url yang sudah tersedia.
+				packedMedia = await packedVendorMedia(logoFile, collageFile)
+			}
+
+			var basePayload = {
 				name: val("inputVendorName"),
 				city: val("inputVendorCity"),
 				phone: val("inputVendorPhone"),
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: collageUrl || logoUrl || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
-				logo_url: logoUrl || null,
-				collage_url: collageUrl || null,
+				image_url: packedMedia || collageUrl || logoUrl || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
 				status: "pending",
 				is_verified: false,
-			})
+			}
+			var payload = Object.assign({}, basePayload)
+			if (!packedMedia) {
+				payload.logo_url = logoUrl || null
+				payload.collage_url = collageUrl || null
+			}
+			var res = await sb.from("vendors").insert(payload)
+			if (res.error && !packedMedia && /logo_url|collage_url|schema cache|column/i.test(res.error.message || "")) {
+				basePayload.image_url = await packedVendorMedia(logoFile, collageFile)
+				res = await sb.from("vendors").insert(basePayload)
+			}
 			if (res.error) throw res.error
 
 			closeModal("modalVendor")
 			if (form) form.reset()
+			var logoPreview = document.getElementById("logoPreviewContainer")
+			var collagePreview = document.getElementById("collagePreviewContainer")
+			if (logoPreview) logoPreview.style.display = "none"
+			if (collagePreview) collagePreview.style.display = "none"
 			toast("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval Admin BIVAK.", 5000)
 			await loadPublicData({ alsoAdminTables: isAdmin })
 		} catch (err) {
