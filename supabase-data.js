@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor approval build 2026-09-05-v3")
+	console.info("[BIVAK] Vendor photo build 2026-09-05-v9")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -149,7 +149,17 @@
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
-		var img = row.image_url || ""
+		var logo = row.logo_url || ""
+		var collage = row.collage_url || ""
+		if (typeof row.image_url === "string" && row.image_url.indexOf("bivak-media:") === 0) {
+			try {
+				var packedMedia = JSON.parse(row.image_url.slice(12))
+				logo = logo || packedMedia.logo || ""
+				collage = collage || packedMedia.collage || ""
+			} catch (ignore) {}
+		}
+		var img = collage || row.image_url || logo || ""
+		if (img.indexOf("bivak-media:") === 0) img = collage || logo || ""
 		if (!img || img.charAt(0) === "<" || img.indexOf(">") !== -1 || (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img))) {
 			img = (window.BIVAK && BIVAK.photoForVendor) ? BIVAK.photoForVendor(row.name, row.city) : "assets/gear-fallback.jpg"
 		}
@@ -160,7 +170,7 @@
 			reviews: row.reviews_count != null ? row.reviews_count : 1,
 			minPrice: Number(row.min_price) || 15000,
 			gears: Array.isArray(row.gears) ? row.gears : [],
-			image: img, logo: img, collage: "",
+			image: img, logo: logo || img, collage: collage,
 			status: row.status, isVerified: !!row.is_verified,
 			verified: !!row.is_verified,
 		}
@@ -266,38 +276,136 @@
 		}
 	}
 
+	async function uploadVendorImage(file, kind) {
+		if (!file) return ""
+		if (file.size > 5 * 1024 * 1024) throw new Error("Ukuran gambar maksimal 5 MB.")
+		if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type || "")) {
+			throw new Error("Format gambar harus JPG, PNG, WEBP, atau GIF.")
+		}
+		var ext = ((file.name || "image.jpg").split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "")
+		var token = (window.crypto && crypto.randomUUID)
+			? crypto.randomUUID()
+			: Date.now() + "-" + Math.random().toString(36).slice(2)
+		var path = kind + "/" + token + "." + ext
+		var uploaded = await sb.storage.from("vendor-images").upload(path, file, {
+			cacheControl: "3600",
+			contentType: file.type,
+			upsert: false,
+		})
+		if (uploaded.error) throw uploaded.error
+		var publicRes = sb.storage.from("vendor-images").getPublicUrl(path)
+		return publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : ""
+	}
+
+	function compressVendorImage(file, maxWidth, maxHeight, quality) {
+		return new Promise(function(resolve, reject) {
+			if (!file) return resolve("")
+			var reader = new FileReader()
+			reader.onerror = function() { reject(new Error("Gagal membaca file gambar.")) }
+			reader.onload = function(ev) {
+				var image = new Image()
+				image.onerror = function() { reject(new Error("File gambar tidak dapat diproses.")) }
+				image.onload = function() {
+					var scale = Math.min(1, maxWidth / image.width, maxHeight / image.height)
+					var canvas = document.createElement("canvas")
+					canvas.width = Math.max(1, Math.round(image.width * scale))
+					canvas.height = Math.max(1, Math.round(image.height * scale))
+					var ctx = canvas.getContext("2d")
+					ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+					resolve(canvas.toDataURL("image/jpeg", quality || 0.78))
+				}
+				image.src = ev.target.result
+			}
+			reader.readAsDataURL(file)
+		})
+	}
+
+	async function packedVendorMedia(logoFile, collageFile) {
+		var logoData = await compressVendorImage(logoFile, 420, 420, 0.8)
+		var collageData = await compressVendorImage(collageFile, 1100, 760, 0.76)
+		return "bivak-media:" + JSON.stringify({ logo: logoData, collage: collageData })
+	}
+
 	/* ----------------------------------------------------------------------
 	   6. Vendor Submit
 	   ---------------------------------------------------------------------- */
 	window.handleVendorSubmit = async function (e) {
 		e.preventDefault()
+		if (e.stopPropagation) e.stopPropagation()
+		console.info("[BIVAK] Tombol kirim vendor diproses")
 		var form = document.getElementById("formAddVendor")
 		var gears = val("inputVendorGears").split(",").map(function(s){return s.trim()}).filter(Boolean)
+		var logoInput = document.getElementById("inputVendorLogo")
+		var collageInput = document.getElementById("inputVendorCollage")
+		var logoFile = logoInput && logoInput.files ? logoInput.files[0] : null
+		var collageFile = collageInput && collageInput.files ? collageInput.files[0] : null
+		var requiredIds = ["inputVendorName", "inputVendorCity", "inputVendorPhone", "inputVendorAddress", "inputVendorGears", "inputVendorMinPrice"]
+		for (var ri = 0; ri < requiredIds.length; ri++) {
+			var requiredEl = document.getElementById(requiredIds[ri])
+			if (!requiredEl || !String(requiredEl.value || "").trim()) {
+				toast("error", "Data Belum Lengkap", "Lengkapi semua kolom wajib sebelum mengirim.")
+				if (requiredEl) requiredEl.focus()
+				return false
+			}
+		}
+		if (!logoFile || !collageFile) {
+			toast("error", "Gambar Belum Lengkap", "Pilih logo toko dan foto kolase barang rental.")
+			if (!logoFile && logoInput) logoInput.focus()
+			else if (collageInput) collageInput.focus()
+			return false
+		}
 
-		busy(form, true, "Mengirim...")
+		busy(form, true, "Mengunggah foto...")
 		try {
-			var res = await sb.from("vendors").insert({
+			var logoUrl = ""
+			var collageUrl = ""
+			var packedMedia = ""
+			try {
+				logoUrl = await uploadVendorImage(logoFile, "logo")
+				collageUrl = await uploadVendorImage(collageFile, "collage")
+			} catch (storageErr) {
+				console.warn("[BIVAK] Storage foto gagal, memakai fallback terkompresi:", storageErr)
+				packedMedia = await packedVendorMedia(logoFile, collageFile)
+			}
+
+			var basePayload = {
 				name: val("inputVendorName"),
 				city: val("inputVendorCity"),
 				phone: val("inputVendorPhone"),
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
+				image_url: packedMedia || collageUrl || logoUrl || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
 				status: "pending",
 				is_verified: false,
-			})
+			}
+			var payload = Object.assign({}, basePayload)
+			if (!packedMedia) {
+				payload.logo_url = logoUrl || null
+				payload.collage_url = collageUrl || null
+			}
+			var res = await sb.from("vendors").insert(payload)
+			if (res.error && !packedMedia && /logo_url|collage_url|schema cache|column/i.test(res.error.message || "")) {
+				basePayload.image_url = await packedVendorMedia(logoFile, collageFile)
+				res = await sb.from("vendors").insert(basePayload)
+			}
 			if (res.error) throw res.error
 
 			closeModal("modalVendor")
 			if (form) form.reset()
+			var logoPreview = document.getElementById("logoPreviewContainer")
+			var collagePreview = document.getElementById("collagePreviewContainer")
+			if (logoPreview) logoPreview.style.display = "none"
+			if (collagePreview) collagePreview.style.display = "none"
 			toast("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval Admin BIVAK.", 5000)
 			await loadPublicData({ alsoAdminTables: isAdmin })
 		} catch (err) {
+			console.error("[BIVAK] Vendor submit gagal:", err)
 			dbErr(err, "Pengajuan gagal dikirim")
 		} finally {
 			busy(form, false)
 		}
+		return false
 	}
 
 	/* ----------------------------------------------------------------------
@@ -699,14 +807,18 @@
 		var pendingBody = document.getElementById("tablePendingVendorsBody")
 		if (pendingBody) {
 			if (!pendingVendorsData || pendingVendorsData.length === 0) {
-				pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>'
+				pendingBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>'
 			} else {
 				pendingBody.innerHTML = pendingVendorsData.map(function(pv, i) {
+					var logoThumb = pv.logo ? '<img src="' + BIVAK.escape(pv.logo) + '" alt="Logo" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '-'
+					var collageThumb = pv.collage ? '<img src="' + BIVAK.escape(pv.collage) + '" alt="Kolase" width="64" height="42" style="width:64px;height:42px;border-radius:6px;object-fit:cover">' : '-'
 					return '<tr>' +
 						'<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
 						'<td>' + BIVAK.escape(pv.phone) + '</td>' +
 						'<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
 						'<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
+						'<td>' + logoThumb + '</td>' +
+						'<td>' + collageThumb + '</td>' +
 						'<td>' +
 							'<button class="btn btn-primary" onclick="approveVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
 							'<button class="btn btn-outline" onclick="rejectVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
@@ -719,11 +831,15 @@
 		var activeBody = document.getElementById("tableActiveVendorsBody")
 		if (activeBody) {
 			activeBody.innerHTML = vendorsData.map(function(av, i) {
+				var logoThumb = av.logo ? '<img src="' + BIVAK.escape(av.logo) + '" alt="Logo" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '-'
+				var collageThumb = av.collage ? '<img src="' + BIVAK.escape(av.collage) + '" alt="Kolase" width="64" height="42" style="width:64px;height:42px;border-radius:6px;object-fit:cover">' : '-'
 				return '<tr>' +
 					'<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
 					'<td>' + BIVAK.escape(av.city) + '</td>' +
 					'<td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ' + (av.rating || 4.8) + '</td>' +
 					'<td><span class="status-tag status-approved">Tayang</span></td>' +
+					'<td>' + logoThumb + '</td>' +
+					'<td>' + collageThumb + '</td>' +
 					'<td><button class="btn btn-outline" onclick="removeActiveVendor(' + av.id + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
 				'</tr>'
 			}).join('')
