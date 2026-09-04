@@ -47,6 +47,37 @@ var BIVAK = {
   el: function(id) { return document.getElementById(id); }
 };
 
+// Image preview handlers
+window.previewVendorLogo = function(input) {
+  var container = BIVAK.el('logoPreviewContainer');
+  var preview = BIVAK.el('logoPreview');
+  if (!input || !input.files || !input.files[0]) {
+    if (container) container.style.display = 'none';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    if (preview) preview.src = e.target.result;
+    if (container) container.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
+window.previewVendorCollage = function(input) {
+  var container = BIVAK.el('collagePreviewContainer');
+  var preview = BIVAK.el('collagePreview');
+  if (!input || !input.files || !input.files[0]) {
+    if (container) container.style.display = 'none';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    if (preview) preview.src = e.target.result;
+    if (container) container.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   BIVAK.load();
   renderVendors();
@@ -65,16 +96,28 @@ function renderVendors(filteredList) {
   }
 
   container.innerHTML = list.map(function(v) {
+    var logoSrc = v.logo || 'assets/gear-fallback.jpg';
+    var collageSrc = v.collage || '';
+    var hasCollage = collageSrc && collageSrc !== '';
+
     return '<div class="vendor-card">' +
       '<div class="vendor-cover">' +
-        '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">' +
+        (hasCollage
+          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover">'
+          : '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">') +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>' : '') +
+        (hasCollage ? '<div class="collage-badge"><i class="fa-solid fa-images"></i> Foto Koleksi</div>' : '') +
       '</div>' +
       '<div class="vendor-body">' +
         '<div class="vendor-header">' +
-          '<h3 class="vendor-title">' + BIVAK.escape(v.name) + '</h3>' +
-          '<div class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + ' (' + (v.reviews || 25) + ')</div>' +
+          '<div class="vendor-avatar">' +
+            '<img src="' + BIVAK.escape(logoSrc) + '" alt="Logo ' + BIVAK.escape(v.name) + '" width="40" height="40" loading="lazy" decoding="async" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-emerald)">' +
+          '</div>' +
+          '<div class="vendor-title-wrap">' +
+            '<h3 class="vendor-title">' + BIVAK.escape(v.name) + '</h3>' +
+            '<div class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + ' (' + (v.reviews || 25) + ')</div>' +
+          '</div>' +
         '</div>' +
         '<div class="vendor-address"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</div>' +
         '<div class="gear-tags">' + (v.gears || []).slice(0,4).map(function(g) {
@@ -111,18 +154,30 @@ function openVendorDetail(id) {
   var v = BIVAK.vendors.find(function(x) { return x.id === id; });
   if (!v) return;
 
+  var logoSrc = v.logo || 'assets/gear-fallback.jpg';
+  var collageSrc = v.collage || '';
+  var hasCollage = collageSrc && collageSrc !== '';
+
   BIVAK.el('detailVendorTitle').textContent = v.name;
   BIVAK.el('detailVendorBody').innerHTML =
     '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem">' +
-      '<img src="' + BIVAK.vendorImg(v) + '" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.onerror=null;this.src=\'assets/gear-fallback.jpg\'">' +
+      (hasCollage
+        ? '<img src="' + BIVAK.escape(collageSrc) + '" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)">'
+        : '<img src="' + BIVAK.vendorImg(v) + '" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.onerror=null;this.src=\'assets/gear-fallback.jpg\'">') +
       '<div style="flex:1">' +
-        '<div style="font-size:0.85rem;color:var(--primary-emerald);font-weight:700;margin-bottom:0.3rem"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
-        '<h3 style="color:#fff;margin-bottom:0.5rem">' + BIVAK.escape(v.name) + '</h3>' +
+        '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem">' +
+          '<img src="' + BIVAK.escape(logoSrc) + '" alt="Logo" width="40" height="40" style="border-radius:50%;object-fit:cover;border:2px solid var(--primary-emerald)">' +
+          '<div>' +
+            '<div style="font-size:0.85rem;color:var(--primary-emerald);font-weight:700"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
+            '<h3 style="color:#fff;font-size:1.1rem;margin:0">' + BIVAK.escape(v.name) + '</h3>' +
+          '</div>' +
+        '</div>' +
         '<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</p>' +
         '<div style="display:flex;gap:0.5rem;align-items:center">' +
           '<span class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + '</span>' +
           '<span style="color:var(--text-muted);font-size:0.85rem">Sewa mulai <strong>' + BIVAK.rupiah(v.minPrice || 15000) + '/hari</strong></span>' +
         '</div>' +
+        (hasCollage ? '<div style="margin-top:0.5rem"><span class="tag"><i class="fa-solid fa-images"></i> Kolase Tersedia</span></div>' : '') +
       '</div>' +
     '</div>' +
     '<h4 style="color:#fff;margin-bottom:0.75rem;border-bottom:1px solid var(--border-glass);padding-bottom:0.4rem">Daftar Peralatan</h4>' +
@@ -267,6 +322,8 @@ function handleVendorSubmit(e) {
   var addrEl = BIVAK.el('inputVendorAddress');
   var gearsEl = BIVAK.el('inputVendorGears');
   var priceEl = BIVAK.el('inputVendorMinPrice');
+  var logoInput = BIVAK.el('inputVendorLogo');
+  var collageInput = BIVAK.el('inputVendorCollage');
 
   var vendor = {
     id: Date.now(),
@@ -277,7 +334,9 @@ function handleVendorSubmit(e) {
     gears: gearsEl ? gearsEl.value.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [],
     minPrice: priceEl ? (parseInt(priceEl.value) || 15000) : 15000,
     image: 'assets/gear-fallback.jpg',
-    verified: false
+    verified: false,
+    logo: null,
+    collage: null
   };
 
   if (!vendor.name || !vendor.phone) {
@@ -285,12 +344,52 @@ function handleVendorSubmit(e) {
     return;
   }
 
+  // Read logo file
+  if (logoInput && logoInput.files && logoInput.files[0]) {
+    var logoReader = new FileReader();
+    logoReader.onload = function(evt) {
+      vendor.logo = evt.target.result;
+      // Read collage file then save
+      if (collageInput && collageInput.files && collageInput.files[0]) {
+        var collageReader = new FileReader();
+        collageReader.onload = function(evt) {
+          vendor.collage = evt.target.result;
+          finishVendorSubmit(vendor);
+        };
+        collageReader.readAsDataURL(collageInput.files[0]);
+      } else {
+        finishVendorSubmit(vendor);
+      }
+    };
+    logoReader.readAsDataURL(logoInput.files[0]);
+  } else {
+    // Read collage file only
+    if (collageInput && collageInput.files && collageInput.files[0]) {
+      var collageReader = new FileReader();
+      collageReader.onload = function(evt) {
+        vendor.collage = evt.target.result;
+        finishVendorSubmit(vendor);
+      };
+      collageReader.readAsDataURL(collageInput.files[0]);
+    } else {
+      finishVendorSubmit(vendor);
+    }
+  }
+}
+
+function finishVendorSubmit(vendor) {
   BIVAK.pendingVendors.push(vendor);
   BIVAK.save();
 
   closeModal('modalVendor');
   var form = BIVAK.el('formAddVendor');
   if (form) form.reset();
+
+  // Reset previews
+  var logoContainer = BIVAK.el('logoPreviewContainer');
+  var collageContainer = BIVAK.el('collagePreviewContainer');
+  if (logoContainer) logoContainer.style.display = 'none';
+  if (collageContainer) collageContainer.style.display = 'none';
 
   updateBadges();
   BIVAK.notify("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval admin.");
@@ -332,14 +431,22 @@ function renderAdminTables() {
   var pendingBody = BIVAK.el('tablePendingVendorsBody');
   if (pendingBody) {
     if (BIVAK.pendingVendors.length === 0) {
-      pendingBody.innerHTML = '<tr><td colspan="5" class="admin-tab-desc" style="text-align:center">Tidak ada antrean.</td></tr>';
+      pendingBody.innerHTML = '<tr><td colspan="7" class="admin-tab-desc" style="text-align:center">Tidak ada antrean.</td></tr>';
     } else {
       pendingBody.innerHTML = BIVAK.pendingVendors.map(function(pv, i) {
+        var logoThumb = pv.logo
+          ? '<img src="' + BIVAK.escape(pv.logo) + '" alt="Logo" width="32" height="32" style="border-radius:50%;object-fit:cover;border:1px solid var(--primary-emerald)">'
+          : '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text-muted)"><i class="fa-solid fa-camera"></i></div>';
+        var collageThumb = pv.collage
+          ? '<img src="' + BIVAK.escape(pv.collage) + '" alt="Kolase" width="64" height="48" style="border-radius:4px;object-fit:cover;border:1px solid var(--border-glass)">'
+          : '<span style="color:var(--text-muted);font-size:0.78rem">-</span>';
         return '<tr>' +
           '<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
           '<td>' + BIVAK.escape(pv.phone) + '</td>' +
           '<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
           '<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
+          '<td style="text-align:center">' + logoThumb + '</td>' +
+          '<td>' + collageThumb + '</td>' +
           '<td>' +
             '<button class="btn btn-primary" onclick="approveVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
             '<button class="btn btn-outline" onclick="rejectVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
@@ -352,11 +459,19 @@ function renderAdminTables() {
   var activeBody = BIVAK.el('tableActiveVendorsBody');
   if (activeBody) {
     activeBody.innerHTML = BIVAK.vendors.map(function(av, i) {
+      var logoThumb = av.logo
+        ? '<img src="' + BIVAK.escape(av.logo) + '" alt="Logo" width="32" height="32" style="border-radius:50%;object-fit:cover;border:1px solid var(--primary-emerald)">'
+        : '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text-muted)"><i class="fa-solid fa-camera"></i></div>';
+      var collageThumb = av.collage
+        ? '<img src="' + BIVAK.escape(av.collage) + '" alt="Kolase" width="64" height="48" style="border-radius:4px;object-fit:cover;border:1px solid var(--border-glass)">'
+        : '<span style="color:var(--text-muted);font-size:0.78rem">-</span>';
       return '<tr>' +
         '<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
         '<td>' + BIVAK.escape(av.city) + '</td>' +
         '<td><i class="fa-solid fa-star color-amber"></i> ' + (av.rating || 4.8) + '</td>' +
         '<td><span class="status-tag status-approved">Tayang</span></td>' +
+        '<td style="text-align:center">' + logoThumb + '</td>' +
+        '<td>' + collageThumb + '</td>' +
         '<td><button class="btn btn-outline" onclick="removeActiveVendor(' + i + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
       '</tr>';
     }).join('');
