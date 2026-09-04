@@ -1276,8 +1276,15 @@ html {
 
 
 /* ==========================================================================
-   Section Headers
+   Coin Admin Button
    ========================================================================== */
+.coin-logo {
+  transition: transform var(--transition-fast);
+}
+
+.coin-logo:hover {
+  transform: scale(1.1);
+}
 
 /* ==========================================================================
    BIVAK v4 - Donasi Pintu Angin Styles
