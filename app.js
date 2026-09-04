@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateBadges();
 });
 
-function renderVendors(filteredList) {
+window.renderVendors = function(filteredList) {
   var container = BIVAK.el('vendorGridContainer');
   if (!container) return;
 
@@ -135,7 +135,7 @@ function renderVendors(filteredList) {
   }).join('');
 }
 
-function filterVendors() {
+window.filterVendors = function() {
   var q = BIVAK.el('searchInput');
   var query = q ? q.value.toLowerCase() : '';
   var c = BIVAK.el('cityFilter');
@@ -150,7 +150,7 @@ function filterVendors() {
   renderVendors(filtered);
 }
 
-function openVendorDetail(id) {
+window.openVendorDetail = function(id) {
   var v = BIVAK.vendors.find(function(x) { return x.id === id; });
   if (!v) return;
 
@@ -194,7 +194,7 @@ function openVendorDetail(id) {
   openModal('modalVendorDetail');
 }
 
-function selTier(n) {
+window.selTier = function(n) {
   BIVAK.tierSelected = n;
   var btns = document.querySelectorAll('.tier-btn');
   for (var i = 0; i < btns.length; i++) {
@@ -215,12 +215,12 @@ BIVAK.fillDonasiNominal = function() {
     : 'Pilih nominal diatas atau isi manual.';
 };
 
-function donasi() {
+window.donasi = function() {
   BIVAK.fillDonasiNominal();
   openModal('modalDonasi');
 }
 
-function handleDonasiSubmit(e) {
+window.handleDonasiSubmit = function(e) {
   e.preventDefault();
 
   var namaEl = BIVAK.el('inputDonasiNama');
@@ -258,7 +258,7 @@ function handleDonasiSubmit(e) {
   BIVAK.notify("success", "Terima Kasih!", "Donasi tersimpan. Nama Anda muncul setelah diverifikasi admin.");
 }
 
-function renderDonationList() {
+window.renderDonationList = function() {
   var approved = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; });
   var allDonors = approved.slice();
 
@@ -290,7 +290,7 @@ function renderDonationList() {
   }
 }
 
-function donasiApprove(i, st) {
+window.donasiApprove = function(i, st) {
   if (i < 0 || i >= BIVAK.donations.length) return;
 
   BIVAK.donations[i].astatus = st;
@@ -302,7 +302,7 @@ function donasiApprove(i, st) {
   BIVAK.notify(st === 'disetujui' ? "success" : "info", st === 'disetujui' ? "Donasi Disetujui" : "Donasi Ditolak", "Status donasi berhasil diperbarui.");
 }
 
-function donasiDeleteLocal(i) {
+window.donasiDeleteLocal = function(i) {
   if (i < 0 || i >= BIVAK.donations.length) return;
   var d = BIVAK.donations[i];
   if (!confirm('Hapus permanen donasi dari "' + (d.nama || 'Donatur') + '"? Tindakan ini tidak bisa dibatalkan.')) return;
@@ -410,7 +410,7 @@ window.finishVendorSubmit = function(vendor) {
 }
 
 
-function switchAdminTab(tabName) {
+window.switchAdminTab = function(tabName) {
   var btns = document.querySelectorAll('.tab-btn');
   btns.forEach(function(btn) { btn.classList.remove('active'); });
 
@@ -541,7 +541,7 @@ window.rejectVendor = function(i) {
   BIVAK.notify("info", "Vendor Ditolak", "Pengajuan vendor telah dihapus dari antrean.");
 }
 
-function removeActiveVendor(i) {
+window.removeActiveVendor = function(i) {
   if (!confirm('Hapus vendor ini dari katalog?')) return;
   BIVAK.vendors.splice(i, 1);
   BIVAK.save();
@@ -551,7 +551,7 @@ function removeActiveVendor(i) {
 }
 
 
-function goMobileSection(id) {
+window.goMobileSection = function(id) {
   var target = document.getElementById(id);
   if (!target) return;
   closeMobileMenu();
@@ -559,7 +559,7 @@ function goMobileSection(id) {
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
-function openModal(id) {
+window.openModal = function(id) {
   var m = BIVAK.el(id);
   if (!m) return;
   m.classList.add('active');
@@ -567,13 +567,13 @@ function openModal(id) {
   BIVAK.lockScroll(true);
 }
 
-function closeModal(id) {
+window.closeModal = function(id) {
   var m = BIVAK.el(id);
   if (m) m.classList.remove('active');
   if (!document.querySelector('.modal-overlay.active')) BIVAK.lockScroll(false);
 }
 
-function updateBadges() {
+window.updateBadges = function() {
   var pendingBadge = BIVAK.el('pendingTabBadge');
   if (pendingBadge) pendingBadge.textContent = BIVAK.pendingVendors.length;
 
@@ -605,7 +605,7 @@ BIVAK.navBackdrop = function() {
   return el;
 };
 
-function toggleMobileMenu() {
+window.toggleMobileMenu = function() {
   var menu = BIVAK.el('navMenu');
   var icon = BIVAK.el('mobileToggleIcon');
   var open = menu ? !menu.classList.contains('active') : false;
@@ -618,7 +618,7 @@ function toggleMobileMenu() {
   BIVAK.lockScroll(open);
 }
 
-function closeMobileMenu() {
+window.closeMobileMenu = function() {
   var menu = BIVAK.el('navMenu');
   var icon = BIVAK.el('mobileToggleIcon');
   if (menu) menu.classList.remove('active');
@@ -630,7 +630,7 @@ function closeMobileMenu() {
   if (!document.querySelector('.modal-overlay.active')) BIVAK.lockScroll(false);
 }
 
-function filterByCity(city) {
+window.filterByCity = function(city) {
   var c = BIVAK.el('cityFilter');
   if (c) c.value = city;
   filterVendors();
