@@ -315,6 +315,7 @@ function donasiDeleteLocal(i) {
 
 function handleVendorSubmit(e) {
   e.preventDefault();
+  console.log('[DEBUG] handleVendorSubmit called');
 
   var nameEl = BIVAK.el('inputVendorName');
   var cityEl = BIVAK.el('inputVendorCity');
@@ -324,6 +325,13 @@ function handleVendorSubmit(e) {
   var priceEl = BIVAK.el('inputVendorMinPrice');
   var logoInput = BIVAK.el('inputVendorLogo');
   var collageInput = BIVAK.el('inputVendorCollage');
+
+  console.log('[DEBUG] Form elements:', {
+    name: nameEl ? nameEl.value : 'NULL',
+    city: cityEl ? cityEl.value : 'NULL',
+    phone: phoneEl ? phoneEl.value : 'NULL',
+    gears: gearsEl ? gearsEl.value : 'NULL'
+  });
 
   var vendor = {
     id: Date.now(),
@@ -338,6 +346,8 @@ function handleVendorSubmit(e) {
     logo: null,
     collage: null
   };
+
+  console.log('[DEBUG] Vendor object created:', vendor);
 
   if (!vendor.name || !vendor.phone) {
     BIVAK.notify("error", "Data Belum Lengkap", "Lengkapi nama dan nomor WhatsApp.");
@@ -378,8 +388,11 @@ function handleVendorSubmit(e) {
 }
 
 function finishVendorSubmit(vendor) {
+  console.log('[DEBUG] finishVendorSubmit called with:', vendor);
   BIVAK.pendingVendors.push(vendor);
   BIVAK.save();
+  console.log('[DEBUG] pendingVendors after push:', BIVAK.pendingVendors.length);
+  console.log('[DEBUG] localStorage bivak_pending:', localStorage.getItem('bivak_pending'));
 
   closeModal('modalVendor');
   var form = BIVAK.el('formAddVendor');
@@ -429,7 +442,9 @@ function switchAdminTab(tabName) {
 }
 
 function renderAdminTables() {
+  console.log('[DEBUG] renderAdminTables called, pendingVendors count:', BIVAK.pendingVendors.length);
   var pendingBody = BIVAK.el('tablePendingVendorsBody');
+  console.log('[DEBUG] pendingBody element:', pendingBody ? 'FOUND' : 'NULL');
   if (pendingBody) {
     if (BIVAK.pendingVendors.length === 0) {
       pendingBody.innerHTML = '<tr><td colspan="7" class="admin-tab-desc" style="text-align:center">Tidak ada antrean.</td></tr>';
