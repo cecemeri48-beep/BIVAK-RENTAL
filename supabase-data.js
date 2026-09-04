@@ -347,12 +347,7 @@
 	/* ----------------------------------------------------------------------
 	   8. Admin badge sync
 	   ---------------------------------------------------------------------- */
-	function syncCoinBadge() {
-		var badge = document.getElementById("coinAdminBadge")
-		if (!badge) return
-		badge.innerText = (pendingVendorsData || []).length
-		badge.style.display = isAdmin && (pendingVendorsData || []).length > 0 ? "inline-flex" : "none"
-	}
+	function syncCoinBadge() {}
 
 	function syncDonasiBadge() {
 		var badge = document.getElementById("donasiBadge")
@@ -378,13 +373,11 @@
 	if (typeof origUpdateBadges === "function") {
 		window.updateBadgesAndStats = function () {
 			origUpdateBadges()
-			syncCoinBadge()
 			syncDonasiBadge()
 			syncAdopsiBadge()
 		}
 	} else {
 		window.updateBadgesAndStats = function () {
-			syncCoinBadge()
 			syncDonasiBadge()
 			syncAdopsiBadge()
 		}
@@ -480,7 +473,6 @@
 			closeModal("modalAdmin")
 			await loadPublicData()
 			// Sembunyikan badge admin segera setelah sesi berakhir
-			syncCoinBadge()
 			syncDonasiBadge()
 			syncAdopsiBadge()
 			toast("info", "Keluar", "Sesi admin diakhiri.")

@@ -454,13 +454,6 @@ function closeModal(id) {
 }
 
 function updateBadges() {
-  var coinBadge = BIVAK.el('coinAdminBadge');
-  if (coinBadge) {
-    var count = BIVAK.pendingVendors.length;
-    coinBadge.textContent = count;
-    coinBadge.style.display = count > 0 ? 'inline-flex' : 'none';
-  }
-
   var pendingBadge = BIVAK.el('pendingTabBadge');
   if (pendingBadge) pendingBadge.textContent = BIVAK.pendingVendors.length;
 
