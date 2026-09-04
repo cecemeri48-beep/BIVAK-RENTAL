@@ -175,8 +175,8 @@
         <button class="btn btn-rose" onclick="donasi()" style="flex:1;min-width:200px">
           <i class="fa-solid fa-hand-holding-heart"></i> Donasi Sekarang
         </button>
-        <a class="btn" style="flex:1;min-width:200px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none" href="https://wa.me/6282320124040?text=Halo%20Admin%20RCS.CBS%2C%20saya%20ingin%20bertanya%20seputar%20donasi%20Gunung%20Bawakaraeng." target="_blank" rel="noopener">
-          <i class="fa-brands fa-whatsapp"></i> Hubungi Admin RC
+     <a class="btn" style="flex:1;min-width:200px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none" href="https://wa.me/6282320124040?text=Halo%20RCS.CBS%2C%20saya%20ingin%20bertanya%20seputar%20donasi%20Gunung%20Bawakaraeng." target="_blank" rel="noopener">
+           <i class="fa-brands fa-whatsapp"></i> Hubungi Kami
         </a>
       </div>
 
@@ -198,7 +198,7 @@
         <div id="dnDonors" style="max-height:400px;overflow-y:auto">
           <!-- Populated by JS -->
         </div>
-        <p class="note" style="margin-top:10px">Nama muncul otomatis setelah donasi diverifikasi admin.</p>
+        <p class="note" style="margin-top:10px">Nama akan muncul setelah donasi diverifikasi.</p>
       </div>
 
       <!-- Dana Alokasi -->
@@ -333,7 +333,7 @@
             <div style="color:var(--text-muted)">Gunung Bawakaraeng</div>
           </div>
         </div>
-        <p class="note" style="margin-top:1rem;text-align:center">Setelah transfer, tekan tombol di bawah untuk mengkonfirmasi. Admin akan memverifikasi dan menerbitkan kode adopsi.</p>
+        <p class="note" style="margin-top:1rem;text-align:center">Setelah transfer, tekan tombol di bawah untuk mengkonfirmasi. Tim kami akan memverifikasi dan menerbitkan kode adopsi.</p>
         <button class="btn btn-whatsapp" onclick="confirmAdopsiPayment()" style="width:100%;margin-top:0.5rem"><i class="fa-brands fa-whatsapp"></i> Saya Sudah Bayar — Konfirmasi</button>
       </div>
 
@@ -451,7 +451,7 @@
           <div class="flow-number">1</div>
           <div class="flow-content">
             <h3>Isi Form Vendor</h3>
-            <p>Daftarkan rental, admin cek data, lalu tampil di katalog.</p>
+            <p>Daftarkan rental, lalu tampil di katalog.</p>
           </div>
         </div>
         <div class="flow-card flow-donasi">
@@ -580,7 +580,7 @@
   <div class="modal-overlay" id="modalAdmin">
     <div class="modal-container" style="max-width: 900px;">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa-solid fa-user-shield text-rose" style="color: #f43f5e;"></i> Panel Admin BIVAK <span class="admin-badge">ADMIN</span></h3>
+        <h3 class="modal-title"><i class="fa-solid fa-user-shield text-rose" style="color: #f43f5e;"></i> Dashboard BIVAK</h3>
         <button class="modal-close" onclick="closeModal('modalAdmin')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
@@ -686,7 +686,7 @@
     <button type="button" onclick="goMobileSection('vendors')"><i class="fa-solid fa-store"></i><span>Vendor</span></button>
     <button type="button" onclick="donasi()"><i class="fa-solid fa-heart"></i><span>Donasi</span></button>
     <button type="button" onclick="openModal('modalVendor')"><i class="fa-solid fa-plus"></i><span>Daftar</span></button>
-    <button type="button" onclick="openAdminPanel()"><i class="fa-solid fa-user-shield"></i><span>Admin</span></button>
+    <button type="button" onclick="openAdminPanel()"><i class="fa-solid fa-user-shield"></i></button>
   </nav>
 
   <footer>
@@ -710,7 +710,7 @@
           </p>
         </div>
         <div>
-          <h4>Cakupan Daerah</h4>
+          <h4>Wilayah Sulawesi Selatan</h4>
           <ul class="footer-links">
             <li><a href="#" onclick="filterByCity('Makassar')">Rental Outdoor Makassar</a></li>
             <li><a href="#" onclick="filterByCity('Gowa')">Rental Alat Camping Gowa</a></li>
@@ -723,7 +723,6 @@
             <li><a href="#donasi">Donasi Pintu Angin</a></li>
             <li><a href="#dampak">Aksi Reboisasi Bawakaraeng</a></li>
             <li><a href="#" onclick="openModal('modalVendor')">Pasang Iklan Vendor</a></li>
-            <li><a href="#" onclick="openAdminPanel()">Dashboard Admin</a></li>
           </ul>
         </div>
       </div>
