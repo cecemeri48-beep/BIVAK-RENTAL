@@ -124,7 +124,18 @@
 
 	async function refreshAdminFlag() {
 		isAdmin = false
-		return false
+		try {
+			var sessionRes = await sb.auth.getSession()
+			var session = sessionRes.data && sessionRes.data.session
+			var user = session && session.user
+			if (!user) return false
+			isAdmin = await checkAdminUser(user, user.email || "")
+			if (!isAdmin) await sb.auth.signOut()
+			return isAdmin
+		} catch (err) {
+			isAdmin = false
+			return false
+		}
 	}
 
 	/* ----------------------------------------------------------------------
@@ -148,8 +159,9 @@
 			reviews: row.reviews_count != null ? row.reviews_count : 1,
 			minPrice: Number(row.min_price) || 15000,
 			gears: Array.isArray(row.gears) ? row.gears : [],
-			image: img,
+			image: img, logo: img, collage: "",
 			status: row.status, isVerified: !!row.is_verified,
+			verified: !!row.is_verified,
 		}
 	}
 
@@ -182,6 +194,13 @@
 			? await sb.from("vendors").select("*").eq("status", "pending").order("created_at", { ascending: true })
 			: { data: [], error: null }
 		pendingVendorsData = (pRes.data || []).map(mapVendor)
+
+		// app.js membaca BIVAK.vendors untuk beranda, filter, detail, dan badge.
+		// Sinkronkan semuanya dengan data Supabase agar approval langsung terlihat.
+		if (window.BIVAK) {
+			BIVAK.vendors = vendorsData.slice()
+			BIVAK.pendingVendors = pendingVendorsData.slice()
+		}
 
 		if (sbd) {
 			var dRes = await sbd.from("donasi").select("*").order("created_at", { ascending: false }).limit(50)
@@ -444,6 +463,7 @@
 		btn.textContent = "Keluar"
 		btn.addEventListener("click", async function () {
 			isAdmin = false
+			await sb.auth.signOut()
 			closeModal("modalAdmin")
 			await loadPublicData()
 			syncDonasiBadge()
@@ -473,9 +493,17 @@
 	async function adminUpdateVendor(id, patch, successTitle, successMsg) {
 		var v = findVendor(id)
 		if (!v) return
+		if (!isAdmin) {
+			toast("error", "Sesi Admin Berakhir", "Silakan masuk lagi sebelum mengubah status vendor.")
+			return
+		}
 		try {
-			var res = await sb.from("vendors").update(patch).eq("id", v.dbId)
+			var res = await sb.from("vendors").update(patch).eq("id", v.dbId).select("id,status")
 			if (res.error) throw res.error
+			if (!res.data || res.data.length === 0) {
+				toast("error", "Approval Tidak Tersimpan", "Database menolak perubahan. Jalankan db/FIX-VENDOR-APPROVAL.sql di Supabase SQL Editor.")
+				return
+			}
 			await loadPublicData({ alsoAdminTables: true })
 			toast("success", successTitle, successMsg.replace("%s", v.name))
 		} catch (err) {
@@ -659,6 +687,11 @@
 	   14. Render admin tables â€” menggunakan data cloud
 	   ---------------------------------------------------------------------- */
 	window.renderAdminTables = function() {
+		var pendingTabBadge = document.getElementById("pendingTabBadge")
+		if (pendingTabBadge) pendingTabBadge.textContent = pendingVendorsData.length
+		var activeTabBadge = document.getElementById("activeTabBadge")
+		if (activeTabBadge) activeTabBadge.textContent = vendorsData.length
+
 		var pendingBody = document.getElementById("tablePendingVendorsBody")
 		if (pendingBody) {
 			if (!pendingVendorsData || pendingVendorsData.length === 0) {
@@ -1043,6 +1076,7 @@
 		   ---------------------------------------------------------------------- */
 		async function boot() {
 			try {
+				await refreshAdminFlag()
 				await loadPublicData()
 				await loadAdopsiData()
 			} catch (err) {
