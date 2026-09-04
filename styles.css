@@ -37,8 +37,8 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   --transition-fast: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+   --transition-normal: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Reset & Base Styling */
@@ -49,8 +49,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  color-scheme: dark;
+  /* scroll-behavior: smooth; */
 }
 
 body {
@@ -1443,7 +1442,7 @@ html {
   display: block;
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.5s ease;
+  transition: width 0.2s ease;
 }
 
 .tier-btn {
@@ -2623,7 +2622,7 @@ canvas.cert-zoom {
     rgba(255, 255, 255, 0.2),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.25s ease;
 }
 
 .btn-primary:hover::before {
@@ -2641,9 +2640,9 @@ canvas.cert-zoom {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
 }
 
-/* Smooth scroll behavior */
+/* Smooth scroll behavior - disabled for snappier PWA */
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; */
 }
 
 /* Accent line animation on section headers */
@@ -2655,7 +2654,7 @@ html {
   background: var(--primary-emerald);
   margin: 0.75rem auto 0;
   border-radius: 2px;
-  transition: width 0.3s ease;
+  transition: width 0.15s ease;
 }
 
 .section-subtitle:hover::after {
@@ -2671,7 +2670,7 @@ html {
   inset: 0;
   border-radius: inherit;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
   pointer-events: none;
 }
 
