@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor submit build 2026-09-05-v5")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v6")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -338,41 +338,26 @@
 		var logoFile = logoInput && logoInput.files ? logoInput.files[0] : null
 		var collageFile = collageInput && collageInput.files ? collageInput.files[0] : null
 
-		busy(form, true, "Mengunggah gambar...")
+		busy(form, true, "Mengirim pengajuan...")
 		try {
-			var logoUrl = ""
-			var collageUrl = ""
-			var packedMedia = ""
-			try {
-				logoUrl = await uploadVendorImage(logoFile, "logo")
-				collageUrl = await uploadVendorImage(collageFile, "collage")
-			} catch (storageErr) {
-				// Tetap kirim pengajuan bila bucket Storage belum siap. Gambar
-				// diperkecil dan disimpan pada kolom image_url yang sudah tersedia.
-				packedMedia = await packedVendorMedia(logoFile, collageFile)
-			}
-
-			var basePayload = {
+			// Simpan gambar terkompresi langsung di image_url. Cara ini hanya
+			// memakai kolom lama sehingga submit tidak bergantung pada bucket,
+			// policy Storage, atau kolom logo_url/collage_url tambahan.
+			var packedMedia = (logoFile || collageFile)
+				? await packedVendorMedia(logoFile, collageFile)
+				: ""
+			var payload = {
 				name: val("inputVendorName"),
 				city: val("inputVendorCity"),
 				phone: val("inputVendorPhone"),
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: packedMedia || collageUrl || logoUrl || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
+				image_url: packedMedia || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
 				status: "pending",
 				is_verified: false,
 			}
-			var payload = Object.assign({}, basePayload)
-			if (!packedMedia) {
-				payload.logo_url = logoUrl || null
-				payload.collage_url = collageUrl || null
-			}
 			var res = await sb.from("vendors").insert(payload)
-			if (res.error && !packedMedia && /logo_url|collage_url|schema cache|column/i.test(res.error.message || "")) {
-				basePayload.image_url = await packedVendorMedia(logoFile, collageFile)
-				res = await sb.from("vendors").insert(basePayload)
-			}
 			if (res.error) throw res.error
 
 			closeModal("modalVendor")
@@ -384,6 +369,7 @@
 			toast("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval Admin BIVAK.", 5000)
 			await loadPublicData({ alsoAdminTables: isAdmin })
 		} catch (err) {
+			console.error("[BIVAK] Vendor submit gagal:", err)
 			dbErr(err, "Pengajuan gagal dikirim")
 		} finally {
 			busy(form, false)
