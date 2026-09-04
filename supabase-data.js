@@ -8,6 +8,7 @@
 
 ;(function () {
 	"use strict"
+	console.info("[BIVAK] Vendor approval build 2026-09-05-v3")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -185,7 +186,7 @@
 
 		// Vendor publik wajib sudah approved DAN verified. Ini mencegah baris
 		// yang salah status tetapi belum pernah di-approve tampil sebagai aktif.
-		var vRes = await sb.from("vendors").select("*").eq("status", "approved").eq("is_verified", true).order("created_at", { ascending: false })
+		var vRes = await sb.from("vendors").select("*").eq("status", "approved").eq("is_verified", true).not("approved_at", "is", null).order("created_at", { ascending: false })
 		if (vRes.error) {
 			vendorsData = []
 		} else {
@@ -514,18 +515,19 @@
 	}
 
 	window.approveVendor = function (id) {
-		return adminUpdateVendor(id, { status: "approved", is_verified: true, updated_at: new Date().toISOString() }, "Vendor Disetujui", '"%s" kini tayang publik.')
+		var now = new Date().toISOString()
+		return adminUpdateVendor(id, { status: "approved", is_verified: true, approved_at: now, updated_at: now }, "Vendor Disetujui", '"%s" kini tayang publik.')
 	}
 
 	window.rejectVendor = function (id) {
-		return adminUpdateVendor(id, { status: "rejected", updated_at: new Date().toISOString() }, "Vendor Ditolak", 'Pengajuan "%s" telah ditolak.')
+		return adminUpdateVendor(id, { status: "rejected", is_verified: false, approved_at: null, updated_at: new Date().toISOString() }, "Vendor Ditolak", 'Pengajuan "%s" telah ditolak.')
 	}
 
 	window.removeActiveVendor = function (id) {
 		var v = findVendor(id)
 		if (!v) return
 		if (!confirm('Turunkan "' + v.name + '" dari katalog publik?')) return
-		return adminUpdateVendor(id, { status: "rejected", updated_at: new Date().toISOString() }, "Vendor Diturunkan", '"%s" tidak lagi tampil di katalog.')
+		return adminUpdateVendor(id, { status: "rejected", is_verified: false, approved_at: null, updated_at: new Date().toISOString() }, "Vendor Diturunkan", '"%s" tidak lagi tampil di katalog.')
 	}
 
 	/* ----------------------------------------------------------------------

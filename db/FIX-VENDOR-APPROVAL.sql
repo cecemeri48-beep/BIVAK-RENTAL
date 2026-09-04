@@ -33,6 +33,11 @@ GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
 
+-- Jejak approval eksplisit. Kolom ini membedakan vendor yang benar-benar
+-- disetujui lewat tombol admin dari status lama yang terlanjur "approved".
+ALTER TABLE public.vendors
+ADD COLUMN IF NOT EXISTS approved_at timestamptz;
+
 -- Paksa semua pendaftaran baru masuk antrean. Nama trigger diawali "zz"
 -- supaya dijalankan setelah trigger BEFORE INSERT lama jika masih ada.
 CREATE OR REPLACE FUNCTION public.force_new_vendor_pending()
@@ -44,6 +49,7 @@ AS $fn$
 BEGIN
   NEW.status := 'pending';
   NEW.is_verified := false;
+  NEW.approved_at := NULL;
   RETURN NEW;
 END;
 $fn$;
@@ -54,11 +60,24 @@ BEFORE INSERT ON public.vendors
 FOR EACH ROW
 EXECUTE FUNCTION public.force_new_vendor_pending();
 
--- Kembalikan pengajuan yang telanjur berstatus approved tanpa verifikasi
--- ke antrean admin. Approval normal selalu mengisi is_verified = true.
+-- Pertahankan enam vendor contoh bawaan sebagai vendor aktif.
 UPDATE public.vendors
-SET status = 'pending', updated_at = now()
-WHERE status = 'approved' AND coalesce(is_verified, false) = false;
+SET approved_at = coalesce(approved_at, updated_at, created_at, now())
+WHERE status = 'approved'
+  AND name IN (
+    'Celebes Outdoor Rental Makassar',
+    'Bawakaraeng Adventure Gowa',
+    'Malino Highland Camp Gear',
+    'Rammang-Rammang Outdoor Maros',
+    'Toraja Highland Explorer',
+    'Palopo Camp & Trail Base'
+  );
+
+-- Vendor lain yang aktif tanpa jejak approved_at dikembalikan ke antrean.
+-- Ini akan memindahkan pengajuan uji seperti "Rcs.cbs" ke Antrean Vendor.
+UPDATE public.vendors
+SET status = 'pending', is_verified = false, approved_at = NULL, updated_at = now()
+WHERE status = 'approved' AND approved_at IS NULL;
 
 -- Bersihkan seluruh nama policy vendor yang pernah dipakai paket lama.
 DROP POLICY IF EXISTS "Public Read Approved Vendors" ON public.vendors;
@@ -72,7 +91,7 @@ DROP POLICY IF EXISTS "vendors_delete_admin" ON public.vendors;
 
 CREATE POLICY "Public Read Approved Vendors"
 ON public.vendors FOR SELECT TO anon, authenticated
-USING (status = 'approved' AND is_verified = true);
+USING (status = 'approved' AND is_verified = true AND approved_at IS NOT NULL);
 
 CREATE POLICY "Public Insert Vendor Request"
 ON public.vendors FOR INSERT TO anon, authenticated

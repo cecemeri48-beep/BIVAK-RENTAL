@@ -18,10 +18,14 @@
 - Pendaftaran baru dipaksa masuk status `pending` oleh trigger database.
 - Vendor publik wajib `approved` sekaligus `is_verified = true`.
 - Baris yang telanjur `approved` tanpa verifikasi dikembalikan ke antrean.
+- Approval kini memiliki jejak eksplisit pada kolom `approved_at`; tanpa nilai
+  tersebut vendor tidak dapat tampil sebagai aktif atau masuk katalog.
 
 ## Cara menerapkan
 
-1. Buka project Supabase utama yang dipakai oleh `supabase-config.js`.
+1. Buka project Supabase utama yang dipakai oleh `supabase-config.js`, yaitu
+   project ref **`pledqkanjduhabruvgxx`**. Jangan mengikuti komentar project
+   lama `sqxwhfdarnzypicoamzl` karena website tidak terhubung ke sana.
 2. Buka **SQL Editor**.
 3. Salin dan jalankan seluruh isi `db/FIX-VENDOR-APPROVAL.sql` satu kali.
 4. Deploy ulang semua file website dari paket ini.
