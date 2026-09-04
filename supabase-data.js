@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor approval build 2026-09-05-v3")
+	console.info("[BIVAK] Vendor images build 2026-09-05-v4")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -149,7 +149,9 @@
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
-		var img = row.image_url || ""
+		var logo = row.logo_url || ""
+		var collage = row.collage_url || ""
+		var img = collage || row.image_url || logo || ""
 		if (!img || img.charAt(0) === "<" || img.indexOf(">") !== -1 || (window.BIVAK && BIVAK.isGenericPhoto && BIVAK.isGenericPhoto(img))) {
 			img = (window.BIVAK && BIVAK.photoForVendor) ? BIVAK.photoForVendor(row.name, row.city) : "assets/gear-fallback.jpg"
 		}
@@ -160,7 +162,7 @@
 			reviews: row.reviews_count != null ? row.reviews_count : 1,
 			minPrice: Number(row.min_price) || 15000,
 			gears: Array.isArray(row.gears) ? row.gears : [],
-			image: img, logo: img, collage: "",
+			image: img, logo: logo || img, collage: collage,
 			status: row.status, isVerified: !!row.is_verified,
 			verified: !!row.is_verified,
 		}
@@ -266,6 +268,27 @@
 		}
 	}
 
+	async function uploadVendorImage(file, kind) {
+		if (!file) return ""
+		if (file.size > 5 * 1024 * 1024) throw new Error("Ukuran gambar maksimal 5 MB.")
+		if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type || "")) {
+			throw new Error("Format gambar harus JPG, PNG, WEBP, atau GIF.")
+		}
+		var ext = ((file.name || "image.jpg").split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "")
+		var token = (window.crypto && crypto.randomUUID)
+			? crypto.randomUUID()
+			: Date.now() + "-" + Math.random().toString(36).slice(2)
+		var path = kind + "/" + token + "." + ext
+		var uploaded = await sb.storage.from("vendor-images").upload(path, file, {
+			cacheControl: "3600",
+			contentType: file.type,
+			upsert: false,
+		})
+		if (uploaded.error) throw uploaded.error
+		var publicRes = sb.storage.from("vendor-images").getPublicUrl(path)
+		return publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : ""
+	}
+
 	/* ----------------------------------------------------------------------
 	   6. Vendor Submit
 	   ---------------------------------------------------------------------- */
@@ -273,9 +296,15 @@
 		e.preventDefault()
 		var form = document.getElementById("formAddVendor")
 		var gears = val("inputVendorGears").split(",").map(function(s){return s.trim()}).filter(Boolean)
+		var logoInput = document.getElementById("inputVendorLogo")
+		var collageInput = document.getElementById("inputVendorCollage")
+		var logoFile = logoInput && logoInput.files ? logoInput.files[0] : null
+		var collageFile = collageInput && collageInput.files ? collageInput.files[0] : null
 
-		busy(form, true, "Mengirim...")
+		busy(form, true, "Mengunggah gambar...")
 		try {
+			var logoUrl = await uploadVendorImage(logoFile, "logo")
+			var collageUrl = await uploadVendorImage(collageFile, "collage")
 			var res = await sb.from("vendors").insert({
 				name: val("inputVendorName"),
 				city: val("inputVendorCity"),
@@ -283,7 +312,9 @@
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
-				image_url: BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
+				image_url: collageUrl || logoUrl || BIVAK.photoForVendor(val("inputVendorName"), val("inputVendorCity")),
+				logo_url: logoUrl || null,
+				collage_url: collageUrl || null,
 				status: "pending",
 				is_verified: false,
 			})
@@ -699,14 +730,18 @@
 		var pendingBody = document.getElementById("tablePendingVendorsBody")
 		if (pendingBody) {
 			if (!pendingVendorsData || pendingVendorsData.length === 0) {
-				pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>'
+				pendingBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>'
 			} else {
 				pendingBody.innerHTML = pendingVendorsData.map(function(pv, i) {
+					var logoThumb = pv.logo ? '<img src="' + BIVAK.escape(pv.logo) + '" alt="Logo" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '-'
+					var collageThumb = pv.collage ? '<img src="' + BIVAK.escape(pv.collage) + '" alt="Kolase" width="64" height="42" style="width:64px;height:42px;border-radius:6px;object-fit:cover">' : '-'
 					return '<tr>' +
 						'<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
 						'<td>' + BIVAK.escape(pv.phone) + '</td>' +
 						'<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
 						'<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
+						'<td>' + logoThumb + '</td>' +
+						'<td>' + collageThumb + '</td>' +
 						'<td>' +
 							'<button class="btn btn-primary" onclick="approveVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
 							'<button class="btn btn-outline" onclick="rejectVendor(' + pv.id + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
@@ -719,11 +754,15 @@
 		var activeBody = document.getElementById("tableActiveVendorsBody")
 		if (activeBody) {
 			activeBody.innerHTML = vendorsData.map(function(av, i) {
+				var logoThumb = av.logo ? '<img src="' + BIVAK.escape(av.logo) + '" alt="Logo" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '-'
+				var collageThumb = av.collage ? '<img src="' + BIVAK.escape(av.collage) + '" alt="Kolase" width="64" height="42" style="width:64px;height:42px;border-radius:6px;object-fit:cover">' : '-'
 				return '<tr>' +
 					'<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
 					'<td>' + BIVAK.escape(av.city) + '</td>' +
 					'<td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ' + (av.rating || 4.8) + '</td>' +
 					'<td><span class="status-tag status-approved">Tayang</span></td>' +
+					'<td>' + logoThumb + '</td>' +
+					'<td>' + collageThumb + '</td>' +
 					'<td><button class="btn btn-outline" onclick="removeActiveVendor(' + av.id + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
 				'</tr>'
 			}).join('')

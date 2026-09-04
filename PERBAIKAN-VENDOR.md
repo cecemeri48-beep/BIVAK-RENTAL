@@ -20,6 +20,8 @@
 - Baris yang telanjur `approved` tanpa verifikasi dikembalikan ke antrean.
 - Approval kini memiliki jejak eksplisit pada kolom `approved_at`; tanpa nilai
   tersebut vendor tidak dapat tampil sebagai aktif atau masuk katalog.
+- Logo dan kolase sekarang diunggah ke bucket Supabase Storage `vendor-images`,
+  lalu URL asli disimpan pada `logo_url` dan `collage_url`.
 
 ## Cara menerapkan
 
@@ -28,7 +30,8 @@
    lama `sqxwhfdarnzypicoamzl` karena website tidak terhubung ke sana.
 2. Buka **SQL Editor**.
 3. Salin dan jalankan seluruh isi `db/FIX-VENDOR-APPROVAL.sql` satu kali.
-4. Deploy ulang semua file website dari paket ini.
-5. Hard refresh browser (`Ctrl+Shift+R`), login admin, kirim satu vendor uji, lalu approve.
+4. Jalankan juga `db/FIX-VENDOR-IMAGES.sql` satu kali.
+5. Deploy ulang semua file website dari paket ini.
+6. Hard refresh browser (`Ctrl+Shift+R`), login admin, kirim satu vendor uji, lalu approve.
 
 Setelah approval, jumlah antrean harus berkurang, jumlah vendor aktif bertambah, dan kartu vendor langsung tampil di beranda.
