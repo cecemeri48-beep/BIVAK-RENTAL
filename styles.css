@@ -2382,6 +2382,52 @@ canvas.cert-zoom {
 }
 
 /* ==========================================================================
+   Mobile Optimizations - Reduce Animations
+   ========================================================================== */
+@media (max-width: 640px) {
+  /* Disable hero floating particles to save battery */
+  .hero::before {
+    animation: none;
+    opacity: 0.5;
+  }
+  
+  /* Keep card stagger but faster */
+  .vendor-card {
+    animation-duration: 0.3s;
+  }
+  
+  /* Disable badge pulse - static is fine */
+  .notification-badge {
+    animation: none;
+  }
+  
+  /* Disable shimmer on buttons */
+  .btn-primary::before {
+    display: none;
+  }
+  
+  /* Disable text breathing */
+  .hero-title span {
+    animation: none;
+  }
+  
+  /* Disable accent line animation */
+  .section-subtitle::after {
+    transition: none;
+    width: 40px;
+  }
+  
+  /* Keep touch feedback only */
+  .vendor-card:active {
+    transform: scale(0.98);
+  }
+  
+  .btn:active {
+    transform: scale(0.96);
+  }
+}
+
+/* ==========================================================================
    Fun Visual Effects - Interactive Polish
    ========================================================================== */
 
