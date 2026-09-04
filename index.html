@@ -480,7 +480,7 @@
         <button class="modal-close" onclick="closeModal('modalVendor')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <form id="formAddVendor" onsubmit="handleVendorSubmit(event)">
+        <form id="formAddVendor" novalidate onsubmit="handleVendorSubmit(event); return false;">
           <div class="form-grid">
             <div class="form-group-full">
               <label class="form-label">Nama Tempat Rental *</label>
@@ -759,10 +759,10 @@
   <!-- Script Loading - Core first, then extensions -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=20260905-6"></script>
+  <script src="app.js?v=20260905-7"></script>
   <script src="shader-hero.js"></script>
   <script src="motion.js"></script>
   <script src="cert.js"></script>
-  <script src="supabase-data.js?v=20260905-6"></script>
+  <script src="supabase-data.js?v=20260905-7"></script>
 </body>
 </html>

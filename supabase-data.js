@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor submit build 2026-09-05-v6")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v7")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -331,12 +331,29 @@
 	   ---------------------------------------------------------------------- */
 	window.handleVendorSubmit = async function (e) {
 		e.preventDefault()
+		if (e.stopPropagation) e.stopPropagation()
+		console.info("[BIVAK] Tombol kirim vendor diproses")
 		var form = document.getElementById("formAddVendor")
 		var gears = val("inputVendorGears").split(",").map(function(s){return s.trim()}).filter(Boolean)
 		var logoInput = document.getElementById("inputVendorLogo")
 		var collageInput = document.getElementById("inputVendorCollage")
 		var logoFile = logoInput && logoInput.files ? logoInput.files[0] : null
 		var collageFile = collageInput && collageInput.files ? collageInput.files[0] : null
+		var requiredIds = ["inputVendorName", "inputVendorCity", "inputVendorPhone", "inputVendorAddress", "inputVendorGears", "inputVendorMinPrice"]
+		for (var ri = 0; ri < requiredIds.length; ri++) {
+			var requiredEl = document.getElementById(requiredIds[ri])
+			if (!requiredEl || !String(requiredEl.value || "").trim()) {
+				toast("error", "Data Belum Lengkap", "Lengkapi semua kolom wajib sebelum mengirim.")
+				if (requiredEl) requiredEl.focus()
+				return false
+			}
+		}
+		if (!logoFile || !collageFile) {
+			toast("error", "Gambar Belum Lengkap", "Pilih logo toko dan foto kolase barang rental.")
+			if (!logoFile && logoInput) logoInput.focus()
+			else if (collageInput) collageInput.focus()
+			return false
+		}
 
 		busy(form, true, "Mengirim pengajuan...")
 		try {
@@ -374,6 +391,7 @@
 		} finally {
 			busy(form, false)
 		}
+		return false
 	}
 
 	/* ----------------------------------------------------------------------
