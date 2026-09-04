@@ -392,6 +392,7 @@ function finishVendorSubmit(vendor) {
   if (collageContainer) collageContainer.style.display = 'none';
 
   updateBadges();
+  renderAdminTables();
   BIVAK.notify("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval admin.");
 }
 
