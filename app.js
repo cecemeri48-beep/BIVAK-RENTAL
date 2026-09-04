@@ -316,6 +316,7 @@ window.donasiDeleteLocal = function(i) {
 window.handleVendorSubmit = function(e) {
   e.preventDefault();
   console.log('[DEBUG] handleVendorSubmit called');
+  alert('Fungsi handleVendorSubmit TERPANGGIL! Cek console (F12).');
 
   var nameEl = BIVAK.el('inputVendorName');
   var cityEl = BIVAK.el('inputVendorCity');
