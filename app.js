@@ -60,7 +60,7 @@ function renderVendors(filteredList) {
   var list = filteredList || BIVAK.vendors;
 
   if (list.length === 0) {
-    container.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:4rem 1rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px dashed var(--border-glass);"><i class="fa-solid fa-store-slash" style="font-size:3rem;color:var(--text-dim);margin-bottom:1rem;"></i><h3 style="color:#fff;">Tidak Ada Vendor</h3><p style="color:var(--text-muted)">Coba ubah filter pencarian.</p></div>';
+    container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store-slash empty-state-icon"></i><h3 class="empty-state-title">Tidak Ada Vendor</h3><p class="empty-state-desc">Coba ubah filter pencarian.</p></div>';
     return;
   }
 
@@ -82,9 +82,9 @@ function renderVendors(filteredList) {
         }).join('') + '</div>' +
         '<div class="vendor-footer">' +
           '<div class="vendor-price">Sewa Mulai <span>' + BIVAK.rupiah(v.minPrice || 15000) + '/hr</span></div>' +
-          '<div style="display:flex;gap:0.5rem">' +
-            '<button class="btn btn-outline" onclick="openVendorDetail(' + v.id + ')" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-solid fa-eye"></i> Detail</button>' +
-            '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20menemukan%20vendor%20Anda%20di%20BIVAK" target="_blank" class="btn btn-whatsapp" style="padding:0.5rem 0.8rem;font-size:0.82rem"><i class="fa-brands fa-whatsapp"></i> WA</a>' +
+          '<div class="btn-row-gap">' +
+            '<button class="btn btn-outline btn-with-icon" onclick="openVendorDetail(' + v.id + ')"><i class="fa-solid fa-eye"></i> Detail</button>' +
+            '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20menemukan%20vendor%20Anda%20di%20BIVAK" target="_blank" class="btn btn-whatsapp btn-with-icon"><i class="fa-brands fa-whatsapp"></i> WA</a>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -113,25 +113,25 @@ function openVendorDetail(id) {
 
   BIVAK.el('detailVendorTitle').textContent = v.name;
   BIVAK.el('detailVendorBody').innerHTML =
-    '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem">' +
-      '<img src="' + (v.image || 'assets/gear-tent.png') + '" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.src=\'assets/gear-tent.png\'">' +
-      '<div style="flex:1">' +
-        '<div style="font-size:0.85rem;color:var(--primary-emerald);font-weight:700;margin-bottom:0.3rem"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
-        '<h3 style="color:#fff;margin-bottom:0.5rem">' + BIVAK.escape(v.name) + '</h3>' +
-        '<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</p>' +
-        '<div style="display:flex;gap:0.5rem;align-items:center">' +
+    '<div class="detail-grid">' +
+      '<img src="' + (v.image || 'assets/gear-tent.png') + '" class="detail-img" onerror="this.src=\'assets/gear-tent.png\'">' +
+      '<div class="detail-content">' +
+        '<div class="detail-location"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + (v.verified ? ' - TERVERIFIKASI' : '') + '</div>' +
+        '<h3 class="detail-title">' + BIVAK.escape(v.name) + '</h3>' +
+        '<p class="detail-address"><i class="fa-solid fa-map-pin"></i> ' + BIVAK.escape(v.address || v.city) + '</p>' +
+        '<div class="detail-price">' +
           '<span class="vendor-rating"><i class="fa-solid fa-star"></i> ' + (v.rating || 4.8) + '</span>' +
-          '<span style="color:var(--text-muted);font-size:0.85rem">Sewa mulai <strong>' + BIVAK.rupiah(v.minPrice || 15000) + '/hari</strong></span>' +
+          ' Sewa mulai <strong>' + BIVAK.rupiah(v.minPrice || 15000) + '/hari</strong>' +
         '</div>' +
       '</div>' +
     '</div>' +
-    '<h4 style="color:#fff;margin-bottom:0.75rem;border-bottom:1px solid var(--border-glass);padding-bottom:0.4rem">Daftar Peralatan</h4>' +
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem">' +
+    '<h4 class="gear-list-title">Daftar Peralatan</h4>' +
+    '<div class="gear-list">' +
       (v.gears || []).map(function(g) {
-        return '<div style="background:rgba(255,255,255,0.03);padding:0.6rem 0.9rem;border-radius:var(--radius-sm);border:1px solid var(--border-glass);color:#e5e7eb;font-size:0.88rem"><i class="fa-solid fa-circle-check text-emerald" style="color:#10b981"></i> ' + BIVAK.escape(g) + '</div>';
+        return '<div class="gear-item"><i class="fa-solid fa-circle-check color-emerald"></i> ' + BIVAK.escape(g) + '</div>';
       }).join('') +
     '</div>' +
-    '<div style="display:flex;justify-content:flex-end;gap:0.75rem">' +
+    '<div class="detail-actions">' +
       '<button class="btn btn-outline" onclick="closeModal(\'modalVendorDetail\')">Tutup</button>' +
       '<a href="https://wa.me/' + v.phone + '?text=Halo%20' + encodeURIComponent(v.name) + '%2C%20saya%20mau%20booking%20sewa%20alat%20outdoor%20lewat%20BIVAK" target="_blank" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Hubungi WhatsApp</a>' +
     '</div>';
@@ -216,14 +216,12 @@ function renderDonationList() {
   if (pc) pc.textContent = pct + '%';
 
   if (box) {
-    var medals = ['??','??','??'];
+    var medals = ['🥇','🥈','🥉'];
     box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
       var nm = BIVAK.escape(d.nama || 'Donatur');
       var top = i < 3;
-      var rank = top ? medals[i] : '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(140,150,170,.18);color:#8c96aa;font-size:12px;font-weight:800">' + (i+1) + '</span>';
-      var bg = top ? 'rgba(16,185,129,.08)' : 'rgba(140,150,170,.05)';
-      var bd = top ? '1px solid rgba(16,185,129,.25)' : '1px solid rgba(140,150,170,.14)';
-      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:' + bg + ';border:' + bd + '"><div style="width:28px;text-align:center;flex-shrink:0">' + rank + '</div><div style="flex:1;min-width:0;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nm + '</div><div style="font-size:13px;font-weight:800;color:#10b981;white-space:nowrap">' + BIVAK.rupiah(d.amt || 0) + '</div></div>';
+      var rank = top ? medals[i] : '<span class="donor-rank-badge">' + (i+1) + '</span>';
+      return '<div class="donor-row' + (top ? ' top' : '') + '"><div class="donor-rank">' + rank + '</div><div class="donor-name">' + nm + '</div><div class="donor-amt">' + BIVAK.rupiah(d.amt || 0) + '</div></div>';
     }).join('');
   }
 }
@@ -323,17 +321,17 @@ function renderAdminTables() {
   var pendingBody = BIVAK.el('tablePendingVendorsBody');
   if (pendingBody) {
     if (BIVAK.pendingVendors.length === 0) {
-      pendingBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada antrean.</td></tr>';
+      pendingBody.innerHTML = '<tr><td colspan="5" class="admin-tab-desc" style="text-align:center">Tidak ada antrean.</td></tr>';
     } else {
       pendingBody.innerHTML = BIVAK.pendingVendors.map(function(pv, i) {
         return '<tr>' +
-          '<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
+          '<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small class="admin-tab-desc">' + BIVAK.escape(pv.city) + '</small></td>' +
           '<td>' + BIVAK.escape(pv.phone) + '</td>' +
           '<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
           '<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
           '<td>' +
-            '<button class="btn btn-primary" onclick="approveVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem"><i class="fa-solid fa-check"></i></button> ' +
-            '<button class="btn btn-outline" onclick="rejectVendor(' + i + ')" style="padding:0.35rem 0.7rem;font-size:0.78rem;border-color:var(--accent-rose);color:var(--accent-rose)"><i class="fa-solid fa-xmark"></i></button>' +
+            '<button class="btn btn-primary btn-sm" onclick="approveVendor(' + i + ')"><i class="fa-solid fa-check"></i></button> ' +
+            '<button class="btn btn-outline btn-reject btn-sm" onclick="rejectVendor(' + i + ')"><i class="fa-solid fa-xmark"></i></button>' +
           '</td>' +
         '</tr>';
       }).join('');
@@ -346,9 +344,9 @@ function renderAdminTables() {
       return '<tr>' +
         '<td><strong>' + BIVAK.escape(av.name) + '</strong></td>' +
         '<td>' + BIVAK.escape(av.city) + '</td>' +
-        '<td><i class="fa-solid fa-star" style="color:var(--accent-amber)"></i> ' + (av.rating || 4.8) + '</td>' +
+        '<td><i class="fa-solid fa-star color-amber"></i> ' + (av.rating || 4.8) + '</td>' +
         '<td><span class="status-tag status-approved">Tayang</span></td>' +
-        '<td><button class="btn btn-outline" onclick="removeActiveVendor(' + i + ')" style="padding:0.3rem 0.6rem;font-size:0.75rem">Hapus</button></td>' +
+        '<td><button class="btn btn-outline btn-sm-table" onclick="removeActiveVendor(' + i + ')">Hapus</button></td>' +
       '</tr>';
     }).join('');
   }
@@ -356,24 +354,24 @@ function renderAdminTables() {
   var donasiBody = BIVAK.el('tableDonasiBody');
   if (donasiBody) {
     if (BIVAK.donations.length === 0) {
-      donasiBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Belum ada donasi.</td></tr>';
+      donasiBody.innerHTML = '<tr><td colspan="5" class="admin-tab-desc" style="text-align:center">Belum ada donasi.</td></tr>';
     } else {
       donasiBody.innerHTML = BIVAK.donations.map(function(r, i) {
         var nm = BIVAK.escape(r.nama || 'Donatur');
         var amt = BIVAK.rupiah(r.amt || 0);
         var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
         var st = r.astatus || 'baru';
-        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">? Diterima</span>' :
-                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">? Ditolak</span>' :
-                       '<span style="color:#f59e0b;font-weight:700">? Baru</span>';
+        var stBadge = st === 'disetujui' ? '<span class="status-dot status-dot-green">✓ Diterima</span>' :
+                       st === 'ditolak' ? '<span class="status-dot status-dot-rose">✗ Ditolak</span>' :
+                       '<span class="status-dot status-dot-amber">○ Baru</span>';
         return '<tr>' +
           '<td>' + nm + '</td>' +
           '<td>' + amt + '</td>' +
           '<td>' + when + '</td>' +
           '<td>' + stBadge + '</td>' +
           '<td>' +
-            '<button class="btn btn-primary" onclick="donasiApprove(' + i + ',\'disetujui\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-check"></i></button> ' +
-            '<button class="btn btn-outline" onclick="donasiApprove(' + i + ',\'ditolak\')" style="padding:0.3rem 0.5rem;font-size:0.75rem"><i class="fa-solid fa-xmark"></i></button>' +
+            '<button class="btn btn-primary btn-approve" onclick="donasiApprove(' + i + ',\'disetujui\')"><i class="fa-solid fa-check"></i></button> ' +
+            '<button class="btn btn-outline btn-reject" onclick="donasiApprove(' + i + ',\'ditolak\')"><i class="fa-solid fa-xmark"></i></button>' +
           '</td>' +
         '</tr>';
       }).join('');

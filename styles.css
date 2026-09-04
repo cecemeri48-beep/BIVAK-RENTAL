@@ -22,7 +22,6 @@
   --accent-amber-hover: #d97706;
   --accent-amber-glow: rgba(245, 158, 11, 0.35);
 
-  --accent-sky: #06b6d4;
   --accent-rose: #f43f5e;
 
   --text-main: #f3f4f6;
@@ -1194,17 +1193,9 @@ html {
   white-space: nowrap;
 }
 
-/* Hilangkan sisa ruang beberapa piksel di bawah gambar cover vendor */
-.vendor-cover img {
-  display: block;
-}
-
 
 /* ==========================================================================
    Trigger Admin Tersembunyi di Logo Koin
-   Logo kanan (koin RCS.CBS) berfungsi sebagai tombol rahasia pembuka
-   panel admin. Badge angka antrean menempel di pojok kanan-atasnya dan
-   hanya ditampilkan untuk admin yang sedang login (mode live).
    ========================================================================== */
 .coin-trigger {
   position: relative;
@@ -1354,6 +1345,23 @@ html {
   color: #f43f5e;
 }
 
+.color-rose {
+  color: #f43f5e;
+}
+
+.color-emerald {
+  color: #10b981;
+}
+
+.color-amber {
+  color: var(--accent-amber);
+}
+
+.btn-row-gap {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .status-pending {
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
@@ -1361,4 +1369,708 @@ html {
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+/* ==========================================================================
+   Adopsi Section
+   ========================================================================== */
+.section-adopsi {
+  background: linear-gradient(135deg, rgba(8,185,111,0.08), rgba(16,185,129,0.04));
+}
+
+.adopsi-packages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.adopsi-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.adopsi-card:hover,
+.adopsi-card.selected {
+  border-color: var(--primary-emerald);
+}
+
+.pkg-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-emerald);
+}
+
+.pkg-name {
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.pkg-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.pkg-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-top: 0.5rem;
+}
+
+.summary-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(16,185,129,0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(16,185,129,0.2);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.summary-row:last-child {
+  margin-bottom: 0;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.payment-col {
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+}
+
+.payment-label {
+  color: var(--text-muted);
+}
+
+.payment-value {
+  color: #fff;
+  font-weight: 700;
+}
+
+.payment-highlight {
+  color: #10b981;
+  font-weight: 800;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ==========================================================================
+   Section Headers
+   ========================================================================== */
+.sh-donasi .bar { background: #f43f5e; }
+.sh-adopsi .bar { background: #10b981; }
+.sh-info .bar { background: var(--accent-sky); }
+
+.section-subtitle-rose {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: rgba(244, 63, 94, 0.3);
+  color: #f43f5e;
+}
+
+/* ==========================================================================
+   Donation Progress
+   ========================================================================== */
+.dn-amount {
+  color: #10b981;
+  font-size: 15px;
+}
+
+.dn-bar-track {
+  margin-top: 8px;
+}
+
+.dn-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.dn-row-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* ==========================================================================
+   Tier Buttons
+   ========================================================================== */
+.donation-tiers {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.tier-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 32px;
+}
+
+.tier-btn:hover {
+  border-color: var(--primary-emerald);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.tier-btn.on {
+  border-color: var(--primary-emerald);
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary-emerald);
+}
+
+/* ==========================================================================
+   Donation CTA
+   ========================================================================== */
+.donation-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.btn-donate {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-wa {
+  flex: 1;
+  min-width: 200px;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   Leaderboard
+   ========================================================================== */
+.form-card-donor {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border-glass);
+}
+
+.donor-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.donor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+
+.donor-row.top {
+  background: rgba(16,185,129,.08);
+  border: 1px solid rgba(16,185,129,.25);
+}
+
+.donor-row:not(.top) {
+  background: rgba(140,150,170,.05);
+  border: 1px solid rgba(140,150,170,.14);
+}
+
+.donor-rank {
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.donor-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(140,150,170,.18);
+  color: #8c96aa;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.donor-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donor-amt {
+  font-size: 13px;
+  font-weight: 800;
+  color: #10b981;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Steps / Panduan
+   ========================================================================== */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  text-align: center;
+}
+
+.step-num {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin: 0 auto 1rem;
+  font-weight: 800;
+}
+
+.step-num-emerald { background: rgba(16, 185, 129, 0.2); color: var(--primary-emerald); }
+.step-num-rose { background: rgba(244, 63, 94, 0.2); color: #f43f5e; }
+.step-num-sky { background: rgba(6, 182, 212, 0.2); color: var(--accent-sky); }
+
+/* ==========================================================================
+   Impact Section
+   ========================================================================== */
+.impact-img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-emerald);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+/* ==========================================================================
+   Modal Variants
+   ========================================================================== */
+.modal-w-lg {
+  max-width: 900px;
+}
+
+.modal-w-md {
+  max-width: 520px;
+}
+
+/* ==========================================================================
+   Admin Table Buttons
+   ========================================================================== */
+.btn-sm {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.btn-xs {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.btn-approve {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.btn-reject {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  border-color: var(--accent-rose);
+  color: var(--accent-rose);
+}
+
+/* ==========================================================================
+   Adopsi Form Actions
+   ========================================================================== */
+.adopsi-form-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   QRIS / Payment Section
+   ========================================================================== */
+.adopsi-payment-info {
+  margin-top: 1.5rem;
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.qris-wrap {
+  text-align: center;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1rem;
+}
+
+.qris-img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+
+.payment-note {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.cert-section {
+  margin-top: 2rem;
+}
+
+/* ==========================================================================
+   Summary Price
+   ========================================================================== */
+.dn-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   Remaining Inline Replacements
+   ========================================================================== */
+.color-emerald { color: #10b981; }
+.color-white { color: #fff; }
+.text-muted-inline { color: var(--text-muted); }
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-margin-top {
+  margin-top: 1rem;
+}
+
+.cert-margin-top {
+  margin-top: 0.5rem;
+}
+
+.h4-title {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.btn-flex-1 { flex: 1; }
+.btn-flex-auto { flex: 0 0 auto; }
+
+.btn-with-icon {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.82rem;
+}
+
+.btn-sm-table {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.btn-row-gap {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.table-overflow {
+  overflow-x: auto;
+}
+
+.nav-brand-margin {
+  margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   Status Dots
+   ========================================================================== */
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
+}
+
+.status-dot-green { color: #10b981; }
+.status-dot-rose { color: #f43f5e; }
+.status-dot-amber { color: #f59e0b; }
+
+/* ==========================================================================
+   Vendor Detail Modal
+   ========================================================================== */
+.detail-grid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.detail-img {
+  width: 200px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-location {
+  font-size: 0.85rem;
+  color: var(--primary-emerald);
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.detail-title {
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.detail-address {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.detail-price {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.detail-price strong {
+  color: var(--primary-emerald);
+}
+
+.gear-list-title {
+  color: #fff;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 0.4rem;
+}
+
+.gear-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.gear-item {
+  background: rgba(255,255,255,0.03);
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+  color: #e5e7eb;
+  font-size: 0.88rem;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Form Utilities
+   ========================================================================== */
+.form-spacer {
+  margin-top: 1.5rem;
+}
+
+.form-flex-end {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+.empty-state {
+  grid-column: span 3;
+  text-align: center;
+  padding: 4rem 1rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-glass);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.empty-state-title {
+  color: #fff;
+}
+
+.empty-state-desc {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Admin Table Row Styles
+   ========================================================================== */
+.data-table td small {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   Certificate Section
+   ========================================================================== */
+.cert-note {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.cert-preview {
+  margin-top: 1rem;
+  display: none;
+  text-align: center;
+}
+
+.cert-canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid rgba(16,185,129,0.3);
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Certificate Section
+   ========================================================================== */
+
+.example-cert {
+  margin-top: 1.5rem;
+  text-align: center;
+  overflow: visible;
+}
+
+.example-cert p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   Qris Fallback
+   ========================================================================== */
+.qris-fallback {
+  padding: 2rem;
+  background: #f0fdf4;
+  border: 2px dashed #10b981;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.qris-fallback-icon {
+  font-size: 3rem;
+}
+
+.qris-fallback-title {
+  color: #166534;
+  font-weight: 600;
+}
+
+.qris-fallback-sub {
+  font-size: 0.85rem;
+  color: #15803d;
+}
+
+/* ==========================================================================
+   Admin Tab Content Padding
+   ========================================================================== */
+.admin-tab-content p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.admin-tab-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ==========================================================================
+   Nav Link Icons
+   ========================================================================== */
+.nav-link-icon {
+  margin-left: 0.25rem;
+}
+
+/* ==========================================================================
+   Modal Info Box
+   ========================================================================== */
+.modal-info {
+  background: rgba(16,185,129,.08);
+  border: 1px solid rgba(16,185,129,.25);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Section with Background
+   ========================================================================== */
+.section-bg-alt {
+  background: rgba(16, 26, 23, 0.4);
+}
+
+/* ==========================================================================
+   Focus Visible Enhancement
+   ========================================================================== */
+:focus-visible {
+  outline: 2px solid var(--primary-emerald);
+  outline-offset: 2px;
 }
