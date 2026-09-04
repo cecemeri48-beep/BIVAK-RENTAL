@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor photo build 2026-09-05-v9")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v10")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -260,7 +260,7 @@
 
 	function busy(form, on, labelWhenBusy) {
 		if (!form) return
-		var btn = form.querySelector('button[type="submit"]')
+		var btn = form.querySelector('button[type="submit"], #btnVendorSubmit')
 		if (!btn) return
 		if (on) {
 			btn.dataset.bvLabel = btn.innerHTML
@@ -329,10 +329,12 @@
 	/* ----------------------------------------------------------------------
 	   6. Vendor Submit
 	   ---------------------------------------------------------------------- */
+	var vendorSubmitRunning = false
 	window.handleVendorSubmit = async function (e) {
-		e.preventDefault()
-		if (e.stopPropagation) e.stopPropagation()
+		if (e && e.preventDefault) e.preventDefault()
+		if (e && e.stopPropagation) e.stopPropagation()
 		console.info("[BIVAK] Tombol kirim vendor diproses")
+		if (vendorSubmitRunning) return false
 		var form = document.getElementById("formAddVendor")
 		var gears = val("inputVendorGears").split(",").map(function(s){return s.trim()}).filter(Boolean)
 		var logoInput = document.getElementById("inputVendorLogo")
@@ -355,6 +357,7 @@
 			return false
 		}
 
+		vendorSubmitRunning = true
 		busy(form, true, "Mengunggah foto...")
 		try {
 			var logoUrl = ""
@@ -404,8 +407,33 @@
 			dbErr(err, "Pengajuan gagal dikirim")
 		} finally {
 			busy(form, false)
+			vendorSubmitRunning = false
 		}
 		return false
+	}
+
+	function bindVendorSubmit() {
+		var form = document.getElementById("formAddVendor")
+		var btn = document.getElementById("btnVendorSubmit")
+		if (btn && !btn.dataset.bivakBound) {
+			btn.dataset.bivakBound = "1"
+			btn.addEventListener("click", function(e) {
+				window.handleVendorSubmit(e)
+			})
+		}
+		if (form && !form.dataset.bivakBound) {
+			form.dataset.bivakBound = "1"
+			form.addEventListener("submit", function(e) {
+				window.handleVendorSubmit(e)
+			})
+		}
+		console.info("[BIVAK] Tombol vendor terhubung:", !!btn)
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", bindVendorSubmit)
+	} else {
+		bindVendorSubmit()
 	}
 
 	/* ----------------------------------------------------------------------
