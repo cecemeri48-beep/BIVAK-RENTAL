@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BIVAK v5 - Clean Build (ES5 Compatible)
  * Simple, reliable, no external dependencies
  */
@@ -141,10 +141,6 @@ function openVendorDetail(id) {
 
 function selTier(n) {
   BIVAK.tierSelected = n;
-  // Cocokkan lewat data-amount, bukan teks tombol. Teks tombol berbunyi
-  // "Rp 20K" sedangkan toLocaleString menghasilkan "20.000", sehingga
-  // pencocokan lama tidak pernah kena dan justru menghapus sorotan
-  // dari semua tombol.
   var btns = document.querySelectorAll('.tier-btn');
   for (var i = 0; i < btns.length; i++) {
     var match = parseInt(btns[i].getAttribute('data-amount'), 10) === n;
@@ -154,8 +150,6 @@ function selTier(n) {
   BIVAK.fillDonasiNominal();
 }
 
-// Isi nominal di form donasi dari tier yang sudah dipilih di luar modal,
-// supaya nilainya tidak perlu ditulis ulang.
 BIVAK.fillDonasiNominal = function() {
   var input = BIVAK.el('inputDonasiNominal');
   if (input) input.value = BIVAK.tierSelected || '';
@@ -229,7 +223,7 @@ function renderDonationList() {
   if (box && sorted.length === 0) {
     box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-dim);font-size:0.85rem;border:1px dashed rgba(140,150,170,.25);border-radius:12px">Belum ada donasi terverifikasi. Jadilah yang pertama mendukung konservasi Bawakaraeng.</div>';
   } else if (box) {
-    var medals = ['🥇', '🥈', '🥉'];
+    var medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
     box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
       var nm = BIVAK.escape(d.nama || 'Donatur');
       var top = i < 3;
@@ -322,17 +316,13 @@ function switchAdminTab(tabName) {
   var tabEl = BIVAK.el(pair.id);
   if (tabEl) tabEl.style.display = 'block';
 
-  // Load data for the selected tab
   if (tabName === 'adopsi') {
     if (typeof renderAdopsiAdmin === 'function') {
       renderAdopsiAdmin()
     } else {
-      console.warn("[BIVAK] renderAdopsiAdmin not found in local scope, trying window...")
       if (typeof window.renderAdopsiAdmin === 'function') {
         window.renderAdopsiAdmin()
       } else {
-        console.error("[BIVAK] renderAdopsiAdmin still not available!")
-        console.error("[BIVAK] Available global functions:", Object.keys(window).filter(k => k.includes('render')))
       }
     }
   }
@@ -449,7 +439,6 @@ function openModal(id) {
 function closeModal(id) {
   var m = BIVAK.el(id);
   if (m) m.classList.remove('active');
-  // Buka kunci hanya kalau tidak ada modal lain yang masih terbuka
   if (!document.querySelector('.modal-overlay.active')) BIVAK.lockScroll(false);
 }
 
@@ -473,7 +462,6 @@ function updateBadges() {
   }
 }
 
-// Backdrop dibuat sekali lalu dipakai ulang
 BIVAK.navBackdrop = function() {
   var el = document.getElementById('navBackdrop');
   if (!el) {
@@ -523,19 +511,14 @@ function filterByCity(city) {
    Helper tampilan
    --------------------------------------------------------------------- */
 
-// Daftar foto vendor yang tersedia di assets/.
 BIVAK.vendorPhotos = ['makassar', 'gowa', 'malino', 'maros', 'toraja', 'palopo'];
 
-// Foto placeholder lama/generik yang harus diganti foto per-kota.
 BIVAK.isGenericPhoto = function(src) {
   if (!src) return true;
   if (src.indexOf('unsplash') !== -1) return true;
   return /assets\/(gear-tent|gear-carrier|gear-fallback|hero-bg)/.test(src);
 };
 
-// Pilih foto berdasarkan kota. Kota tak dikenal dipetakan secara
-// deterministik ke salah satu foto, supaya tidak ada dua vendor
-// berurutan yang memakai gambar sama.
 BIVAK.photoForVendor = function(name, city) {
   var key = String(city || '').toLowerCase();
   var map = [
@@ -547,8 +530,6 @@ BIVAK.photoForVendor = function(name, city) {
   for (var i = 0; i < map.length; i++) {
     if (key.indexOf(map[i][0]) !== -1) return 'assets/vendor-' + map[i][1] + '.jpg';
   }
-  // FNV-1a: stabil antar-reload dan menyebar jauh lebih rata daripada
-  // hash shift-kurang, supaya kota tak dikenal tidak menumpuk di satu foto.
   var seed = String(name || '') + key;
   var h = 2166136261;
   for (var j = 0; j < seed.length; j++) {
@@ -558,11 +539,8 @@ BIVAK.photoForVendor = function(name, city) {
   return 'assets/vendor-' + BIVAK.vendorPhotos[h % BIVAK.vendorPhotos.length] + '.jpg';
 };
 
-// Sumber tunggal untuk foto vendor + varian lebar 600px untuk srcset.
 BIVAK.vendorImg = function(v, width) {
   var src = (v && v.image) ? v.image : '';
-  // Apa pun sumber datanya (hardcoded / Supabase / vendor baru), foto
-  // generik selalu diganti foto per-kota supaya tidak seragam.
   if (BIVAK.isGenericPhoto(src)) {
     src = BIVAK.photoForVendor(v && v.name, v && v.city);
   }
@@ -573,13 +551,11 @@ BIVAK.vendorImg = function(v, width) {
   return src;
 };
 
-// Pakai toast bila tersedia, alert hanya sebagai jaring pengaman.
 BIVAK.notify = function(type, title, message) {
   if (typeof window.toast === 'function') { window.toast(type, title, message); return; }
   alert(title + '\n' + message);
 };
 
-// Kunci scroll body saat modal / menu terbuka supaya latar tidak ikut bergerak.
 BIVAK.lockScroll = function(locked) {
   document.body.classList.toggle('no-scroll', !!locked);
 };
@@ -616,8 +592,6 @@ window.toggleSection = function (id, btn, forceOpen) {
 
 BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel', 'impactPanel'];
 
-// Buka panel otomatis bila pengguna melompat ke section itu dari menu,
-// supaya klik menu tidak berujung pada bagian yang tampak kosong.
 function openPanelFromHash() {
   var peta = { donasi: 'donasiPanel', adopsi: 'adopsiPanel' };
   var kunci = (location.hash || '').replace('#', '');
