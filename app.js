@@ -803,7 +803,7 @@ window.toggleSection = function (id, btn, forceOpen) {
 BIVAK.collapsiblePanels = ['konservasiPanel', 'donasiPanel', 'adopsiPanel', 'impactPanel'];
 
 window.openPanelFromHash = function() {
-  var peta = { donasi: ['konservasiPanel', 'donasiPanel'], adopsi: ['konservasiPanel', 'adopsiPanel'], konservasi: ['konservasiPanel'] };
+  var peta = { donasi: ['konservasiPanel', 'donasiPanel'], adopsi: ['konservasiPanel', 'adopsiPanel'], konservasi: ['konservasiPanel'], dampak: ['konservasiPanel'] };
   var kunci = (location.hash || '').replace('#', '');
   var ids = peta[kunci];
   if (ids) ids.forEach(function(id) { window.toggleSection(id, null, true); });
