@@ -209,7 +209,7 @@ window.openCollageLightbox = function(id) {
 
 // Tandai item bottom nav yang sedang aktif sesuai posisi scroll
 function initBottomNavSpy() {
-  var map = { katalog: 0, vendors: 0, donasi: 1, panduan: 2 };
+  var map = { katalog: 0, vendors: 0, donasi: 1 };
   var items = document.querySelectorAll('.mobile-bottom-nav a, .mobile-bottom-nav button');
   if (!items.length || !('IntersectionObserver' in window)) return;
   var io = new IntersectionObserver(function(entries) {
@@ -220,7 +220,7 @@ function initBottomNavSpy() {
       items.forEach(function(it, i) { it.classList.toggle('active', i === idx); });
     });
   }, { rootMargin: '-45% 0px -45% 0px' });
-  ['katalog', 'vendors', 'donasi', 'panduan'].forEach(function(id) {
+  ['katalog', 'vendors', 'donasi'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) io.observe(el);
   });
