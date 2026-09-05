@@ -800,13 +800,13 @@ window.toggleSection = function (id, btn, forceOpen) {
   return open;
 };
 
-BIVAK.collapsiblePanels = ['donasiPanel', 'adopsiPanel', 'impactPanel'];
+BIVAK.collapsiblePanels = ['konservasiPanel', 'donasiPanel', 'adopsiPanel', 'impactPanel'];
 
 window.openPanelFromHash = function() {
-  var peta = { donasi: 'donasiPanel', adopsi: 'adopsiPanel' };
+  var peta = { donasi: ['konservasiPanel', 'donasiPanel'], adopsi: ['konservasiPanel', 'adopsiPanel'], konservasi: ['konservasiPanel'] };
   var kunci = (location.hash || '').replace('#', '');
-  var id = peta[kunci];
-  if (id) window.toggleSection(id, null, true);
+  var ids = peta[kunci];
+  if (ids) ids.forEach(function(id) { window.toggleSection(id, null, true); });
 }
 
 window.initCollapsibles = function() {

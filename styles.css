@@ -3213,3 +3213,54 @@ html {
     min-height: 30px;
   }
 }
+
+/* ==========================================================================
+   Panel gabungan: Konservasi Gunung Bawakaraeng (Donasi + Adopsi)
+   ========================================================================== */
+.konservasi-section {
+  padding-bottom: 0;
+}
+
+.konservasi-toggle {
+  min-height: 64px;
+  font-size: 1.05rem;
+  padding: 1rem 1.2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(6,182,212,.08));
+  border: 1px solid rgba(16,185,129,.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.konservasi-toggle:hover {
+  background: linear-gradient(135deg, rgba(16,185,129,.32), rgba(6,182,212,.14));
+  border-color: var(--primary-emerald);
+}
+
+.konservasi-toggle .collapse-label i { font-size: 1.15rem; }
+
+.konservasi-hint {
+  color: var(--text-muted);
+  font-size: .8rem;
+  margin: .5rem 0 0;
+  text-align: center;
+}
+
+/* Saat panel terbuka, hint disembunyikan supaya tidak mengulang info */
+#konservasiPanel.open { margin-top: 0; }
+.konservasi-toggle[aria-expanded="true"] + .konservasi-hint { display: none; }
+
+/* Section di dalam panel: padding dirapatkan supaya tidak dobel */
+#konservasiPanel > .section { padding-top: 1.5rem; }
+#konservasiPanel > .section:last-child { padding-bottom: 2rem; }
+
+@media (max-width: 640px) {
+  .konservasi-section { padding-top: 1.35rem; }
+  .konservasi-toggle {
+    min-height: 58px;
+    font-size: .94rem;
+    padding: .85rem 1rem;
+    border-radius: 18px;
+  }
+  .konservasi-hint { font-size: .74rem; }
+  #konservasiPanel > .section { padding-top: 1.1rem; }
+}

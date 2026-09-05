@@ -141,6 +141,22 @@
     </div>
   </section>
 
+  <!-- Panel gabungan: Konservasi Gunung Bawakaraeng (Donasi + Adopsi) -->
+  <section id="konservasi" class="section konservasi-section">
+    <div class="container">
+      <button type="button" class="collapse-toggle konservasi-toggle" aria-expanded="false"
+              aria-controls="konservasiPanel"
+              data-open="Konservasi Gunung Bawakaraeng"
+              data-close="Konservasi Gunung Bawakaraeng"
+              onclick="toggleSection('konservasiPanel', this)">
+        <span class="collapse-label"><i class="fa-solid fa-mountain-sun"></i><span class="collapse-label-text">Konservasi Gunung Bawakaraeng</span></span>
+        <i class="fa-solid fa-chevron-down collapse-chevron"></i>
+      </button>
+      <p class="konservasi-hint">Donasi Pintu Angin &amp; Adopsi Pohon — ketuk panel untuk membuka.</p>
+    </div>
+  </section>
+  <div class="collapse-body" id="konservasiPanel">
+
   <!-- Section 2: DONASI PINTU ANGIN -->
   <section id="donasi" class="section donation-section">
     <div class="container">
@@ -377,6 +393,8 @@
       </div><!-- /adopsiPanel -->
     </div>
   </section>
+
+  </div><!-- /konservasiPanel -->
 
   <!-- Section 3: Dampak -->
   <section id="dampak" class="section">
