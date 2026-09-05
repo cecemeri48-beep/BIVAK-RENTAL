@@ -3084,10 +3084,8 @@ html {
 }
 
 /* ==========================================================================
-   Mobile UX v2: vendor section & user-friendliness
+   Mobile UX v2: chips, nav aktif, bottom sheet, lightbox koleksi
    ========================================================================== */
-
-/* Chip filter lokasi cepat */
 .city-chips {
   grid-column: 1 / -1;
   display: flex;
@@ -3123,7 +3121,6 @@ html {
   color: #04120d;
 }
 
-/* Bottom nav: state aktif */
 .mobile-bottom-nav a.active,
 .mobile-bottom-nav button.active {
   background: rgba(16,185,129,.14);
@@ -3132,7 +3129,39 @@ html {
 .mobile-bottom-nav a.active i,
 .mobile-bottom-nav button.active i { color: #34d399; }
 
-/* Detail vendor sebagai bottom sheet + CTA WhatsApp sticky di mobile */
+/* Badge Foto Koleksi sekarang tombol yang bisa diklik */
+.collage-badge-btn {
+  border: 1px solid rgba(255,255,255,.22);
+  font-family: inherit;
+  cursor: zoom-in;
+  transition: background .18s ease, transform .18s ease;
+}
+.collage-badge-btn:hover,
+.collage-badge-btn:focus-visible {
+  background: rgba(16,185,129,.9);
+  color: #04120d;
+  outline: none;
+}
+.collage-badge-btn:active { transform: scale(.96); }
+
+/* Caption di lightbox koleksi */
+.lightbox-caption {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 2rem);
+  padding: .5rem .9rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,.72);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #e5e7eb;
+  font-size: .78rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Detail vendor bottom sheet + CTA WhatsApp sticky di mobile */
 @media (max-width: 640px) {
   #modalVendorDetail.modal-overlay { align-items: flex-end; padding: 0; }
   #modalVendorDetail .modal-container {
@@ -3166,4 +3195,12 @@ html {
 
   .search-filter-card { overflow: hidden; }
   .city-chips { margin: 0 -0.1rem; }
+
+  /* Badge koleksi di HP: tetap pill kecil yang jelas bisa ditekan */
+  #vendorGridContainer .collage-badge-btn {
+    top: auto;
+    bottom: .45rem;
+    right: .45rem;
+    min-height: 30px;
+  }
 }

@@ -101,15 +101,7 @@ window.renderVendors = function(filteredList) {
   var list = filteredList || BIVAK.vendors;
 
   if (list.length === 0) {
-    container.innerHTML = '<div class="vendor-empty" style="grid-column:1/-1;text-align:center;padding:2.4rem 1.2rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px dashed var(--border-glass)">' +
-      '<i class="fa-solid fa-mountain-sun" style="font-size:2.2rem;color:var(--primary-emerald);opacity:.8"></i>' +
-      '<h3 style="color:#fff;margin:.7rem 0 .35rem">Belum Ketemu di Filter Ini</h3>' +
-      '<p style="color:var(--text-muted);font-size:.88rem;max-width:320px;margin:0 auto 1.1rem">Coba kata kunci lain atau lokasi berbeda. Punya rental sendiri? Daftarkan sekarang.</p>' +
-      '<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">' +
-        '<button class="btn btn-outline" onclick="resetVendorFilter()"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button>' +
-        '<button class="btn btn-primary" onclick="openModal(\'modalVendor\')"><i class="fa-solid fa-plus"></i> Daftarkan Vendor</button>' +
-      '</div>' +
-    '</div>';
+    container.innerHTML = '<div style="grid-column:span 3;text-align:center;padding:4rem 1rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px dashed var(--border-glass);"><i class="fa-solid fa-mountain-sun" style="font-size:3rem;color:var(--text-dim);margin-bottom:1rem;"></i><h3 style="color:#fff;">Tidak Ada Vendor</h3><p style="color:var(--text-muted)">Coba kata kunci lain atau lokasi berbeda.</p><div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem"><button class="btn btn-outline" onclick="resetVendorFilter()"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button><button class="btn btn-primary" onclick="openModal(\'modalVendor\')"><i class="fa-solid fa-plus"></i> Daftarkan Vendor</button></div></div>';
     return;
   }
 
@@ -121,11 +113,11 @@ window.renderVendors = function(filteredList) {
     return '<div class="vendor-card">' +
       '<div class="vendor-cover">' +
         (hasCollage
-          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover">'
+          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover;cursor:zoom-in" onclick="openCollageLightbox(' + v.id + ')">'
           : '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">') +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge"><i class="fa-solid fa-circle-check"></i> Terverifikasi</div>' : '') +
-        (hasCollage ? '<div class="collage-badge"><i class="fa-solid fa-images"></i> Foto Koleksi</div>' : '') +
+        (hasCollage ? '<button type="button" class="collage-badge collage-badge-btn" onclick="event.stopPropagation();openCollageLightbox(' + v.id + ')" title="Ketuk untuk memperbesar foto koleksi"><i class="fa-solid fa-images"></i> Foto Koleksi</button>' : '') +
       '</div>' +
       '<div class="vendor-body">' +
         '<div class="vendor-header">' +
@@ -192,6 +184,29 @@ window.pickCity = function(city) {
   if (typeof window.goMobileSection === 'function') window.goMobileSection('katalog');
 };
 
+// Lightbox untuk memperbesar Foto Koleksi vendor
+window.openCollageLightbox = function(id) {
+  var v = BIVAK.vendors.find(function(x) { return x.id === id; });
+  var src = v && v.collage ? v.collage : '';
+  if (!src) return;
+  var lb = document.getElementById('collageLightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'collageLightbox';
+    lb.className = 'cert-lightbox';
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-label', 'Foto koleksi vendor diperbesar');
+  }
+  lb.innerHTML = '<img src="' + BIVAK.escape(src) + '" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '">' +
+    '<div class="lightbox-caption">' + BIVAK.escape(v.name) + ' &mdash; ketuk di mana saja untuk menutup</div>';
+  lb.onclick = function() {
+    lb.remove();
+    if (BIVAK.lockScroll) BIVAK.lockScroll(false);
+  };
+  if (!lb.isConnected) document.body.appendChild(lb);
+  if (BIVAK.lockScroll) BIVAK.lockScroll(true);
+};
+
 // Tandai item bottom nav yang sedang aktif sesuai posisi scroll
 function initBottomNavSpy() {
   var map = { katalog: 0, vendors: 0, donasi: 1, panduan: 2 };
@@ -225,7 +240,7 @@ window.openVendorDetail = function(id) {
   BIVAK.el('detailVendorBody').innerHTML =
     '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem">' +
       (hasCollage
-        ? '<img src="' + BIVAK.escape(collageSrc) + '" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)">'
+        ? '<img src="' + BIVAK.escape(collageSrc) + '" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md);cursor:zoom-in" onclick="openCollageLightbox(' + v.id + ')" title="Ketuk untuk memperbesar">'
         : '<img src="' + BIVAK.vendorImg(v) + '" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="200" height="160" loading="lazy" decoding="async" style="width:200px;height:160px;object-fit:cover;border-radius:var(--radius-md)" onerror="this.onerror=null;this.src=\'assets/gear-fallback.jpg\'">') +
       '<div style="flex:1">' +
         '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem">' +
