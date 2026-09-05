@@ -2073,8 +2073,6 @@ canvas.cert-zoom {
 
   #vendorGridContainer .location-badge { left: .45rem; }
   #vendorGridContainer .verified-badge { right: .45rem; }
-  #vendorGridContainer .verified-badge { max-width: 34px; overflow: hidden; }
-  #vendorGridContainer .verified-badge i { margin-right: .15rem; }
   #vendorGridContainer .collage-badge { bottom: .45rem; right: .45rem; }
 
   /* Misi sosial: ringkas di mobile, detail dibuka bila dibutuhkan */
@@ -3161,8 +3159,20 @@ html {
   pointer-events: none;
 }
 
-/* Detail vendor bottom sheet + CTA WhatsApp sticky di mobile */
 @media (max-width: 640px) {
+  /* Badge Terverifikasi: lingkaran centang bersih, teks tidak lagi kepotong.
+     Teks lengkap tetap terbaca lewat title/aria-label dan muncul penuh di modal detail. */
+  #vendorGridContainer .verified-badge {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    gap: 0;
+  }
+  #vendorGridContainer .verified-badge i { margin: 0; font-size: .68rem; }
+  #vendorGridContainer .verified-badge .verified-text { display: none; }
+
   #modalVendorDetail.modal-overlay { align-items: flex-end; padding: 0; }
   #modalVendorDetail .modal-container {
     width: 100%;
@@ -3196,7 +3206,6 @@ html {
   .search-filter-card { overflow: hidden; }
   .city-chips { margin: 0 -0.1rem; }
 
-  /* Badge koleksi di HP: tetap pill kecil yang jelas bisa ditekan */
   #vendorGridContainer .collage-badge-btn {
     top: auto;
     bottom: .45rem;
