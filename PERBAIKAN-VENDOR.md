@@ -22,6 +22,8 @@
   tersebut vendor tidak dapat tampil sebagai aktif atau masuk katalog.
 - Logo dan kolase sekarang diunggah ke bucket Supabase Storage `vendor-images`,
   lalu URL asli disimpan pada `logo_url` dan `collage_url`.
+- Jika Storage atau kolom gambar belum siap, form memakai fallback gambar
+  terkompresi agar pengajuan tetap masuk antrean dan modal dapat ditutup.
 
 ## Cara menerapkan
 
