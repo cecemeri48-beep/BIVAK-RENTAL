@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor submit build 2026-09-05-v11")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v12")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
