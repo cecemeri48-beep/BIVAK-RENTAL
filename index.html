@@ -35,9 +35,10 @@
       <a href="#" class="nav-brand">
         <div class="brand-logos">
           <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
-          <button class="btn-admin-icon" onclick="openAdminPanel()" title="Panel Admin">
-            <img src="assets/coin.jpg" alt="Admin" class="brand-logo coin-logo" width="40" height="40">
-          </button>
+          <span class="coin-trigger" onclick="openAdminPanel()" title="Panel Admin" role="button" tabindex="0">
+            <img src="assets/coin.jpg" alt="RCS.CBS Medallion" class="brand-logo coin-logo" width="40" height="40">
+            <span class="notification-badge coin-admin-badge" id="coinAdminBadge">0</span>
+          </span>
         </div>
         <div class="brand-text">
           <h1>RCS.CBS - BIVAK</h1>
@@ -47,13 +48,13 @@
 
       <ul class="nav-menu" id="navMenu">
         <li><a href="#katalog" class="nav-link active" onclick="closeMobileMenu()">Katalog Vendor</a></li>
-        <li><a href="#donasi" class="nav-link" onclick="closeMobileMenu()">Donasi Pintu Angin <i class="fa-solid fa-heart text-rose"></i></a><span class="notification-badge donasi-badge badge-hidden" id="donasiBadge">0</span></li>
-        <li><a href="#adopsi" class="nav-link" onclick="closeMobileMenu()">Adopsi Pohon <i class="fa-solid fa-seedling text-emerald"></i></a><span class="notification-badge adopsi-badge badge-hidden" id="adopsiBadge">0</span></li>
+        <li><a href="#donasi" class="nav-link" onclick="closeMobileMenu()">Donasi Pintu Angin <i class="fa-solid fa-heart text-rose" style="color: #f43f5e;"></i></a><span class="notification-badge donasi-badge" id="donasiBadge" style="display:none">0</span></li>
+        <li><a href="#adopsi" class="nav-link" onclick="closeMobileMenu()">Adopsi Pohon <i class="fa-solid fa-seedling text-emerald"></i></a><span class="notification-badge adopsi-badge" id="adopsiBadge" style="display:none">0</span></li>
         <li><a href="#dampak" class="nav-link" onclick="closeMobileMenu()">Dampak Konservasi</a></li>
         <li><a href="#panduan" class="nav-link" onclick="closeMobileMenu()">Panduan</a></li>
 
         <li class="mobile-drawer-actions">
-          <a class="btn-pintuangin btn-block w-full" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
+          <a class="btn-pintuangin btn-block" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" style="width:100%" title="Buka Aplikasi Pintu Angin">
             <i class="fa-solid fa-mountain-sun"></i> <span>Buka Aplikasi Pintu Angin</span>
           </a>
           <button class="btn btn-outline btn-block" onclick="closeMobileMenu(); openModal('modalVendor')">
@@ -66,7 +67,7 @@
       </ul>
 
       <div class="nav-actions">
-        <a class="btn-pintuangin btn-small" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
+        <a class="btn-pintuangin" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" style="padding:0.5rem 1.1rem;font-size:0.82rem" title="Buka Aplikasi Pintu Angin">
           <i class="fa-solid fa-mountain-sun"></i> <span>Pintu Angin</span>
         </a>
         <button class="btn btn-outline desktop-only-action" onclick="openModal('modalVendor')">
@@ -116,6 +117,15 @@
         <button class="btn btn-primary" onclick="filterVendors()">
           <i class="fa-solid fa-filter"></i> Cari
         </button>
+        <div class="city-chips" aria-label="Filter cepat lokasi">
+          <button type="button" class="city-chip active" data-city="" onclick="pickCity('')">Semua</button>
+          <button type="button" class="city-chip" data-city="Makassar" onclick="pickCity('Makassar')">Makassar</button>
+          <button type="button" class="city-chip" data-city="Gowa" onclick="pickCity('Gowa')">Gowa</button>
+          <button type="button" class="city-chip" data-city="Malino" onclick="pickCity('Malino')">Malino</button>
+          <button type="button" class="city-chip" data-city="Maros" onclick="pickCity('Maros')">Maros</button>
+          <button type="button" class="city-chip" data-city="Toraja" onclick="pickCity('Toraja')">Toraja</button>
+          <button type="button" class="city-chip" data-city="Palopo" onclick="pickCity('Palopo')">Palopo</button>
+        </div>
       </div>
 
     </div>
@@ -137,10 +147,10 @@
   <section id="donasi" class="section donation-section">
     <div class="container">
       <div class="section-header">
-        <a class="btn-pintuangin mb-md" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
+        <a class="btn-pintuangin" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" style="margin-bottom:1.1rem" title="Buka Aplikasi Pintu Angin">
           <i class="fa-solid fa-mountain-sun"></i> <span>Buka Aplikasi Pintu Angin</span>
         </a>
-        <div class="section-subtitle section-subtitle-rose">
+        <div class="section-subtitle" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">
           <i class="fa-solid fa-heart"></i> Donasi Pintu Angin Bawakaraeng
         </div>
         <h2 class="section-title">Salurkan Donasi untuk Konservasi</h2>
@@ -151,19 +161,19 @@
 
       <!-- Donation Progress -->
       <div class="donation-progress-card">
-        <div class="row-between quota-label">
+        <div class="row-between" style="font-size:13px;font-weight:700;margin-bottom:8px">
           <span>Terkumpul 2026</span>
-          <span class="amount-display" id="dnCollected">Rp 47.500.000</span>
+          <span style="color:#10b981;font-size:15px" id="dnCollected">Rp 47.500.000</span>
         </div>
-        <div class="quota mt-sm"><i class="progress-bar" id="dnBar" style="width: 63%"></i></div>
-        <div class="row-between fs-xs text-muted mt-sm">
+        <div class="quota" style="margin-top:8px"><i id="dnBar" style="width:63%;background:linear-gradient(90deg,#10b981,#059669)"></i></div>
+        <div class="row-between" style="font-size:12px;color:var(--text-muted);margin-top:4px">
           <span>Target Rp 75.000.000</span>
           <span id="dnPct">63%</span>
         </div>
       </div>
 
       <!-- Donasi Tier Buttons -->
-      <div class="donation-tier-row">
+      <div class="donation-tier-container" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
         <button type="button" class="tier-btn" data-amount="20000" aria-pressed="false" onclick="selTier(20000)"><i class="fa-solid fa-leaf"></i> Rp 20K</button>
         <button type="button" class="tier-btn on" data-amount="50000" aria-pressed="true" onclick="selTier(50000)"><i class="fa-solid fa-seedling"></i> Rp 50K</button>
         <button type="button" class="tier-btn" data-amount="100000" aria-pressed="false" onclick="selTier(100000)"><i class="fa-solid fa-tree"></i> Rp 100K</button>
@@ -171,12 +181,12 @@
       </div>
 
       <!-- CTA Buttons -->
-      <div class="donation-cta-row">
-        <button class="btn btn-rose btn-cta-flex" onclick="donasi()">
+      <div class="donation-cta" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
+        <button class="btn btn-rose" onclick="donasi()" style="flex:1;min-width:200px">
           <i class="fa-solid fa-hand-holding-heart"></i> Donasi Sekarang
         </button>
-        <a class="btn btn-wa-style btn-cta-flex" href="https://wa.me/6282320124040?text=Halo%20RCS.CBS%2C%20saya%20ingin%20bertanya%20seputar%20donasi%20Gunung%20Bawakaraeng." target="_blank" rel="noopener">
-           <i class="fa-brands fa-whatsapp"></i> Hubungi Kami
+        <a class="btn" style="flex:1;min-width:200px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none" href="https://wa.me/6282320124040?text=Halo%20Admin%20RCS.CBS%2C%20saya%20ingin%20bertanya%20seputar%20donasi%20Gunung%20Bawakaraeng." target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i> Hubungi Admin RC
         </a>
       </div>
 
@@ -193,48 +203,48 @@
       <div class="collapse-body" id="donasiPanel">
 
       <!-- Donor Leaderboard -->
-      <div class="sh sh-rose"><span class="bar"></span><h3>Donatur Bawakaraeng</h3></div>
-      <div class="form-card bg-glass">
-        <div id="dnDonors" class="max-height-400 overflow-y-auto">
+      <div class="sh"><span class="bar" style="background:#f43f5e"></span><h3>Donatur Bawakaraeng</h3></div>
+      <div class="form-card" style="background:rgba(255,255,255,.03);border:1px solid var(--border-glass)">
+        <div id="dnDonors" style="max-height:400px;overflow-y:auto">
           <!-- Populated by JS -->
         </div>
-        <p class="note mt-sm">Nama akan muncul setelah donasi diverifikasi.</p>
+        <p class="note" style="margin-top:10px">Nama muncul otomatis setelah donasi diverifikasi admin.</p>
       </div>
 
       <!-- Dana Alokasi -->
-      <div class="sh sh-emerald"><span class="bar"></span><h3>Ke mana dana disalurkan?</h3></div>
-      <div class="form-card alloc flex-column gap-md" id="allocList">
+      <div class="sh"><span class="bar" style="background:#10b981"></span><h3>Ke mana dana disalurkan?</h3></div>
+      <div class="form-card alloc" id="allocList" style="display:flex;flex-direction:column;gap:1rem">
         <div>
-          <div class="row-small">
-            <span class="text-white"><i class="fa-solid fa-tree text-emerald me-sm"></i>Reboisasi & Bibit Pohon Endemik</span>
-            <span class="text-emerald">60%</span>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-tree" style="color:#10b981;margin-right:6px"></i>Reboisasi & Bibit Pohon Endemik</span>
+            <span style="color:#10b981">60%</span>
           </div>
-          <div class="quota"><i class="progress-bar" style="width: 60%"></i></div>
-          <p class="fs-xs text-muted mt-sm">Pembelian bibit, penanaman rutin, dan perawatan pohon di lahan kritis Bawakaraeng.</p>
+          <div class="quota"><i style="width:60%;background:linear-gradient(90deg,#10b981,#059669)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Pembelian bibit, penanaman rutin, dan perawatan pohon di lahan kritis Bawakaraeng.</p>
         </div>
         <div>
-          <div class="row-small">
-            <span class="text-white"><i class="fa-solid fa-shield-halved text-sky me-sm"></i>Patroli & Keamanan Jalur</span>
-            <span class="text-sky">20%</span>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-shield-halved" style="color:#06b6d4;margin-right:6px"></i>Patroli & Keamanan Jalur</span>
+            <span style="color:#06b6d4">20%</span>
           </div>
-          <div class="quota"><i class="progress-bar progress-bar-sky" style="width: 20%"></i></div>
-          <p class="fs-xs text-muted mt-sm">Operasional patroli jalur Pintu Angin, pencegahan kebakaran, dan dukungan tim SAR.</p>
+          <div class="quota"><i style="width:20%;background:linear-gradient(90deg,#06b6d4,#0284c7)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Operasional patroli jalur Pintu Angin, pencegahan kebakaran, dan dukungan tim SAR.</p>
         </div>
         <div>
-          <div class="row-small">
-            <span class="text-white"><i class="fa-solid fa-graduation-cap text-amber me-sm"></i>Edukasi Lingkungan</span>
-            <span class="text-amber">10%</span>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-graduation-cap" style="color:#f59e0b;margin-right:6px"></i>Edukasi Lingkungan</span>
+            <span style="color:#f59e0b">10%</span>
           </div>
-          <div class="quota"><i class="progress-bar progress-bar-amber" style="width: 10%"></i></div>
-          <p class="fs-xs text-muted mt-sm">Kampanye sadar sampah, pelatihan KPA, dan edukasi pendaki pemula.</p>
+          <div class="quota"><i style="width:10%;background:linear-gradient(90deg,#f59e0b,#d97706)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Kampanye sadar sampah, pelatihan KPA, dan edukasi pendaki pemula.</p>
         </div>
         <div>
-          <div class="row-small">
-            <span class="text-white"><i class="fa-solid fa-people-group text-rose me-sm"></i>Operasional Relawan</span>
-            <span class="text-rose">10%</span>
+          <div class="row-between" style="font-size:0.88rem;font-weight:700;margin-bottom:6px">
+            <span style="color:#fff"><i class="fa-solid fa-people-group" style="color:#f43f5e;margin-right:6px"></i>Operasional Relawan</span>
+            <span style="color:#f43f5e">10%</span>
           </div>
-          <div class="quota"><i class="progress-bar progress-bar-rose" style="width: 10%"></i></div>
-          <p class="fs-xs text-muted mt-sm">Logistik, transportasi, dan konsumsi relawan saat aksi lapangan.</p>
+          <div class="quota"><i style="width:10%;background:linear-gradient(90deg,#f43f5e,#e11d48)"></i></div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px">Logistik, transportasi, dan konsumsi relawan saat aksi lapangan.</p>
         </div>
       </div>
       <p class="note">Laporan keuangan lengkap dipublikasikan tiap kuartal oleh RCS.CBS.</p>
@@ -243,10 +253,10 @@
   </section>
 
   <!-- Section: Adopsi Pohon -->
-  <section id="adopsi" class="section section-alt">
+  <section id="adopsi" class="section" style="background: linear-gradient(135deg, rgba(8,185,111,0.08), rgba(16,185,129,0.04));">
     <div class="container">
-      <div class="sh sh-emerald"><span class="bar"></span><h3><i class="fa-solid fa-seedling"></i> Adopsi Pohon Bawakaraeng</h3></div>
-      <p class="text-muted mb-lg">Danai satu pohon untuk direstorasi di lahan kritis Bawakaraeng. Dapatkan sertifikat digital setelah verifikasi.</p>
+      <div class="sh"><span class="bar" style="background:#10b981"></span><h3><i class="fa-solid fa-seedling"></i> Adopsi Pohon Bawakaraeng</h3></div>
+      <p style="color: var(--text-muted); margin-bottom: 1.25rem;">Danai satu pohon untuk direstorasi di lahan kritis Bawakaraeng. Dapatkan sertifikat digital setelah verifikasi.</p>
       <button type="button" class="collapse-toggle" aria-expanded="false"
               aria-controls="adopsiPanel"
               data-open="Lihat Paket, Form &amp; Sertifikat" data-close="Tutup Paket, Form &amp; Sertifikat"
@@ -260,31 +270,31 @@
       <div class="collapse-body" id="adopsiPanel">
 
       <!-- Paket Adopsi -->
-      <div class="adopsi-packages grid-2col mb-lg">
-        <div class="adopsi-card form-card adopsi-card-wrapper" onclick="selectAdopsiPackage('bibit', 25000, 'Bibit')" id="pkg-bibit">
-          <div class="fs-2xl mb-sm">🌱</div>
-          <h4 class="text-white mb-sm">Paket Bibit</h4>
-          <p class="text-muted fs-sm">1 Bibit Endemik + Tanam</p>
-          <div class="fs-lg font-extrabold text-emerald mt-sm">Rp 25.000</div>
+      <div class="adopsi-packages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
+        <div class="adopsi-card form-card" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s" onclick="selectAdopsiPackage('bibit', 25000, 'Bibit')" id="pkg-bibit">
+          <div style="font-size:2rem;margin-bottom:0.5rem">🌱</div>
+          <h4 style="color:#fff;margin-bottom:0.25rem">Paket Bibit</h4>
+          <p style="color:var(--text-muted);font-size:0.85rem">1 Bibit Endemik + Tanam</p>
+          <div style="font-size:1.25rem;font-weight:800;color:#10b981;margin-top:0.5rem">Rp 25.000</div>
         </div>
-        <div class="adopsi-card form-card adopsi-card-wrapper" onclick="selectAdopsiPackage('pohon', 100000, 'Pohon')" id="pkg-pohon">
-          <div class="fs-2xl mb-sm">🌳</div>
-          <h4 class="text-white mb-sm">Paket Pohon</h4>
-          <p class="text-muted fs-sm">1 Pohon + Perawatan 1 Thn</p>
-          <div class="fs-lg font-extrabold text-emerald mt-sm">Rp 100.000</div>
+        <div class="adopsi-card form-card" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s" onclick="selectAdopsiPackage('pohon', 100000, 'Pohon')" id="pkg-pohon">
+          <div style="font-size:2rem;margin-bottom:0.5rem">🌳</div>
+          <h4 style="color:#fff;margin-bottom:0.25rem">Paket Pohon</h4>
+          <p style="color:var(--text-muted);font-size:0.85rem">1 Pohon + Perawatan 1 Thn</p>
+          <div style="font-size:1.25rem;font-weight:800;color:#10b981;margin-top:0.5rem">Rp 100.000</div>
         </div>
-        <div class="adopsi-card form-card adopsi-card-wrapper" onclick="selectAdopsiPackage('rumpun', 500000, 'Rumpun')" id="pkg-rumpun">
-          <div class="fs-2xl mb-sm">🌲</div>
-          <h4 class="text-white mb-sm">Paket Rumpun</h4>
-          <p class="text-muted fs-sm">10 Pohon + Monitoring</p>
-          <div class="fs-lg font-extrabold text-emerald mt-sm">Rp 500.000</div>
+        <div class="adopsi-card form-card" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s" onclick="selectAdopsiPackage('rumpun', 500000, 'Rumpun')" id="pkg-rumpun">
+          <div style="font-size:2rem;margin-bottom:0.5rem">🌲</div>
+          <h4 style="color:#fff;margin-bottom:0.25rem">Paket Rumpun</h4>
+          <p style="color:var(--text-muted);font-size:0.85rem">10 Pohon + Monitoring</p>
+          <div style="font-size:1.25rem;font-weight:800;color:#10b981;margin-top:0.5rem">Rp 500.000</div>
         </div>
       </div>
 
       <!-- Form Adopsi -->
-      <div class="form-card d-none" id="adopsiFormCard">
-        <h4 class="text-white mb-md"><i class="fa-solid fa-seedling"></i> Form Adopsi Pohon</h4>
-        <div class="grid-2col">
+      <div class="form-card" id="adopsiFormCard" style="display:none">
+        <h4 style="color:#fff;margin-bottom:1rem"><i class="fa-solid fa-seedling"></i> Form Adopsi Pohon</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div class="input-group">
             <label>Nama untuk Sertifikat</label>
             <input type="text" id="adopsiNama" class="form-control" placeholder="Nama kamu / instansi">
@@ -295,75 +305,75 @@
             <small class="note">Kode adopsi akan dikirim ke nomor ini setelah diverifikasi.</small>
           </div>
         </div>
-        <div class="summary-box mt-md">
-          <div class="flex-between mb-sm">
-            <span class="text-muted">Paket dipilih:</span>
-            <span class="text-white font-bold" id="adopsiSelectedPkg">-</span>
+        <div style="margin-top:1rem;padding:1rem;background:rgba(16,185,129,0.1);border-radius:var(--radius-md);border:1px solid rgba(16,185,129,0.2)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+            <span style="color:var(--text-muted)">Paket dipilih:</span>
+            <span style="color:#fff;font-weight:700" id="adopsiSelectedPkg">-</span>
           </div>
-          <div class="flex-between">
-            <span class="text-muted">Total Pembayaran:</span>
-            <span class="font-extrabold fs-lg text-emerald" id="adopsiSelectedAmt">-</span>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--text-muted)">Total Pembayaran:</span>
+            <span style="color:#10b981;font-size:1.25rem;font-weight:800" id="adopsiSelectedAmt">-</span>
           </div>
         </div>
-        <div class="flex-gap-md mt-md">
-          <button class="btn btn-primary btn-full" onclick="submitAdopsi()"><i class="fa-solid fa-paper-plane"></i> Ajukan Adopsi</button>
-          <button class="btn btn-outline" onclick="cancelAdopsi()">Batal</button>
+        <div style="margin-top:1rem;display:flex;gap:0.75rem">
+          <button class="btn btn-primary" onclick="submitAdopsi()" style="flex:1"><i class="fa-solid fa-paper-plane"></i> Ajukan Adopsi</button>
+          <button class="btn btn-outline" onclick="cancelAdopsi()" style="flex:0 0 auto">Batal</button>
         </div>
       </div>
 
       <!-- Info QRIS -->
-      <div class="form-card d-none mt-lg" id="adopsiPaymentInfo">
-        <div class="text-center mb-md">
-          <div class="fs-3xl mb-sm">🌱</div>
-          <h4 class="text-white">Lanjutkan Pembayaran</h4>
-          <p class="text-muted fs-md">Pindai QRIS di bawah atau transfer ke Rekening RCS.CBS</p>
+      <div class="form-card" id="adopsiPaymentInfo" style="display:none;margin-top:1.5rem">
+        <div style="text-align:center;margin-bottom:1rem">
+          <div style="font-size:3rem;margin-bottom:0.5rem">🌱</div>
+          <h4 style="color:#fff">Lanjutkan Pembayaran</h4>
+          <p style="color:var(--text-muted);font-size:0.9rem">Pindai QRIS di bawah atau transfer ke Rekening RCS.CBS</p>
         </div>
-        <div class="text-center p-lg mb-md bg-white rounded-lg">
-          <img src="assets/qris-gopay.png" alt="QRIS GoPay" width="200" height="200" loading="lazy" class="cert-canvas" onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;background:#f0fdf4;border:2px dashed #10b981;border-radius:1rem;text-align:center\'><div style=\'font-size:3rem\'>💳</div><p style=\'color:#166534;font-weight:600\'>QRIS GoPay</p><p style=\'font-size:0.85rem;color:#15803d\'>RCS.CBS Bawakaraeng</p></div>'">
+        <div style="text-align:center;padding:1.5rem;background:#fff;border-radius:var(--radius-lg);margin-bottom:1rem">
+          <img src="assets/qris-gopay.png" alt="QRIS GoPay" width="200" height="200" loading="lazy" style="width:200px;height:200px;object-fit:contain" onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;background:#f0fdf4;border:2px dashed #10b981;border-radius:1rem;text-align:center\'><div style=\'font-size:3rem\'>💳</div><p style=\'color:#166534;font-weight:600\'>QRIS GoPay</p><p style=\'font-size:0.85rem;color:#15803d\'>RCS.CBS Bawakaraeng</p></div>'">
         </div>
-        <div class="grid-2col">
-          <div class="payment-box">
-            <div class="text-muted">Transfer ke:</div>
-            <div class="text-white font-bold">Bank BRI</div>
-            <div class="text-emerald font-extrabold">082320124040</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.9rem">
+          <div style="padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm)">
+            <div style="color:var(--text-muted)">Transfer ke:</div>
+            <div style="color:#fff;font-weight:700">Bank BRI</div>
+            <div style="color:#10b981;font-weight:800">082320124040</div>
           </div>
-          <div class="payment-box">
-            <div class="text-muted">Atas Nama:</div>
-            <div class="text-white font-bold">RCS.CBS</div>
-            <div class="text-muted">Gunung Bawakaraeng</div>
+          <div style="padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm)">
+            <div style="color:var(--text-muted)">Atas Nama:</div>
+            <div style="color:#fff;font-weight:700">RCS.CBS</div>
+            <div style="color:var(--text-muted)">Gunung Bawakaraeng</div>
           </div>
         </div>
-        <p class="note mt-md text-center">Setelah transfer, tekan tombol di bawah untuk mengkonfirmasi. Tim kami akan memverifikasi dan menerbitkan kode adopsi.</p>
-        <button class="btn btn-whatsapp btn-full mt-sm" onclick="confirmAdopsiPayment()"><i class="fa-brands fa-whatsapp"></i> Saya Sudah Bayar — Konfirmasi</button>
+        <p class="note" style="margin-top:1rem;text-align:center">Setelah transfer, tekan tombol di bawah untuk mengkonfirmasi. Admin akan memverifikasi dan menerbitkan kode adopsi.</p>
+        <button class="btn btn-whatsapp" onclick="confirmAdopsiPayment()" style="width:100%;margin-top:0.5rem"><i class="fa-brands fa-whatsapp"></i> Saya Sudah Bayar — Konfirmasi</button>
       </div>
 
       <!-- Sertifikat -->
-      <div class="sh sh-emerald mt-lg"><span class="bar"></span><h3><i class="fa-solid fa-certificate"></i> Unduh Sertifikat Adopsi</h3></div>
-      <div class="form-card bg-glass">
-        <p class="text-muted mb-md">Sudah mengadopsi pohon? Masukkan <b class="text-emerald">kode adopsi</b>-mu (format: POH-XXXXX) untuk mengunduh sertifikat resmi.</p>
+      <div class="sh" style="margin-top:2rem"><span class="bar" style="background:#10b981"></span><h3><i class="fa-solid fa-certificate"></i> Unduh Sertifikat Adopsi</h3></div>
+      <div class="form-card" style="background:rgba(255,255,255,.03);border:1px solid var(--border-glass)">
+        <p style="color:var(--text-muted);margin-bottom:1rem">Sudah mengadopsi pohon? Masukkan <b style="color:#10b981">kode adopsi</b>-mu (format: POH-XXXXX) untuk mengunduh sertifikat resmi.</p>
         <div class="input-group">
           <label>Kode Adopsi</label>
           <input type="text" id="certAdopsiCode" class="form-control" placeholder="POH-XXXXX" oninput="checkAdopsiCode()">
-          <div id="certCodeMsg" class="note mt-sm"></div>
+          <div id="certCodeMsg" class="note" style="margin-top:0.5rem"></div>
         </div>
-        <div class="input-group mt-md">
+        <div class="input-group" style="margin-top:1rem">
           <label>Nama Penerima</label>
           <input type="text" id="certAdopsiName" class="form-control" placeholder="Nama lengkap untuk sertifikat" oninput="updateCertPreview()">
         </div>
-        <div id="certPreview" class="mt-md d-none text-center">
-          <canvas id="certCanvas" class="cert-zoom cert-canvas" width="1400" height="990"></canvas>
+        <div id="certPreview" style="margin-top:1rem;display:none;text-align:center">
+          <canvas id="certCanvas" class="cert-zoom" width="1400" height="990" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(16,185,129,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
           <p class="cert-hint">Ketuk sertifikat untuk memperbesar</p>
         </div>
-        <button class="btn btn-primary btn-full mt-md" onclick="downloadAdopsiCert()" id="btnDownloadCert" disabled>
+        <button class="btn btn-primary" onclick="downloadAdopsiCert()" style="width:100%;margin-top:1rem" id="btnDownloadCert" disabled>
           <i class="fa-solid fa-download"></i> Unduh Sertifikat (PNG)
         </button>
-        <p class="note mt-sm text-center">File PNG resolusi tinggi. Wajib memasukkan kode adopsi yang valid.</p>
+        <p class="note" style="margin-top:0.5rem;text-align:center">File PNG resolusi tinggi. Wajib memasukkan kode adopsi yang valid.</p>
       </div>
       
       <!-- Contoh Sertifikat -->
-      <div class="form-card mt-lg text-center overflow-visible">
-        <p class="text-muted mb-md fs-md">Contoh Sertifikat Adopsi Pohon:</p>
-        <canvas id="exampleCertCanvas" class="cert-zoom cert-canvas cert-canvas-example" width="1400" height="990"></canvas>
+      <div class="form-card" style="margin-top:1.5rem;text-align:center;overflow:visible">
+        <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem">Contoh Sertifikat Adopsi Pohon:</p>
+        <canvas id="exampleCertCanvas" class="cert-zoom" width="1400" height="990" style="width:100%;height:auto;border-radius:8px;border:2px solid rgba(247,224,138,0.3);max-width:100%;display:block;margin:0 auto"></canvas>
           <p class="cert-hint">Ketuk sertifikat untuk memperbesar</p>
       </div>
       </div><!-- /adopsiPanel -->
@@ -376,8 +386,8 @@
       <div class="impact-banner">
         <div>
           <div class="section-subtitle"><i class="fa-solid fa-seedling"></i> Misi Sosial RCS.CBS</div>
-          <h2 class="hero-title-lg">Membangun Ekosistem Kamping Berkelanjutan</h2>
-          <p class="text-muted mb-lg">
+          <h2 style="font-size: 2rem; color: #fff; margin-bottom: 1rem;">Membangun Ekosistem Kamping Berkelanjutan</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
             RCS.CBS - BIVAK hadir sebagai jembatan kolaborasi antara vendor, pegiat alam, dan komunitas pecinta alam untuk melestarikan keasrian alam Gunung Bawakaraeng.
           </p>
           <button class="collapse-toggle impact-mobile-toggle"
@@ -395,42 +405,42 @@
             <li class="impact-item">
               <div class="impact-icon"><i class="fa-solid fa-tree"></i></div>
               <div>
-                <h4 class="text-white">Program Reboisasi Hutan Bawakaraeng</h4>
-                <p class="text-muted fs-sm">Pendanaan donasi untuk bibit pohon endemik dan penanaman rutin bersama KPA.</p>
+                <h4 style="color: #fff;">Program Reboisasi Hutan Bawakaraeng</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Pendanaan donasi untuk bibit pohon endemik dan penanaman rutin bersama KPA.</p>
               </div>
             </li>
             <li class="impact-item">
               <div class="impact-icon"><i class="fa-solid fa-hand-holding-medical"></i></div>
               <div>
-                <h4 class="text-white">Tanggap Bencana Alam & Kemanusiaan</h4>
-                <p class="text-muted fs-sm">Dana darurat untuk bantuan banjir, tanah longsor, & tim SAR.</p>
+                <h4 style="color: #fff;">Tanggap Bencana Alam & Kemanusiaan</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Dana darurat untuk bantuan banjir, tanah longsor, & tim SAR.</p>
               </div>
             </li>
           </ul>
         </div>
-        <div class="impact-benefits-col">
-          <div class="impact-item">
-            <div class="impact-icon flex-shrink-0"><i class="fa-solid fa-seedling"></i></div>
+        <div class="impact-benefits" style="display:flex;flex-direction:column;gap:0.9rem">
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-seedling"></i></div>
             <div>
-              <div class="text-white font-extrabold fs-md">1 Donasi = 1 Bibit Pohon</div>
-              <div class="text-muted fs-sm">Setiap donasi langsung dikonversi jadi penanaman bibit endemik Bawakaraeng.</div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">1 Donasi = 1 Bibit Pohon</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Setiap donasi langsung dikonversi jadi penanaman bibit endemik Bawakaraeng.</div>
             </div>
           </div>
-          <div class="impact-item">
-            <div class="impact-icon flex-shrink-0"><i class="fa-solid fa-handshake-angle"></i></div>
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-handshake-angle"></i></div>
             <div>
-              <div class="text-white font-extrabold fs-md">100% Transparan</div>
-              <div class="text-muted fs-sm">Laporan penyaluran donasi dipublikasikan dan bisa dicek siapa saja.</div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">100% Transparan</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Laporan penyaluran donasi dipublikasikan dan bisa dicek siapa saja.</div>
             </div>
           </div>
-          <div class="impact-item">
-            <div class="impact-icon flex-shrink-0"><i class="fa-solid fa-mountain-sun"></i></div>
+          <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-card);border:1px solid var(--border-emerald);border-radius:var(--radius-lg);padding:1rem 1.15rem">
+            <div class="impact-icon" style="flex-shrink:0"><i class="fa-solid fa-mountain-sun"></i></div>
             <div>
-              <div class="text-white font-extrabold fs-md">Bersama KPA & Komunitas Lokal</div>
-              <div class="text-muted fs-sm">Aksi reboisasi dikerjakan rutin bareng relawan di jalur Pintu Angin.</div>
+              <div style="color:#fff;font-weight:800;font-size:0.95rem">Bersama KPA & Komunitas Lokal</div>
+              <div style="color:var(--text-muted);font-size:0.82rem">Aksi reboisasi dikerjakan rutin bareng relawan di jalur Pintu Angin.</div>
             </div>
           </div>
-          <button class="btn btn-rose btn-block" onclick="donasi()">
+          <button class="btn btn-rose btn-block" onclick="donasi()" style="margin-top:0.25rem">
             <i class="fa-solid fa-hand-holding-heart"></i> <span>Ikut Berdonasi</span>
           </button>
         </div>
@@ -440,7 +450,7 @@
   </section>
 
   <!-- Section 4: Panduan -->
-  <section id="panduan" class="section section-dark">
+  <section id="panduan" class="section" style="background: rgba(16, 26, 23, 0.4);">
     <div class="container">
       <div class="section-header">
         <div class="section-subtitle"><i class="fa-solid fa-circle-info"></i> Alur Kerja Platform</div>
@@ -451,7 +461,7 @@
           <div class="flow-number">1</div>
           <div class="flow-content">
             <h3>Isi Form Vendor</h3>
-            <p>Daftarkan rental, lalu tampil di katalog.</p>
+            <p>Daftarkan rental, admin cek data, lalu tampil di katalog.</p>
           </div>
         </div>
         <div class="flow-card flow-donasi">
@@ -476,11 +486,11 @@
   <div class="modal-overlay" id="modalVendor">
     <div class="modal-container">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa-solid fa-store text-emerald icon-emerald"></i> Pasang Iklan Rental Outdoor</h3>
+        <h3 class="modal-title"><i class="fa-solid fa-store text-emerald" style="color: #10b981;"></i> Pasang Iklan Rental Outdoor</h3>
         <button class="modal-close" onclick="closeModal('modalVendor')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <form id="formAddVendor" novalidate onsubmit="return false;">
+        <form id="formAddVendor" onsubmit="handleVendorSubmit(event)">
           <div class="form-grid">
             <div class="form-group-full">
               <label class="form-label">Nama Tempat Rental *</label>
@@ -502,7 +512,8 @@
             </div>
             <div>
               <label class="form-label">Nomor WhatsApp *</label>
-              <input type="text" id="inputVendorPhone" class="form-control" placeholder="628xxxxxxxxxx" required>
+              <input type="tel" id="inputVendorPhone" class="form-control" inputmode="tel" placeholder="Contoh: 0812xxxxxxx atau 62812xxxxxxx" required>
+              <p class="form-hint">Bebas tulis format apa pun — otomatis diubah ke format WhatsApp (628...).</p>
             </div>
             <div class="form-group-full">
               <label class="form-label">Alamat Lengkap *</label>
@@ -512,34 +523,15 @@
               <label class="form-label">Item Tersedia (pisahkan koma) *</label>
               <input type="text" id="inputVendorGears" class="form-control" placeholder="Tenda Dome 4P, Carrier 75L, Sleeping Bag" required>
             </div>
-            <div class="form-group-full">
+            <div>
               <label class="form-label">Harga Sewa Mulai (Rp) *</label>
               <input type="number" id="inputVendorMinPrice" class="form-control" placeholder="15000" required>
             </div>
           </div>
-          <div class="form-grid mt-md" style="border-top:1px solid var(--border-glass);padding-top:1.25rem">
-            <div>
-              <label class="form-label">Logo Toko (Avatar) *</label>
-              <input type="file" id="inputVendorLogo" class="form-control" accept="image/*" onchange="previewVendorLogo(this)">
-              <div id="logoPreviewContainer" style="margin-top:0.5rem;display:none">
-                <img id="logoPreview" src="" alt="Preview Logo" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid var(--primary-emerald)">
-              </div>
-              <small class="note">Foto akan dijadikan avatar bulat di panel vendor</small>
-            </div>
-            <div>
-              <label class="form-label">Kolase Foto Barang Rental *</label>
-              <input type="file" id="inputVendorCollage" class="form-control" accept="image/*" onchange="previewVendorCollage(this)">
-              <div id="collagePreviewContainer" style="margin-top:0.5rem;display:none">
-                <img id="collagePreview" src="" alt="Preview Kolase" style="width:100%;max-width:280px;height:140px;object-fit:cover;border-radius:8px;border:2px solid var(--primary-emerald)">
-              </div>
-              <small class="note">Unggah 1 foto kolase (grid) peralatan yang tersedia</small>
-            </div>
-          </div>
-          <div class="flex-gap-md justify-content-end mt-lg">
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
             <button type="button" class="btn btn-outline" onclick="closeModal('modalVendor')">Batal</button>
-            <button type="button" id="btnVendorSubmit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Kirim Untuk Di-Approve</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Kirim Untuk Di-Approve</button>
           </div>
-          <div id="vendorSubmitStatus" role="status" aria-live="polite" style="display:none;margin-top:.75rem;padding:.7rem .85rem;border-radius:10px;font-size:.86rem"></div>
         </form>
       </div>
     </div>
@@ -547,16 +539,16 @@
 
   <!-- Modal 2: Form Donasi -->
   <div class="modal-overlay" id="modalDonasi">
-    <div class="modal-container modal-sm">
+    <div class="modal-container" style="max-width: 520px;">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa-solid fa-hand-holding-heart text-rose icon-rose"></i> Donasi untuk Bawakaraeng</h3>
+        <h3 class="modal-title"><i class="fa-solid fa-hand-holding-heart text-rose" style="color: #f43f5e;"></i> Donasi untuk Bawakaraeng</h3>
         <button class="modal-close" onclick="closeModal('modalDonasi')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <div class="info-alert">
-          <p class="mb-0 fs-sm text-muted">
-            <i class="fa-solid fa-info-circle text-emerald"></i>
-            Transfer ke <strong class="text-white">GoPay 082320124040</strong> (a.n. RCS.CBS), lalu kirim bukti via WhatsApp.
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:12px;margin-bottom:16px">
+          <p style="margin:0;font-size:13px;color:var(--text-muted)">
+            <i class="fa-solid fa-info-circle" style="color:#10b981"></i>
+            Transfer ke <strong style="color:#fff">GoPay 082320124040</strong> (a.n. RCS.CBS), lalu kirim bukti via WhatsApp.
           </p>
         </div>
         <form id="formDonasi" onsubmit="handleDonasiSubmit(event)">
@@ -575,7 +567,7 @@
               <input type="email" id="inputDonasiEmail" class="form-control" placeholder="email@example.com">
             </div>
           </div>
-          <div class="flex-gap-md justify-content-end mt-lg">
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
             <button type="button" class="btn btn-outline" onclick="closeModal('modalDonasi')">Batal</button>
             <button type="submit" class="btn btn-rose"><i class="fa-solid fa-heart"></i> Konfirmasi Donasi</button>
           </div>
@@ -597,9 +589,9 @@
 
   <!-- Modal 4: Admin Panel -->
   <div class="modal-overlay" id="modalAdmin">
-    <div class="modal-container modal-lg">
+    <div class="modal-container" style="max-width: 900px;">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa-solid fa-user-shield text-rose icon-rose"></i> Dashboard BIVAK</h3>
+        <h3 class="modal-title"><i class="fa-solid fa-user-shield text-rose" style="color: #f43f5e;"></i> Panel Admin BIVAK <span class="admin-badge">ADMIN</span></h3>
         <button class="modal-close" onclick="closeModal('modalAdmin')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
@@ -620,28 +612,26 @@
 
         <!-- Tab 1: Pending Vendors -->
         <div id="tabPendingVendors" class="admin-tab-content">
-          <p class="admin-desc">Antrean approval iklan vendor baru.</p>
-          <div class="table-responsive">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Antrean approval iklan vendor baru.</p>
+          <div style="overflow-x: auto;">
             <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Vendor & Lokasi</th>
-                    <th>WhatsApp</th>
-                    <th>Katalog</th>
-                    <th>Harga</th>
-                    <th>Logo</th>
-                    <th>Kolase</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
+              <thead>
+                <tr>
+                  <th>Vendor & Lokasi</th>
+                  <th>WhatsApp</th>
+                  <th>Katalog</th>
+                  <th>Harga</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
               <tbody id="tablePendingVendorsBody"></tbody>
             </table>
           </div>
         </div>
 
         <!-- Tab 2: Active Vendors -->
-        <div id="tabActiveVendors" class="admin-tab-content d-none">
-          <div class="table-responsive">
+        <div id="tabActiveVendors" class="admin-tab-content" style="display: none;">
+          <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
@@ -649,8 +639,6 @@
                   <th>Lokasi</th>
                   <th>Rating</th>
                   <th>Status</th>
-                  <th>Logo</th>
-                  <th>Kolase</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -660,9 +648,9 @@
         </div>
 
         <!-- Tab 3: Donasi -->
-        <div id="tabDonasi" class="admin-tab-content d-none">
-          <p class="admin-desc">Verifikasi donasi dari Pintu Angin Bawakaraeng.</p>
-          <div class="table-responsive">
+        <div id="tabDonasi" class="admin-tab-content" style="display: none;">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Verifikasi donasi dari Pintu Angin Bawakaraeng.</p>
+          <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
@@ -679,9 +667,9 @@
         </div>
 
         <!-- Tab 4: Adopsi Pohon -->
-        <div id="tabAdopsi" class="admin-tab-content d-none">
-          <p class="admin-desc">Verifikasi pembayaran adopsi pohon & terbitkan kode sertifikat.</p>
-          <div class="table-responsive">
+        <div id="tabAdopsi" class="admin-tab-content" style="display: none;">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Verifikasi pembayaran adopsi pohon & terbitkan kode sertifikat.</p>
+          <div style="overflow-x: auto;">
             <table class="data-table">
               <thead>
                 <tr>
@@ -706,36 +694,32 @@
 
   <!-- Footer -->
   <nav class="mobile-bottom-nav" aria-label="Navigasi cepat mobile">
-    <button type="button" onclick="goMobileSection('katalog')"><i class="fa-solid fa-store"></i><span>Vendor</span></button>
+    <button type="button" onclick="goMobileSection('vendors')"><i class="fa-solid fa-store"></i><span>Vendor</span></button>
     <button type="button" onclick="donasi()"><i class="fa-solid fa-heart"></i><span>Donasi</span></button>
     <button type="button" onclick="openModal('modalVendor')"><i class="fa-solid fa-plus"></i><span>Daftar</span></button>
-    <a href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
-      <i class="fa-solid fa-mountain-sun"></i><span>Pintu Angin</span>
-    </a>
+    <button type="button" onclick="openAdminPanel()"><i class="fa-solid fa-user-shield"></i><span>Admin</span></button>
   </nav>
 
   <footer>
     <div class="container">
       <div class="footer-grid">
         <div>
-           <div class="nav-brand footer-brand">
-             <div class="brand-logos">
-               <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
-               <button onclick="openAdminPanel()" title="Panel Admin" class="btn-admin-icon">
-                 <img src="assets/coin.jpg" alt="Admin" class="brand-logo coin-logo" width="40" height="40">
-               </button>
-             </div>
+          <div class="nav-brand" style="margin-bottom: 1rem;">
+            <div class="brand-logos">
+              <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
+              <img src="assets/coin.jpg" alt="RCS.CBS Coin" class="brand-logo coin-logo" width="40" height="40">
+            </div>
             <div class="brand-text">
               <h1>RCS.CBS - BIVAK</h1>
               <div class="brand-subtitle">Bursa Interaktif Vendor Alam & Komunitas</div>
             </div>
           </div>
-          <p class="footer-text">
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px;">
             Platform direktori rental alat outdoor dan donasi konservasi alam Gunung Bawakaraeng.
           </p>
         </div>
         <div>
-          <h4>Wilayah Sulawesi Selatan</h4>
+          <h4>Cakupan Daerah</h4>
           <ul class="footer-links">
             <li><a href="#" onclick="filterByCity('Makassar')">Rental Outdoor Makassar</a></li>
             <li><a href="#" onclick="filterByCity('Gowa')">Rental Alat Camping Gowa</a></li>
@@ -748,6 +732,7 @@
             <li><a href="#donasi">Donasi Pintu Angin</a></li>
             <li><a href="#dampak">Aksi Reboisasi Bawakaraeng</a></li>
             <li><a href="#" onclick="openModal('modalVendor')">Pasang Iklan Vendor</a></li>
+            <li><a href="#" onclick="openAdminPanel()">Dashboard Admin</a></li>
           </ul>
         </div>
       </div>
@@ -760,10 +745,10 @@
   <!-- Script Loading - Core first, then extensions -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=20260905-12"></script>
+  <script src="app.js"></script>
   <script src="shader-hero.js"></script>
-  <script src="motion.js?v=20260905-12"></script>
+  <script src="motion.js"></script>
   <script src="cert.js"></script>
-  <script src="supabase-data.js?v=20260905-12"></script>
+  <script src="supabase-data.js"></script>
 </body>
 </html>

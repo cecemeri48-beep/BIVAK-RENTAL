@@ -395,9 +395,6 @@
     document.addEventListener("pointermove", function (e) {
       var btn = e.target.closest && e.target.closest(".btn-primary, .btn-amber");
       if (!btn || btn.dataset.mMagnetOff === "1") return;
-      // Jangan geser tombol di dalam modal: transform membuat pointerup
-      // mendarat di luar tombol sehingga event CLICK tidak pernah terjadi.
-      if (btn.closest(".modal-overlay")) return;
       var r = btn.getBoundingClientRect();
       var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
       var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
@@ -410,7 +407,6 @@
       function (e) {
         var btn = e.target.closest && e.target.closest(".btn-primary, .btn-amber");
         if (!btn) return;
-        if (btn.closest(".modal-overlay")) return;
         animate(btn, { transform: [btn.style.transform || "none", "translate3d(0,0,0)"] }, {
           spring: SPRING.bouncy
         });
@@ -430,12 +426,6 @@
       var size = Math.max(r.width, r.height) * 2;
       var span = document.createElement("span");
       span.className = "m-ripple";
-      // Wajib inline: aturan ".btn > * { position: relative }" di motion.css
-      // menimpa ".m-ripple { position: absolute }". Tanpa ini, span ripple
-      // menjadi flex-item selebar ratusan px yang menggeser tombol sebelum
-      // pointerup, sehingga event click tidak pernah terjadi pada tombol.
-      span.style.position = "absolute";
-      span.style.pointerEvents = "none";
       span.style.width = span.style.height = size + "px";
       span.style.left = e.clientX - r.left - size / 2 + "px";
       span.style.top = e.clientY - r.top - size / 2 + "px";
