@@ -8,7 +8,7 @@
 
 ;(function () {
 	"use strict"
-	console.info("[BIVAK] Vendor submit build 2026-09-05-v10")
+	console.info("[BIVAK] Vendor submit build 2026-09-05-v11")
 
 	/* ----------------------------------------------------------------------
 	   0. TOAST
@@ -297,6 +297,30 @@
 		return publicRes.data && publicRes.data.publicUrl ? publicRes.data.publicUrl : ""
 	}
 
+	function withTimeout(promise, ms, message) {
+		return Promise.race([
+			promise,
+			new Promise(function(_, reject) {
+				setTimeout(function() { reject(new Error(message || "Proses terlalu lama.")) }, ms)
+			})
+		])
+	}
+
+	function setVendorSubmitStatus(kind, message) {
+		var el = document.getElementById("vendorSubmitStatus")
+		if (!el) return
+		if (!message) {
+			el.style.display = "none"
+			el.textContent = ""
+			return
+		}
+		el.style.display = "block"
+		el.textContent = message
+		el.style.color = kind === "error" ? "#fecaca" : kind === "success" ? "#a7f3d0" : "#dbeafe"
+		el.style.background = kind === "error" ? "rgba(239,68,68,.14)" : kind === "success" ? "rgba(16,185,129,.14)" : "rgba(59,130,246,.14)"
+		el.style.border = "1px solid " + (kind === "error" ? "rgba(239,68,68,.35)" : kind === "success" ? "rgba(16,185,129,.35)" : "rgba(59,130,246,.35)")
+	}
+
 	function compressVendorImage(file, maxWidth, maxHeight, quality) {
 		return new Promise(function(resolve, reject) {
 			if (!file) return resolve("")
@@ -335,6 +359,7 @@
 		if (e && e.stopPropagation) e.stopPropagation()
 		console.info("[BIVAK] Tombol kirim vendor diproses")
 		if (vendorSubmitRunning) return false
+		setVendorSubmitStatus("info", "Memeriksa data pengajuan...")
 		var form = document.getElementById("formAddVendor")
 		var gears = val("inputVendorGears").split(",").map(function(s){return s.trim()}).filter(Boolean)
 		var logoInput = document.getElementById("inputVendorLogo")
@@ -345,13 +370,15 @@
 		for (var ri = 0; ri < requiredIds.length; ri++) {
 			var requiredEl = document.getElementById(requiredIds[ri])
 			if (!requiredEl || !String(requiredEl.value || "").trim()) {
-				toast("error", "Data Belum Lengkap", "Lengkapi semua kolom wajib sebelum mengirim.")
+					toast("error", "Data Belum Lengkap", "Lengkapi semua kolom wajib sebelum mengirim.")
+					setVendorSubmitStatus("error", "Lengkapi semua kolom wajib sebelum mengirim.")
 				if (requiredEl) requiredEl.focus()
 				return false
 			}
 		}
 		if (!logoFile || !collageFile) {
 			toast("error", "Gambar Belum Lengkap", "Pilih logo toko dan foto kolase barang rental.")
+			setVendorSubmitStatus("error", "Pilih logo toko dan foto kolase barang rental.")
 			if (!logoFile && logoInput) logoInput.focus()
 			else if (collageInput) collageInput.focus()
 			return false
@@ -359,15 +386,21 @@
 
 		vendorSubmitRunning = true
 		busy(form, true, "Mengunggah foto...")
+		setVendorSubmitStatus("info", "Mengunggah dan menyiapkan foto...")
 		try {
 			var logoUrl = ""
 			var collageUrl = ""
 			var packedMedia = ""
 			try {
-				logoUrl = await uploadVendorImage(logoFile, "logo")
-				collageUrl = await uploadVendorImage(collageFile, "collage")
+				var uploadedUrls = await withTimeout(Promise.all([
+					uploadVendorImage(logoFile, "logo"),
+					uploadVendorImage(collageFile, "collage")
+				]), 12000, "Upload foto terlalu lama")
+				logoUrl = uploadedUrls[0]
+				collageUrl = uploadedUrls[1]
 			} catch (storageErr) {
 				console.warn("[BIVAK] Storage foto gagal, memakai fallback terkompresi:", storageErr)
+				setVendorSubmitStatus("info", "Storage tidak tersedia; memakai foto terkompresi...")
 				packedMedia = await packedVendorMedia(logoFile, collageFile)
 			}
 
@@ -387,10 +420,11 @@
 				payload.logo_url = logoUrl || null
 				payload.collage_url = collageUrl || null
 			}
-			var res = await sb.from("vendors").insert(payload)
+			setVendorSubmitStatus("info", "Menyimpan pengajuan ke antrean...")
+			var res = await withTimeout(sb.from("vendors").insert(payload), 15000, "Penyimpanan pengajuan terlalu lama")
 			if (res.error && !packedMedia && /logo_url|collage_url|schema cache|column/i.test(res.error.message || "")) {
 				basePayload.image_url = await packedVendorMedia(logoFile, collageFile)
-				res = await sb.from("vendors").insert(basePayload)
+				res = await withTimeout(sb.from("vendors").insert(basePayload), 15000, "Penyimpanan pengajuan terlalu lama")
 			}
 			if (res.error) throw res.error
 
@@ -400,10 +434,12 @@
 			var collagePreview = document.getElementById("collagePreviewContainer")
 			if (logoPreview) logoPreview.style.display = "none"
 			if (collagePreview) collagePreview.style.display = "none"
+			setVendorSubmitStatus("success", "Pengajuan berhasil masuk antrean admin.")
 			toast("success", "Pengajuan Terkirim", "Iklan Anda masuk antrean approval Admin BIVAK.", 5000)
 			await loadPublicData({ alsoAdminTables: isAdmin })
 		} catch (err) {
 			console.error("[BIVAK] Vendor submit gagal:", err)
+			setVendorSubmitStatus("error", "Gagal mengirim: " + ((err && err.message) || "Kesalahan tidak diketahui"))
 			dbErr(err, "Pengajuan gagal dikirim")
 		} finally {
 			busy(form, false)
@@ -415,12 +451,6 @@
 	function bindVendorSubmit() {
 		var form = document.getElementById("formAddVendor")
 		var btn = document.getElementById("btnVendorSubmit")
-		if (btn && !btn.dataset.bivakBound) {
-			btn.dataset.bivakBound = "1"
-			btn.addEventListener("click", function(e) {
-				window.handleVendorSubmit(e)
-			})
-		}
 		if (form && !form.dataset.bivakBound) {
 			form.dataset.bivakBound = "1"
 			form.addEventListener("submit", function(e) {
@@ -429,6 +459,16 @@
 		}
 		console.info("[BIVAK] Tombol vendor terhubung:", !!btn)
 	}
+
+	// Delegasi pada fase capture tetap menangkap klik walau isi modal dirender
+	// ulang atau elemen anak (ikon/teks) yang menerima klik.
+	document.addEventListener("click", function(e) {
+		var target = e.target && e.target.closest ? e.target.closest("#btnVendorSubmit") : null
+		if (!target) return
+		e.preventDefault()
+		e.stopPropagation()
+		window.handleVendorSubmit(e)
+	}, true)
 
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", bindVendorSubmit)
