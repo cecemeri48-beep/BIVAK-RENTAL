@@ -23,6 +23,7 @@
   <!-- Stylesheets -->
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="motion.css">
+  <link rel="stylesheet" href="vendor-shop.css?v=20260907-02">
 
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
@@ -50,6 +51,7 @@
         <li><a href="#donasi" class="nav-link" onclick="closeMobileMenu()">Donasi Pintu Angin <i class="fa-solid fa-heart text-rose"></i></a><span class="notification-badge donasi-badge badge-hidden" id="donasiBadge">0</span></li>
         <li><a href="#adopsi" class="nav-link" onclick="closeMobileMenu()">Adopsi Pohon <i class="fa-solid fa-seedling text-emerald"></i></a><span class="notification-badge adopsi-badge badge-hidden" id="adopsiBadge">0</span></li>
         <li><a href="#dampak" class="nav-link" onclick="closeMobileMenu()">Dampak Konservasi</a></li>
+        <li><a href="#panduan" class="nav-link" onclick="closeMobileMenu()">Panduan</a></li>
 
         <li class="mobile-drawer-actions">
           <a class="btn-pintuangin btn-block w-full" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
@@ -115,15 +117,6 @@
         <button class="btn btn-primary" onclick="filterVendors()">
           <i class="fa-solid fa-filter"></i> Cari
         </button>
-        <div class="city-chips" aria-label="Filter cepat lokasi">
-          <button type="button" class="city-chip active" data-city="" onclick="pickCity('')">Semua</button>
-          <button type="button" class="city-chip" data-city="Makassar" onclick="pickCity('Makassar')">Makassar</button>
-          <button type="button" class="city-chip" data-city="Gowa" onclick="pickCity('Gowa')">Gowa</button>
-          <button type="button" class="city-chip" data-city="Malino" onclick="pickCity('Malino')">Malino</button>
-          <button type="button" class="city-chip" data-city="Maros" onclick="pickCity('Maros')">Maros</button>
-          <button type="button" class="city-chip" data-city="Toraja" onclick="pickCity('Toraja')">Toraja</button>
-          <button type="button" class="city-chip" data-city="Palopo" onclick="pickCity('Palopo')">Palopo</button>
-        </div>
       </div>
 
     </div>
@@ -135,27 +128,18 @@
       <div class="section-header">
         <div class="section-subtitle"><i class="fa-solid fa-compass"></i> Rental Outdoor Terverifikasi</div>
         <h2 class="section-title">Vendor Rental Outdoor Terpercaya</h2>
-        <p class="section-description">Pilih vendor terdekat di daerah Anda, cek ketersediaan perlengkapan, dan pesan langsung melalui WhatsApp.</p>
+        <p class="section-description">Pilih vendor terdekat di daerah Anda, lihat daftar barang dan harga sewanya, lalu hubungi vendornya langsung lewat WhatsApp.</p>
+      </div>
+      <div class="shop-disclaimer" id="shopSectionNote">
+        <i class="fa-solid fa-handshake-angle"></i>
+        <div>
+          <b>BIVAK RENTAL hanya mempertemukan penyewa dan vendor rental.</b>
+          <span>Setelah memilih vendor, seluruh transaksi &mdash; harga akhir, pembayaran, jaminan, serah terima, dan pengembalian barang &mdash; diurus dan dikomunikasikan langsung dengan vendor tersebut, tanpa perantaraan BIVAK RENTAL. Daftar barang, jumlah, dan harga di halaman ini diisi sendiri oleh masing-masing vendor.</span>
+        </div>
       </div>
       <div class="grid-3" id="vendorGridContainer"></div>
     </div>
   </section>
-
-  <!-- Panel gabungan: Konservasi Gunung Bawakaraeng (Donasi + Adopsi) -->
-  <section id="konservasi" class="section konservasi-section">
-    <div class="container">
-      <button type="button" class="collapse-toggle konservasi-toggle" aria-expanded="false"
-              aria-controls="konservasiPanel"
-              data-open="Konservasi Gunung Bawakaraeng"
-              data-close="Konservasi Gunung Bawakaraeng"
-              onclick="toggleSection('konservasiPanel', this)">
-        <span class="collapse-label"><i class="fa-solid fa-mountain-sun"></i><span class="collapse-label-text">Konservasi Gunung Bawakaraeng</span></span>
-        <i class="fa-solid fa-chevron-down collapse-chevron"></i>
-      </button>
-      <p class="konservasi-hint">Donasi Pintu Angin &amp; Adopsi Pohon — ketuk panel untuk membuka.</p>
-    </div>
-  </section>
-  <div class="collapse-body" id="konservasiPanel">
 
   <!-- Section 2: DONASI PINTU ANGIN -->
   <section id="donasi" class="section donation-section">
@@ -454,13 +438,47 @@
               <div class="text-muted fs-sm">Aksi reboisasi dikerjakan rutin bareng relawan di jalur Pintu Angin.</div>
             </div>
           </div>
+          <button class="btn btn-rose btn-block" onclick="donasi()">
+            <i class="fa-solid fa-hand-holding-heart"></i> <span>Ikut Berdonasi</span>
+          </button>
         </div>
         </div><!-- /impactPanel -->
       </div>
     </div>
   </section>
-  </div><!-- /konservasiPanel -->
 
+  <!-- Section 4: Panduan -->
+  <section id="panduan" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle"><i class="fa-solid fa-circle-info"></i> Alur Kerja Platform</div>
+        <h2 class="section-title">Cara Bergabung</h2>
+      </div>
+      <div class="platform-flow">
+        <div class="flow-card flow-vendor">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h3>Isi Form Vendor</h3>
+            <p>Daftarkan rental, lalu tampil di katalog.</p>
+          </div>
+        </div>
+        <div class="flow-card flow-donasi">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h3>Donasi Konservasi</h3>
+            <p>Pilih nominal, transfer, lalu kirim konfirmasi.</p>
+          </div>
+        </div>
+        <div class="flow-card flow-publik">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h3>Nama Tampil Publik</h3>
+            <p>Setelah validasi, dukungan muncul di leaderboard.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Modal 1: Form Pasang Iklan Vendor -->
   <div class="modal-overlay" id="modalVendor">
@@ -470,6 +488,10 @@
         <button class="modal-close" onclick="closeModal('modalVendor')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
+        <div class="shop-disclaimer compact">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>BIVAK RENTAL hanya mempertemukan penyewa dan vendor. Penyewa akan menghubungi dan bertransaksi langsung dengan Anda; BIVAK tidak menjadi perantara pembayaran maupun pengiriman barang.</span>
+        </div>
         <form id="formAddVendor" novalidate onsubmit="return false;">
           <div class="form-grid">
             <div class="form-group-full">
@@ -492,8 +514,7 @@
             </div>
             <div>
               <label class="form-label">Nomor WhatsApp *</label>
-              <input type="tel" id="inputVendorPhone" class="form-control" inputmode="tel" placeholder="Contoh: 0812xxxxxxx atau 62812xxxxxxx" required>
-              <p class="form-hint">Bebas tulis format apa pun — otomatis diubah ke format WhatsApp (628...).</p>
+              <input type="text" id="inputVendorPhone" class="form-control" placeholder="628xxxxxxxxxx" required>
             </div>
             <div class="form-group-full">
               <label class="form-label">Alamat Lengkap *</label>
@@ -523,7 +544,7 @@
               <div id="collagePreviewContainer" style="margin-top:0.5rem;display:none">
                 <img id="collagePreview" src="" alt="Preview Kolase" style="width:100%;max-width:280px;height:140px;object-fit:cover;border-radius:8px;border:2px solid var(--primary-emerald)">
               </div>
-              <small class="note">Foto ini jadi cover kartu vendor Anda. Pengunjung bisa mengetuk badge "Foto Koleksi" untuk memperbesarnya.</small>
+              <small class="note">Unggah 1 foto kolase (grid) peralatan yang tersedia</small>
             </div>
           </div>
           <div class="flex-gap-md justify-content-end mt-lg">
@@ -575,14 +596,95 @@
     </div>
   </div>
 
-  <!-- Modal 3: Detail Vendor -->
+  <!-- Modal 3: Detail Vendor (Gear Catalog + Cart) -->
   <div class="modal-overlay" id="modalVendorDetail">
-    <div class="modal-container">
+    <div class="modal-container modal-lg">
       <div class="modal-header">
         <h3 class="modal-title" id="detailVendorTitle">Detail Vendor</h3>
         <button class="modal-close" onclick="closeModal('modalVendorDetail')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body" id="detailVendorBody"></div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Dashboard Vendor - kelola daftar barang & stok sendiri -->
+  <div class="modal-overlay" id="modalVendorManage">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-store text-emerald icon-emerald"></i> Kelola Barang Toko</h3>
+        <button class="modal-close" onclick="closeModal('modalVendorManage')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="vendorManageBody">
+        <div id="vendorManageLogin">
+          <p class="section-description" style="margin-bottom:1rem">Khusus vendor. Masukkan <strong>nama toko</strong> (sesuai yang tampil di BIVAK) dan <strong>PIN Toko 6 digit</strong> untuk menambah, mengubah, atau menghapus barang yang Anda sewakan. Belum punya PIN? Minta ke admin BIVAK.</p>
+          <div class="form-grid">
+            <div>
+              <label class="form-label">Nama Toko *</label>
+              <input type="text" id="inputManageVendorId" class="form-control" placeholder="Contoh: Celebes Outdoor Rental Makassar">
+            </div>
+            <div>
+              <label class="form-label">PIN Toko (6 digit) *</label>
+              <input type="text" id="inputManagePin" class="form-control" placeholder="xxxxxx" maxlength="6" inputmode="numeric">
+            </div>
+          </div>
+          <div class="flex-gap-md justify-content-end mt-md">
+            <button type="button" class="btn btn-outline" onclick="closeModal('modalVendorManage')">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="loginVendorManage()"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+          </div>
+          <div id="vendorManageStatus" role="status" aria-live="polite" style="display:none;margin-top:.75rem;padding:.7rem .85rem;border-radius:10px;font-size:.86rem"></div>
+        </div>
+        <div id="vendorManageDashboard" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+            <div>
+              <h4 style="color:#fff;margin:0" id="manageDashboardTitle">Dashboard</h4>
+              <small style="color:var(--text-muted)">Tambah barang, ubah harga sewa, dan atur jumlah unit yang siap disewa</small>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="showAddGearForm()"><i class="fa-solid fa-plus"></i> Tambah Barang</button>
+          </div>
+          <div id="addGearForm" style="display:none;margin-bottom:1rem;padding:1rem;border:1px solid var(--border-glass);border-radius:var(--radius-md);background:rgba(7,12,11,0.5)">
+            <h5 style="color:#fff;margin-bottom:.75rem"><i class="fa-solid fa-box-open text-emerald"></i> Tambah Barang Baru</h5>
+            <div class="form-grid">
+              <div class="form-group-full">
+                <label class="form-label">Nama Barang *</label>
+                <input type="text" id="inputGearName" class="form-control" placeholder="Contoh: Tenda Dome 4P Arpenaz">
+              </div>
+              <div>
+                <label class="form-label">Kategori *</label>
+                <select id="inputGearCategory" class="form-control">
+                  <option value="tenda">Tenda</option>
+                  <option value="carrier">Carrier</option>
+                  <option value="cooking">Cooking Set</option>
+                  <option value="sleep">Sleeping Bag</option>
+                  <option value="lighting">Lighting</option>
+                  <option value="apparel">Apparel</option>
+                  <option value="accessories">Accessories</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Harga Sewa / Hari (Rp) *</label>
+                <input type="number" id="inputGearPrice" class="form-control" placeholder="25000">
+              </div>
+              <div>
+                <label class="form-label">Jumlah Unit Dimiliki *</label>
+                <input type="number" id="inputGearStock" class="form-control" placeholder="1" min="1" max="999">
+              </div>
+              <div class="form-group-full">
+                <label class="form-label">Foto Barang</label>
+                <input type="file" id="inputGearPhoto" class="form-control" accept="image/*">
+              </div>
+              <div class="form-group-full">
+                <label class="form-label">Deskripsi Singkat</label>
+                <input type="text" id="inputGearDesc" class="form-control" placeholder="Contoh: kapasitas 4 orang, double layer, kondisi bagus">
+              </div>
+            </div>
+            <div class="flex-gap-md justify-content-end mt-md">
+              <button type="button" class="btn btn-outline" onclick="document.getElementById('addGearForm').style.display='none'">Batal</button>
+              <button type="button" class="btn btn-primary" onclick="addNewGearItem()"><i class="fa-solid fa-save"></i> Simpan Barang</button>
+            </div>
+          </div>
+          <div id="vendorManageItemsList"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -710,12 +812,15 @@
       <div class="footer-grid">
         <div>
            <div class="nav-brand footer-brand">
-             <div class="brand-logos">
-               <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
-               <button onclick="openAdminPanel()" title="Panel Admin" class="btn-admin-icon">
-                 <img src="assets/coin.jpg" alt="Admin" class="brand-logo coin-logo" width="40" height="40">
-               </button>
-             </div>
+              <div class="brand-logos">
+                <img src="assets/logo.jpg" alt="BIVAK Logo" class="brand-logo" width="40" height="40">
+                <button onclick="openVendorManagePanel()" title="Kelola Barang Toko (khusus vendor)" class="btn-admin-icon">
+                  <i class="fa-solid fa-store" style="color:#10b981;font-size:1.1rem"></i>
+                </button>
+                <button onclick="openAdminPanel()" title="Panel Admin" class="btn-admin-icon">
+                  <img src="assets/coin.jpg" alt="Admin" class="brand-logo coin-logo" width="40" height="40">
+                </button>
+              </div>
             <div class="brand-text">
               <h1>RCS.CBS - BIVAK</h1>
               <div class="brand-subtitle">Bursa Interaktif Vendor Alam & Komunitas</div>
@@ -723,11 +828,17 @@
           </div>
           <p class="footer-text">
             Platform direktori rental alat outdoor dan donasi konservasi alam Gunung Bawakaraeng.
+            BIVAK RENTAL hanya mempertemukan penyewa dengan vendor rental: setelah penyewa memilih vendor,
+            semua transaksi dan komunikasi berlangsung langsung dengan vendor tersebut tanpa perantaraan BIVAK RENTAL.
           </p>
         </div>
         <div>
-          <h4>Cakupan Daerah</h4>
-          <p style="color:var(--primary-emerald);font-size:0.95rem;font-weight:700;margin:0">Wilayah Sulawesi Selatan</p>
+          <h4>Wilayah Sulawesi Selatan</h4>
+          <ul class="footer-links">
+            <li><a href="#" onclick="filterByCity('Makassar')">Rental Outdoor Makassar</a></li>
+            <li><a href="#" onclick="filterByCity('Gowa')">Rental Alat Camping Gowa</a></li>
+            <li><a href="#" onclick="filterByCity('Malino')">Vendor Rental Malino</a></li>
+          </ul>
         </div>
         <div>
           <h4>Komunitas & Donasi</h4>
@@ -747,10 +858,12 @@
   <!-- Script Loading - Core first, then extensions -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=20260905-12"></script>
+  <script src="app.js?v=20260907-01"></script>
   <script src="shader-hero.js"></script>
-  <script src="motion.js?v=20260905-12"></script>
+  <script src="motion.js?v=20260907-01"></script>
   <script src="cert.js"></script>
-  <script src="supabase-data.js?v=20260905-12"></script>
+  <script src="supabase-data.js?v=20260907-01"></script>
+  <script src="vendor-shop.js?v=20260907-01"></script>
+  <script src="admin-pin.js?v=20260907-02"></script>
 </body>
 </html>

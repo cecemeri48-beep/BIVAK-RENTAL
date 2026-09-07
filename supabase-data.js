@@ -83,7 +83,7 @@
 	}
 
 	if (!window.supabase || typeof window.supabase.createClient !== "function") {
-		toast("info", "Mode Offline Aktif", "Data lokal sedang digunakan. Semua fitur utama tetap jalan.", 3500)
+		toast("error", "Gagal memuat database", "Library Supabase tidak termuat.")
 		return
 	}
 
@@ -407,7 +407,7 @@
 			var basePayload = {
 				name: val("inputVendorName"),
 				city: val("inputVendorCity"),
-				phone: BIVAK.normalizePhone(val("inputVendorPhone")),
+				phone: val("inputVendorPhone"),
 				address: val("inputVendorAddress"),
 				gears: gears,
 				min_price: parseInt(val("inputVendorMinPrice"), 10) || 15000,
@@ -1021,7 +1021,7 @@
 		var wa = document.getElementById('adopsiWA').value.trim()
 		if (wa.startsWith('0')) wa = '62' + wa.substring(1)
 		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + document.getElementById('adopsiNama').value + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + _selectedPackage.name + '\nTotal: Rp ' + _selectedPackage.amount.toLocaleString('id-ID') + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
-		window.open('https://wa.me/' + BIVAK.normalizePhone(wa) + '?text=' + encodeURIComponent(msg), '_blank')
+		window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank')
 	}
 
 	window.checkAdopsiCode = function() {

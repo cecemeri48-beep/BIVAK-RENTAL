@@ -542,6 +542,11 @@ select.form-control {
   padding-right: 2rem;
 }
 
+select.form-control option {
+  background-color: #070c0b;
+  color: #fff;
+}
+
 /* Quick Stats Bar */
 .hero-stats {
   display: flex;
@@ -762,6 +767,123 @@ select.form-control {
   font-weight: 800;
   color: var(--primary-emerald);
   font-family: var(--font-heading);
+}
+
+.rating-reviews {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Gear Preview Section (Olshop Style) */
+.gear-preview-section {
+  margin: 0.85rem 0;
+  padding: 0.85rem;
+  background: rgba(7, 12, 11, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.gear-preview-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gear-preview-label i {
+  color: var(--primary-emerald);
+}
+
+.mini-items-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.mini-item {
+  position: relative;
+  background: rgba(16, 26, 23, 0.6);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.mini-item:hover {
+  border-color: var(--primary-emerald);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mini-item img {
+  width: 100%;
+  height: 65px;
+  object-fit: cover;
+  display: block;
+}
+
+.mini-item-info {
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mini-item-name {
+  font-size: 0.68rem;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-item-price {
+  font-size: 0.65rem;
+  color: var(--primary-emerald);
+  font-weight: 700;
+}
+
+.quick-add-btn {
+  position: absolute;
+  bottom: 0.35rem;
+  right: 0.35rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-emerald);
+  border: none;
+  color: #000;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--transition-fast);
+}
+
+.mini-item:hover .quick-add-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.quick-add-btn:hover {
+  background: var(--primary-emerald-hover);
+  transform: scale(1.1) !important;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  height: 34px;
 }
 
 /* Grid Layouts */
@@ -1799,8 +1921,12 @@ canvas.cert-zoom {
   .vendor-title { font-size: 1.05rem; line-height: 1.25; }
   .vendor-rating { font-size: .82rem; }
   .vendor-address { font-size: .86rem; line-height: 1.35; }
-  .gear-tags { gap: .4rem; }
-  .tag { font-size: .72rem; padding: .35rem .5rem; }
+  .gear-preview-section { margin: 0.6rem 0; padding: 0.6rem; }
+  .mini-items-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+  .mini-item img { height: 70px; }
+  .mini-item-name { font-size: 0.65rem; }
+  .mini-item-price { font-size: 0.6rem; }
+  .quick-add-btn { width: 20px; height: 20px; font-size: 0.65rem; }
   .vendor-footer {
     flex-direction: column;
     align-items: stretch;
@@ -3093,4 +3219,267 @@ html {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+/* ==========================================================================
+   BIVAK OLSHOP GEAR CATALOG & LIVE CART BAR (Outdoor Theme)
+   ========================================================================== */
+
+/* Category Tabs in Vendor Detail */
+.gear-category-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: thin;
+}
+.gear-cat-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.gear-cat-btn.active, .gear-cat-btn:hover {
+  background: var(--primary-emerald);
+  color: #050a08;
+  border-color: var(--primary-emerald);
+  font-weight: 700;
+}
+
+/* Gear Item Cards Grid */
+.gear-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.gear-item-card {
+  background: rgba(14, 24, 21, 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+  position: relative;
+}
+.gear-item-card:hover {
+  border-color: var(--primary-emerald);
+  transform: translateY(-2px);
+}
+
+.gear-item-thumb {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  background: #070c0b;
+}
+.gear-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gear-stock-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+.gear-stock-badge.ready {
+  background: rgba(16, 185, 129, 0.9);
+  color: #03140e;
+}
+.gear-stock-badge.low {
+  background: rgba(245, 158, 11, 0.9);
+  color: #1a1003;
+}
+.gear-stock-badge.empty {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+.gear-item-content {
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.gear-item-title {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+}
+.gear-item-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-bottom: 0.6rem;
+  flex: 1;
+}
+.gear-item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 0.6rem;
+  margin-top: auto;
+}
+.gear-price-day {
+  font-weight: 800;
+  color: var(--primary-emerald);
+  font-size: 0.95rem;
+}
+.gear-price-unit {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+/* Quantity Stepper (Olshop Style) */
+.gear-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(7, 12, 11, 0.9);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.gear-qty-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+.gear-qty-btn:hover:not(:disabled) {
+  background: var(--primary-emerald);
+  color: #050a08;
+}
+.gear-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.gear-qty-val {
+  min-width: 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Floating Rental Cart Bar at Bottom of Modal */
+.rental-cart-bar {
+  position: sticky;
+  bottom: -1.5rem;
+  margin: 1.5rem -1.5rem -1.5rem -1.5rem;
+  background: rgba(14, 24, 21, 0.95);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-emerald);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  z-index: 10;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.6);
+}
+.rental-cart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.rental-cart-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.rental-cart-total {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary-emerald);
+}
+.rental-duration-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #fff;
+}
+.rental-duration-picker select {
+  background: rgba(7, 12, 11, 0.9);
+  border: 1px solid var(--border-emerald);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Quick Stock Management for Vendor Dashboard */
+.stock-manage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  gap: 0.75rem;
+}
+.stock-manage-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.stock-manage-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .gear-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+  }
+  .gear-item-thumb {
+    height: 100px;
+  }
+  .gear-item-content {
+    padding: 0.6rem;
+  }
+  .gear-item-title {
+    font-size: 0.82rem;
+  }
+  .rental-cart-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    margin: 1.25rem -1rem -1.25rem -1rem;
+  }
+  .rental-cart-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .rental-cart-actions .btn {
+    flex: 1;
+  }
 }

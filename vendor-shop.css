@@ -1,0 +1,341 @@
+/* =====================================================================
+   BIVAK - Katalog barang vendor (tambahan untuk styles.css)
+   Versi sederhana: hanya tampilan daftar barang + dashboard vendor.
+   Tidak ada keranjang, pengiriman, atau pembayaran.
+   ===================================================================== */
+
+/* -------------------------------------------------- Catatan platform */
+.shop-disclaimer {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	margin: 0 0 1.25rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid rgba(16, 185, 129, 0.28);
+	border-left: 3px solid #10b981;
+	border-radius: 12px;
+	background: rgba(16, 185, 129, 0.07);
+	font-size: 0.85rem;
+	line-height: 1.55;
+	color: var(--text-muted, #9ca3af);
+}
+.shop-disclaimer > i {
+	margin-top: 0.15rem;
+	color: #10b981;
+	font-size: 1rem;
+	flex: 0 0 auto;
+}
+.shop-disclaimer b {
+	display: block;
+	margin-bottom: 0.2rem;
+	color: #fff;
+	font-size: 0.9rem;
+}
+.shop-disclaimer span { display: block; }
+.shop-disclaimer.compact {
+	align-items: center;
+	margin-bottom: 1rem;
+	padding: 0.65rem 0.85rem;
+	font-size: 0.8rem;
+}
+
+/* ------------------------------------------ Kepala detail toko vendor */
+.shop-head {
+	position: relative;
+	margin-bottom: 1.1rem;
+	border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+	border-radius: 14px;
+	overflow: hidden;
+	background: rgba(7, 12, 11, 0.55);
+}
+.shop-head-cover {
+	width: 100%;
+	height: 150px;
+	object-fit: cover;
+	display: block;
+	opacity: 0.8;
+}
+.shop-head-info { padding: 0.9rem 1rem 1rem; }
+.shop-head-title {
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+}
+.shop-head-title img {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #10b981;
+	flex: 0 0 auto;
+}
+.shop-head-title h3 {
+	margin: 0.1rem 0 0;
+	color: #fff;
+	font-size: 1.05rem;
+	line-height: 1.25;
+}
+.shop-head-city {
+	font-size: 0.72rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #10b981;
+}
+.shop-head-address {
+	margin: 0.6rem 0 0;
+	font-size: 0.82rem;
+	color: var(--text-muted, #9ca3af);
+}
+.shop-head-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+	margin: 0.7rem 0 0.9rem;
+	font-size: 0.8rem;
+	color: var(--text-muted, #9ca3af);
+}
+.shop-head-meta i { color: #10b981; margin-right: 0.3rem; }
+.shop-head-meta strong { color: #fff; }
+.shop-contact-btn { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+.shop-section-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 1.1rem 0 0.6rem;
+	color: #fff;
+	font-size: 0.95rem;
+}
+
+/* ------------------------------------------------- Kartu barang vendor */
+.gear-item-cat {
+	margin-top: 0.15rem;
+	font-size: 0.72rem;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: #10b981;
+}
+.gear-item-facts {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.4rem;
+	margin-top: 0.7rem;
+	padding-top: 0.65rem;
+	border-top: 1px dashed var(--border-glass, rgba(255, 255, 255, 0.1));
+}
+.gear-item-facts > div { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.gear-item-facts span {
+	font-size: 0.66rem;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: var(--text-dim, #6b7280);
+}
+.gear-item-facts b {
+	color: #fff;
+	font-size: 0.86rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.gear-item-facts b small { color: var(--text-muted, #9ca3af); font-weight: 400; font-size: 0.72rem; }
+
+.gear-item-card.is-empty { opacity: 0.65; }
+.gear-item-card.is-highlight {
+	border-color: #10b981 !important;
+	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+.gear-item-thumb { position: relative; }
+.gear-stock-badge {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.5rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.66rem;
+	font-weight: 600;
+	backdrop-filter: blur(4px);
+}
+.gear-stock-badge.ready { background: rgba(16, 185, 129, 0.9); color: #04160f; }
+.gear-stock-badge.low { background: rgba(245, 158, 11, 0.9); color: #1a1204; }
+.gear-stock-badge.empty { background: rgba(148, 163, 184, 0.85); color: #0b1220; }
+
+.shop-empty {
+	grid-column: 1 / -1;
+	padding: 1.6rem 1rem;
+	text-align: center;
+	border: 1px dashed var(--border-glass, rgba(255, 255, 255, 0.12));
+	border-radius: 12px;
+	color: var(--text-muted, #9ca3af);
+	font-size: 0.85rem;
+}
+.shop-empty i { color: #10b981; margin-right: 0.35rem; }
+
+/* ------------------------------- Katalog ringkas di kartu vendor (beranda) */
+.mini-item { position: relative; }
+.mini-item-stock {
+	position: absolute;
+	top: 0.3rem;
+	right: 0.3rem;
+	padding: 0.1rem 0.4rem;
+	border-radius: 999px;
+	font-size: 0.6rem;
+	font-weight: 600;
+}
+.mini-item-stock.ready { background: rgba(16, 185, 129, 0.92); color: #04160f; }
+.mini-item-stock.low { background: rgba(245, 158, 11, 0.92); color: #1a1204; }
+.mini-item-stock.empty { background: rgba(148, 163, 184, 0.9); color: #0b1220; }
+
+.mini-items-empty {
+	grid-column: 1 / -1;
+	padding: 0.7rem 0.5rem;
+	text-align: center;
+	font-size: 0.74rem;
+	color: var(--text-dim, #6b7280);
+	border: 1px dashed var(--border-glass, rgba(255, 255, 255, 0.1));
+	border-radius: 10px;
+}
+.mini-items-empty i { margin-right: 0.3rem; }
+.mini-items-more {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.4rem;
+	border: 1px dashed rgba(16, 185, 129, 0.35);
+	border-radius: 10px;
+	font-size: 0.7rem;
+	color: #10b981;
+}
+
+/* --------------------------------------- Dashboard vendor (kelola barang) */
+.shop-manage-tabs {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.4rem;
+	margin-bottom: 0.9rem;
+}
+.shop-logout-btn { white-space: nowrap; }
+
+.stock-manage-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	padding: 0.7rem 0.85rem;
+	margin-bottom: 0.5rem;
+	border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+	border-radius: 12px;
+	background: rgba(7, 12, 11, 0.5);
+}
+.stock-manage-main { min-width: 0; flex: 1 1 200px; }
+.stock-manage-name { color: #fff; font-size: 0.9rem; font-weight: 600; }
+.stock-manage-meta { margin-top: 0.15rem; font-size: 0.76rem; color: var(--text-muted, #9ca3af); }
+.stock-manage-actions { display: flex; align-items: center; gap: 0.4rem; }
+.shop-danger { color: #f87171 !important; border-color: rgba(248, 113, 113, 0.4) !important; }
+
+.shop-order-status {
+	display: block;
+	margin-top: 0.75rem;
+	padding: 0.7rem 0.85rem;
+	border-radius: 10px;
+	font-size: 0.84rem;
+	line-height: 1.5;
+}
+.shop-order-status.is-info { background: rgba(59, 130, 246, 0.12); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.shop-order-status.is-success { background: rgba(16, 185, 129, 0.12); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+.shop-order-status.is-error { background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+.shop-order-badge {
+	display: inline-block;
+	padding: 0.1rem 0.45rem;
+	border-radius: 999px;
+	font-size: 0.66rem;
+	font-weight: 600;
+}
+.shop-order-badge.st-cancelled { background: rgba(148, 163, 184, 0.85); color: #0b1220; }
+
+/* ----------------------------------------------------------- Responsif */
+@media (max-width: 720px) {
+	.shop-head-cover { height: 120px; }
+	.gear-item-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.stock-manage-row { align-items: flex-start; }
+	.stock-manage-actions { width: 100%; justify-content: space-between; }
+	.shop-disclaimer { font-size: 0.8rem; }
+}
+
+/* =====================================================================
+   PIN toko di Panel Admin (admin-pin.js)
+   ===================================================================== */
+.pin-reveal {
+	border: 1px solid rgba(16, 185, 129, 0.35);
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.03));
+	border-radius: 14px;
+	padding: 1rem 1.1rem;
+	text-align: center;
+}
+
+.pin-reveal.is-hidden {
+	border-color: rgba(140, 150, 170, 0.28);
+	background: rgba(140, 150, 170, 0.08);
+}
+
+.pin-reveal-label {
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #10b981;
+	font-weight: 700;
+}
+
+.pin-reveal.is-hidden .pin-reveal-label {
+	color: var(--text-muted, #98a2b3);
+}
+
+.pin-reveal-value {
+	font-family: "Courier New", ui-monospace, monospace;
+	font-size: 2.4rem;
+	font-weight: 800;
+	letter-spacing: 0.42em;
+	color: #fff;
+	margin: 0.45rem 0 0.15rem;
+	text-indent: 0.42em;
+	line-height: 1.15;
+	user-select: all;
+}
+
+.pin-reveal.is-hidden .pin-reveal-value {
+	color: var(--text-muted, #98a2b3);
+	font-size: 1.9rem;
+}
+
+.pin-reveal-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	justify-content: center;
+	margin-top: 0.75rem;
+}
+
+.pin-note {
+	font-size: 0.78rem;
+	line-height: 1.55;
+	color: var(--text-muted, #98a2b3);
+	margin: 0.7rem 0 0;
+}
+
+.pin-note i {
+	color: #f59e0b;
+	margin-right: 0.3rem;
+}
+
+.btn-vendor-pin.pin-missing {
+	border-color: #f59e0b !important;
+	color: #f59e0b !important;
+}
+
+@media (max-width: 720px) {
+	.pin-reveal-value {
+		font-size: 1.85rem;
+		letter-spacing: 0.3em;
+		text-indent: 0.3em;
+	}
+}

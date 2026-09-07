@@ -96,3 +96,35 @@ ke sini.
   masuk hanya dengan memasukkan email. Ini perlu autentikasi Supabase yang
   sebenarnya plus Row Level Security, dan sebaiknya diputuskan olehmu dulu
   karena mengubah alur login.
+
+## 2026-09-07 — Katalog Barang Vendor (sederhana)
+
+### Ditambahkan
+- `vendor-shop.js` + `vendor-shop.css`: setiap vendor memperlihatkan barang yang dimiliki (nama, kategori, jumlah unit, jumlah siap disewa, harga sewa/hari, foto, deskripsi).
+- Dashboard vendor: login nama toko + PIN 6 digit, lalu tambah/ubah/hapus barang dan atur jumlah unit siap disewa.
+- Catatan platform di daftar vendor, detail vendor, form pendaftaran, dashboard, dan footer: BIVAK RENTAL hanya mempertemukan penyewa dan vendor; transaksi & komunikasi langsung dengan vendor tanpa perantaraan BIVAK RENTAL.
+- SQL: `db/OLSHOP-01-VENDOR-SECURITY.sql`, `db/OLSHOP-02-VENDOR-ITEMS.sql`, `db/OLSHOP-03-CEK-DAN-PIN.sql`.
+- Panduan `KATALOG-VENDOR.md`.
+
+### Diubah
+- Tidak ada keranjang, checkout, pengiriman, atau pembayaran. Kontak vendor lewat WhatsApp langsung.
+- Kartu vendor memakai katalog nyata dari database, bukan stok contoh (`generateDemoItems` dihapus).
+- Daftar vendor & pengajuan vendor tidak lagi disimpan di localStorage.
+- PIN toko disimpan sebagai hash bcrypt di `vendor_secrets` (kolom `vendors.edit_pin` dihapus).
+- Policy `vendor_items_all_anon` (`USING (true)`) dihapus; publik hanya boleh membaca barang vendor yang sudah disetujui admin.
+
+### Dihapus
+- `supabase-data-v2.js` dan `supabase-data-v3.js` (kembar, tidak dipakai).
+- `alert()` debug dan seluruh `console.log("[DEBUG] ...")` pada `app.js`.
+
+## 2026-09-07 (b) — PIN toko dari Panel Admin
+
+### Ditambahkan
+- `admin-pin.js`: saat admin menyetujui vendor baru, PIN toko 6 angka langsung tampil di Panel Admin beserta tombol Salin PIN dan Kirim ke Vendor (WhatsApp siap kirim).
+- Tombol **PIN** di tabel Vendor Aktif: Buat PIN Baru, Tetapkan PIN Sendiri, Buka Kunci. Tombol berwarna kuning bila toko belum punya PIN.
+- `db/OLSHOP-04-ADMIN-PIN.sql`: fungsi `admin_vendor_issue_pin`, `admin_vendor_pin_ensure`, `admin_vendor_pin_status`, `admin_vendor_pin_unlock` — semuanya hanya untuk sesi admin (cek `public.admins`), ditolak untuk `anon`.
+- Gaya tampilan kotak PIN di `vendor-shop.css`.
+
+### Diubah
+- Admin tidak perlu lagi membuka Supabase SQL Editor untuk membagikan PIN vendor.
+- Membuat PIN baru otomatis memutus sesi toko yang masih terbuka.
