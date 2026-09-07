@@ -188,3 +188,61 @@ Opsional: db/OLSHOP-03-CEK-DAN-PIN.sql (hanya untuk mengecek isi tabel)
 ### Catatan platform (wajib, sudah tertulis di web)
 
 BIVAK RENTAL hanya mempertemukan penyewa dan pihak yang menyewakan. Setelah penyewa memilih vendor rental yang mau dipakai, seluruh transaksi dan komunikasi — harga akhir, pembayaran, jaminan, serah terima, sampai pengembalian barang — berhubungan langsung dengan pihak vendor tersebut, tanpa perantaraan BIVAK RENTAL lagi. Karena itu di web **tidak ada** fitur keranjang, pemesanan, pengiriman, maupun pembayaran.
+
+---
+
+## PENTING: kalau muncul "Fitur Belum Dipasang" padahal SQL sudah dijalankan
+
+Ini **bug pesan error**, bukan SQL Anda yang gagal.
+
+**Sebabnya:** fungsi PIN dibuat dengan `SET search_path = public`, sedangkan di Supabase ekstensi `pgcrypto` (penyedia `crypt()` dan `gen_salt()`) terpasang di skema **`extensions`**. Dari dalam fungsi, `crypt()` jadi tidak terlihat dan PostgreSQL menjawab:
+
+```
+ERROR: function crypt(text, text) does not exist
+```
+
+Karena pesan itu memuat kata *"does not exist"*, web dulu salah menyimpulkan bahwa `OLSHOP-04` belum dijalankan.
+
+**Solusinya:** jalankan sekali di Supabase SQL Editor:
+
+```
+db/OLSHOP-05-PERBAIKI-CRYPT.sql
+```
+
+Berkas itu menambahkan skema `extensions` ke `search_path` semua fungsi `vendor_shop_*` dan `admin_vendor_*` (tanpa mengubah isi fungsinya), lalu menyegarkan cache skema PostgREST. Aman dijalankan berulang kali dan tidak menghapus data.
+
+Di akhir hasilnya Anda akan melihat:
+- `pgcrypto_siap` = **true**
+- daftar fungsi dengan kolom `pengaturan` yang memuat kata `extensions`
+
+### Urutan SQL terbaru
+
+```
+1. db/OLSHOP-01-VENDOR-SECURITY.sql   (login toko + PIN + sesi)
+2. db/OLSHOP-02-VENDOR-ITEMS.sql      (tabel barang + RPC kelola barang)
+3. db/OLSHOP-04-ADMIN-PIN.sql         (PIN dari Panel Admin)
+4. db/OLSHOP-05-PERBAIKI-CRYPT.sql    (WAJIB kalau muncul pesan di atas)
+
+Opsional: db/OLSHOP-03-CEK-DAN-PIN.sql (hanya untuk mengecek isi tabel)
+```
+
+Untuk pemasangan baru, berkas 01/02/04 sudah diperbaiki (`search_path = public, extensions, pg_temp`), jadi masalah ini tidak akan terulang.
+
+### Pesan error sekarang jujur
+
+| Pesan di web | Artinya | Solusi |
+| --- | --- | --- |
+| "Tinggal Satu Langkah" | Fungsi ada, tapi pgcrypto tidak terbaca | Jalankan `OLSHOP-05` |
+| "Fitur Belum Dipasang" | RPC benar-benar tidak ada (kode PGRST202) | Jalankan `OLSHOP-04` |
+| "Khusus Admin" | Email login belum terdaftar admin | Jalankan `ADD-ADMIN-EMAIL.sql` |
+| Pesan lain + kode | Pesan asli dari server, apa adanya | Baca pesannya |
+
+---
+
+## Vendor mencari menu "Kelola Barang Toko"
+
+Sekarang tersedia di **tiga tempat**:
+
+1. **Menu navigasi atas** — tulisan hijau "Kelola Barang Toko" (juga muncul di menu geser HP)
+2. **Tombol di menu geser HP** — sejajar dengan "Pasang Iklan Vendor"
+3. **Footer** — tautan "Kelola Barang Toko (Vendor)" dan tombol ikon toko

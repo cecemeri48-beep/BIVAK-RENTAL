@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_issue_pin(p_vendor_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_pin text;
@@ -67,7 +67,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_pin_ensure(p_vendor_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE v_exists boolean;
 BEGIN
@@ -97,7 +97,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_pin_status()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE v_rows jsonb;
 BEGIN
@@ -128,7 +128,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_pin_unlock(p_vendor_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 BEGIN
 	IF NOT public.bivak_is_privileged() THEN

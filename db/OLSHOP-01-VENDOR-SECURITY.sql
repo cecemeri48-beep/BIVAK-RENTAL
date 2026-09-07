@@ -13,7 +13,19 @@
 
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Di Supabase, pgcrypto sudah terpasang di skema "extensions".
+-- Blok ini hanya berjaga-jaga untuk database non-Supabase.
+DO $pgc$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto') THEN
+		BEGIN
+			CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
+		EXCEPTION WHEN OTHERS THEN
+			CREATE EXTENSION pgcrypto;
+		END;
+	END IF;
+END
+$pgc$;
 
 -- ---------------------------------------------------------------------
 -- 1. Tabel rahasia PIN (tidak pernah terekspos ke anon/authenticated)
@@ -87,7 +99,7 @@ RETURNS boolean
 LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE v_admin boolean := false;
 BEGIN
@@ -111,7 +123,7 @@ RETURNS uuid
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 	SELECT s.vendor_id
 	FROM public.vendor_sessions s
@@ -128,7 +140,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_login(p_name text, p_pin text)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_id uuid;
@@ -218,7 +230,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_logout(p_token uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 BEGIN
 	DELETE FROM public.vendor_sessions WHERE token = p_token;
@@ -233,7 +245,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_set_pin(p_vendor_id uuid, p_pin t
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 BEGIN
 	IF NOT public.bivak_is_privileged() THEN
@@ -261,7 +273,7 @@ CREATE OR REPLACE FUNCTION public.admin_vendor_reset_pin(p_vendor_id uuid)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE v_pin text;
 BEGIN

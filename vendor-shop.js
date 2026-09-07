@@ -65,9 +65,27 @@
 		if (s.length && s.indexOf("62") !== 0) s = "62" + s
 		return s
 	}
+	// pgcrypto (crypt/gen_salt) tidak terlihat dari dalam fungsi karena
+	// search_path. Pesan servernya juga berbunyi "does not exist", jadi harus
+	// dipisahkan lebih dulu supaya SQL tidak salah dituduh belum dijalankan.
+	function cryptIssue(err) {
+		var msg = String((err && (err.message || err.hint || err.code)) || "")
+		return /crypt|gen_salt|pgcrypto/i.test(msg)
+	}
 	function missingFn(err) {
 		var msg = String((err && (err.message || err.hint || err.code)) || "")
-		return /does not exist|not find the function|schema cache|PGRST202|42883|42P01/i.test(msg)
+		if (cryptIssue(err)) return false
+		return /not find the function|schema cache|PGRST202|42883|42P01|relation .* does not exist/i.test(msg)
+	}
+	// Pesan error yang benar: sebutkan sebab aslinya, jangan menebak.
+	function serverErr(err, hintBelumDipasang) {
+		if (cryptIssue(err)) {
+			return "Fungsinya sudah ada, tapi belum bisa membaca pgcrypto. Jalankan db/OLSHOP-05-PERBAIKI-CRYPT.sql di Supabase SQL Editor."
+		}
+		if (missingFn(err)) return hintBelumDipasang
+		var msg = (err && err.message) || "Terjadi kendala di server."
+		var code = (err && err.code) ? " (" + err.code + ")" : ""
+		return esc(msg + code)
 	}
 
 	var CATS = (window.BIVAK && BIVAK.gearCategories) || {
@@ -394,9 +412,8 @@
 
 		sb.rpc("vendor_shop_login", { p_name: name, p_pin: pin }).then(function (res) {
 			if (res.error) {
-				return manageStatus("error", missingFn(res.error)
-					? "Login toko belum aktif. Jalankan <b>db/OLSHOP-01-VENDOR-SECURITY.sql</b> di Supabase SQL Editor."
-					: esc(res.error.message || "Gagal memverifikasi PIN."))
+				return manageStatus("error", serverErr(res.error,
+					"Login toko belum aktif. Jalankan <b>db/OLSHOP-01-VENDOR-SECURITY.sql</b> di Supabase SQL Editor."))
 			}
 			var d = res.data || {}
 			if (!d.success) return manageStatus("error", esc(d.message || "PIN toko salah."))
@@ -450,7 +467,7 @@
 				try { sessionStorage.removeItem("bivak_shop_token") } catch (ignore) {}
 				if (!silent) {
 					manageStatus("error", res.error
-						? (missingFn(res.error) ? "Jalankan db/OLSHOP-02-VENDOR-ITEMS.sql di Supabase SQL Editor." : esc(res.error.message))
+						? serverErr(res.error, "Jalankan db/OLSHOP-02-VENDOR-ITEMS.sql di Supabase SQL Editor.")
 						: esc((res.data && res.data.message) || "Sesi berakhir, masuk ulang."))
 				}
 				return
@@ -604,9 +621,8 @@
 			if (photoUrl) payload.photo_url = photoUrl
 			sb.rpc("vendor_shop_item_save", { p_token: SHOP.token, p_item: payload }).then(function (res) {
 				if (res.error) {
-					return toast("error", "Gagal menyimpan barang", missingFn(res.error)
-						? "Jalankan db/OLSHOP-02-VENDOR-ITEMS.sql di Supabase."
-						: (res.error.message || "Coba lagi."))
+					return toast("error", "Gagal menyimpan barang", serverErr(res.error,
+						"Jalankan db/OLSHOP-02-VENDOR-ITEMS.sql di Supabase."))
 				}
 				var d = res.data || {}
 				if (!d.success) return toast("error", "Barang tidak tersimpan", d.message || "Coba lagi.")

@@ -154,7 +154,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_items(p_token uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_vendor uuid;
@@ -187,7 +187,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_item_save(p_token uuid, p_item jso
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_vendor uuid;
@@ -271,7 +271,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_set_stock(p_token uuid, p_item_id 
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_vendor uuid;
@@ -311,7 +311,7 @@ CREATE OR REPLACE FUNCTION public.vendor_shop_item_delete(p_token uuid, p_item_i
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $fn$
 DECLARE
 	v_vendor uuid;

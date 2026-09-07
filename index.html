@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="motion.css">
   <link rel="stylesheet" href="vendor-shop.css?v=20260907-03">
+  <link rel="stylesheet" href="mobile-fix.css?v=20260907-04">
 
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
@@ -51,6 +52,7 @@
         <li><a href="#donasi" class="nav-link" onclick="closeMobileMenu()">Donasi Pintu Angin <i class="fa-solid fa-heart text-rose"></i></a><span class="notification-badge donasi-badge badge-hidden" id="donasiBadge">0</span></li>
         <li><a href="#adopsi" class="nav-link" onclick="closeMobileMenu()">Adopsi Pohon <i class="fa-solid fa-seedling text-emerald"></i></a><span class="notification-badge adopsi-badge badge-hidden" id="adopsiBadge">0</span></li>
         <li><a href="#dampak" class="nav-link" onclick="closeMobileMenu()">Dampak Konservasi</a></li>
+        <li><a href="#" class="nav-link nav-link-shop" onclick="closeMobileMenu(); openVendorManagePanel(); return false;" title="Khusus vendor: kelola barang yang Anda sewakan">Kelola Barang Toko <i class="fa-solid fa-store"></i></a></li>
 
         <li class="mobile-drawer-actions">
           <a class="btn-pintuangin btn-block w-full" href="https://www.pintuangin.my.id/" target="_blank" rel="noopener" title="Buka Aplikasi Pintu Angin">
@@ -58,6 +60,9 @@
           </a>
           <button class="btn btn-outline btn-block" onclick="closeMobileMenu(); openModal('modalVendor')">
             <i class="fa-solid fa-plus"></i> <span>Pasang Iklan Vendor</span>
+          </button>
+          <button class="btn btn-outline btn-block btn-shop-drawer" onclick="closeMobileMenu(); openVendorManagePanel()">
+            <i class="fa-solid fa-store"></i> <span>Kelola Barang Toko</span>
           </button>
           <button class="btn btn-rose btn-block" onclick="donasi()">
             <i class="fa-solid fa-hand-holding-heart"></i> <span>Donasi Sekarang</span>

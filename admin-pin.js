@@ -173,11 +173,23 @@
 		return sb.rpc(name, args || {}).then(function (res) {
 			if (res.error) {
 				var m = res.error.message || ""
-				if (/does not exist|schema cache|PGRST202|42883/i.test(m)) {
+				var code = res.error.code || ""
+				// PENTING: error pgcrypto juga berbunyi "does not exist". Kalau tidak
+				// dipisahkan, web salah bilang SQL-nya belum dijalankan padahal sudah.
+				if (/crypt|gen_salt|pgcrypto/i.test(m)) {
+					toast(
+						"error",
+						"Tinggal Satu Langkah",
+						"Fungsi PIN sudah terpasang, tapi belum bisa membaca pgcrypto. Jalankan db/OLSHOP-05-PERBAIKI-CRYPT.sql di Supabase SQL Editor."
+					)
+				} else if (code === "PGRST202" || /not find the function|schema cache/i.test(m)) {
 					toast("error", "Fitur Belum Dipasang", "Jalankan db/OLSHOP-04-ADMIN-PIN.sql di Supabase SQL Editor sekali saja.")
+				} else if (/khusus admin|permission denied|not authorized/i.test(m)) {
+					toast("error", "Khusus Admin", "Email yang dipakai login belum terdaftar sebagai admin. Jalankan db/ADD-ADMIN-EMAIL.sql.")
 				} else {
-					toast("error", "Gagal", m || "Permintaan ditolak server.")
+					toast("error", "Gagal", (m || "Permintaan ditolak server.") + (code ? " (" + code + ")" : ""))
 				}
+				if (window.console && console.warn) console.warn("[BIVAK PIN] " + name + " gagal:", res.error)
 				return null
 			}
 			return res.data

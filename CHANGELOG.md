@@ -130,3 +130,22 @@ Ditambahkan ke versi mobile tanpa mengubah tampilan/perbaikan yang sudah ada (ad
 ### Sengaja TIDAK dibuat
 
 Keranjang, pemesanan, jadwal sewa, pengiriman, dan pembayaran. Sesuai konsep: web hanya memperlihatkan barang milik tiap vendor beserta jumlah dan harga sewanya.
+
+## 2026-09-07 (lanjutan) - Perbaikan pesan error pgcrypto, tampilan vertical & menu vendor
+
+### Perbaikan bug: "Fitur Belum Dipasang" padahal SQL sudah dijalankan
+
+- Sebab: fungsi dibuat dengan `SET search_path = public`, tetapi `pgcrypto` (`crypt`, `gen_salt`) berada di skema `extensions` di Supabase. Error aslinya `function crypt(text, text) does not exist`, dan deteksi di web menangkap kata "does not exist" lalu salah menuduh SQL belum dijalankan.
+- `db/OLSHOP-05-PERBAIKI-CRYPT.sql` (baru): menambahkan `extensions` ke `search_path` semua fungsi `vendor_shop_*` / `admin_vendor_*` tanpa mengubah isinya, menyegarkan cache skema PostgREST, lalu menampilkan hasil pemeriksaan.
+- `db/OLSHOP-01`, `02`, `04`: `SET search_path = public` -> `SET search_path = public, extensions, pg_temp` (14 fungsi), dan pemasangan `pgcrypto` di SQL 01 dibuat aman untuk Supabase maupun non-Supabase.
+- `admin-pin.js`: error dipisahkan menjadi empat kasus jelas - pgcrypto belum terbaca, RPC benar-benar tidak ada (`PGRST202`), bukan admin, dan pesan asli server beserta kodenya. Error juga dicatat ke console.
+- `vendor-shop.js`: `missingFn()` tidak lagi menganggap error pgcrypto sebagai "SQL belum dijalankan"; ditambah `serverErr()` yang memberi pesan sesuai sebab pada login toko, pemuatan barang, dan penyimpanan barang.
+
+### Menu "Kelola Barang Toko" dinaikkan ke atas
+
+- `index.html`: tautan hijau **Kelola Barang Toko** di navigasi atas (ikut tampil di menu geser HP) dan tombol **Kelola Barang Toko** di menu geser, sejajar "Pasang Iklan Vendor". Tautan footer tetap ada.
+
+### Perbaikan tampilan layar vertical (portrait)
+
+- `mobile-fix.css` (baru, dimuat paling akhir): `.grid-2col` di dalam kartu form jadi satu kolom; label pindah ke atas kolom isian (sebelumnya `.input-group` memakai flex baris sehingga label dan kotak isian berdesakan); tinggi isian minimal 48px dan font 16px; tombol form adopsi bertumpuk penuh; kartu paket adopsi satu per baris di bawah 420px.
+- `styles.css` sengaja TIDAK diubah - perbaikan ditumpuk lewat berkas terpisah.
