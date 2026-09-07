@@ -1,7 +1,7 @@
 /* ==========================================================================
    BIVAK - Konfigurasi Supabase
    --------------------------------------------------------------------------
-   Database utama BIVAK: pledqkanjduhabruvgxx
+   Database utama BIVAK: sqxwhfdarnzypicoamzl
    Database donasi (pintu angin): ncoueeeskzslldppsbvx
    
    Admin login pakai email + password Supabase Auth.

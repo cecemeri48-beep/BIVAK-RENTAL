@@ -50,7 +50,7 @@ sudah dihapus** (dulu `generateDemoItems` menampilkan barang fiktif).
 
 Ikon toko di footer → **Kelola Barang Toko**:
 
-1. Login: **nama toko** + **PIN 6 digit** (PIN diberikan admin dari Panel Admin saat toko disetujui).
+1. Login: **nama toko** + **PIN 6 digit**.
 2. **Tambah Barang**: nama, kategori, harga sewa/hari, jumlah unit, foto, deskripsi.
 3. **Ubah** barang (ikon pensil): semua kolom bisa diedit, termasuk harga.
 4. **Hapus** barang (ikon tong sampah).
@@ -70,42 +70,30 @@ Buka project **`pledqkanjduhabruvgxx`** → SQL Editor → jalankan berurutan:
 
 1. `db/OLSHOP-01-VENDOR-SECURITY.sql`
 2. `db/OLSHOP-02-VENDOR-ITEMS.sql`
-3. `db/OLSHOP-04-ADMIN-PIN.sql`  <- ini yang membuat PIN tampil di Panel Admin
-4. `db/OLSHOP-03-CEK-DAN-PIN.sql` (opsional: query pemeriksaan lewat SQL Editor)
+3. `db/OLSHOP-03-CEK-DAN-PIN.sql` (opsional: pemeriksaan + kelola PIN)
 
 > Jangan menjalankan lagi `FIX-VENDOR-ITEMS.sql` yang lama — file itu memasang
 > policy `vendor_items_all_anon` yang membuat siapa pun bisa mengubah barang
 > vendor lain. Skrip 02 sengaja menghapus policy tersebut.
 
-### 4.2 Bagikan PIN ke vendor (dari Panel Admin, tanpa SQL)
+### 4.2 Bagikan PIN ke vendor
 
-Setelah `OLSHOP-04-ADMIN-PIN.sql` dijalankan sekali, admin tidak perlu lagi
-membuka Supabase:
+PIN tidak lagi bisa dibaca dari browser (dulu kolom `vendors.edit_pin` bisa
+di-`SELECT` siapa saja dengan anon key). Sekarang tersimpan sebagai hash bcrypt
+di tabel `vendor_secrets`. Untuk memberi PIN baru ke vendor, jalankan di SQL Editor:
 
-1. Buka **Panel Admin** (ikon di header/footer) lalu masuk dengan email admin.
-2. Vendor baru mendaftar -> tab **Antrean** -> klik tombol centang (**Setujui**).
-3. Begitu disetujui, **PIN 6 angka langsung tampil di layar** dalam kotak hijau,
-   lengkap dengan tombol:
-   - **Salin PIN**
-   - **Kirim ke Vendor** -> membuka WhatsApp vendor dengan pesan siap kirim
-     (nama toko + PIN + cara masuk + catatan bahwa BIVAK hanya mempertemukan
-     penyewa dan vendor)
-4. Untuk vendor yang sudah tayang: tab **Vendor Aktif** -> tombol **PIN** di
-   kolom aksi. Di situ tersedia:
-   - **Buat PIN Baru** (kalau vendor lupa PIN; PIN lama langsung mati)
-   - **Tetapkan PIN Sendiri** (isi 6 angka pilihan sendiri)
-   - **Buka Kunci** (kalau vendor salah PIN 5x dan terkunci 15 menit)
+```sql
+-- PIN acak, tampil sekali (catat lalu kirim ke vendor)
+SELECT v.name, public.admin_vendor_reset_pin(v.id) AS pin_baru
+FROM public.vendors v
+WHERE v.name ILIKE '%celebes outdoor%';
 
-Tombol **PIN** berwarna kuning bila toko itu belum punya PIN sama sekali.
-
-> PIN hanya bisa dilihat **sekali**, saat dibuat. Yang tersimpan di database
-> cuma hash bcrypt-nya, jadi tidak ada cara membaca PIN lama — kalau hilang,
-> tinggal buat PIN baru. Semua fungsi PIN menolak siapa pun yang bukan admin
-> (dicek lewat tabel `public.admins`), jadi pengunjung biasa tidak bisa
-> memanggilnya walau tahu nama fungsinya.
-
-Alternatif lewat SQL Editor tetap ada di `db/OLSHOP-03-CEK-DAN-PIN.sql`
-(nomor 5 dan 6) kalau sewaktu-waktu dibutuhkan.
+-- atau tetapkan PIN sendiri
+SELECT public.admin_vendor_set_pin(
+  (SELECT id FROM public.vendors WHERE name ILIKE '%celebes outdoor%'),
+  '123456'
+);
+```
 
 ### 4.3 Unggah web
 
@@ -124,9 +112,7 @@ Unggah seluruh folder seperti biasa (Vercel / hosting statis). Berkas baru:
 | `app.js` | 20 KB kode olshop lama dibuang (keranjang, stok demo, dashboard lama); daftar vendor tidak lagi di-cache di `localStorage`; `alert`/`console.log [DEBUG]` dihapus; pengajuan vendor wajib lewat server |
 | `db/OLSHOP-01-VENDOR-SECURITY.sql` **(baru)** | PIN toko jadi hash bcrypt + tabel sesi + RPC login/logout + reset PIN admin |
 | `db/OLSHOP-02-VENDOR-ITEMS.sql` **(baru)** | rapikan `vendor_items`, tutup lubang RLS, RPC kelola barang per vendor |
-| `db/OLSHOP-03-CEK-DAN-PIN.sql` **(baru)** | query pemeriksaan & pengelolaan PIN lewat SQL Editor |
-| `db/OLSHOP-04-ADMIN-PIN.sql` **(baru)** | fungsi PIN untuk Panel Admin: buat/reset/lihat status/buka kunci |
-| `admin-pin.js` **(baru)** | PIN tampil di Panel Admin saat approve + tombol PIN per vendor + kirim WhatsApp |
+| `db/OLSHOP-03-CEK-DAN-PIN.sql` **(baru)** | query pemeriksaan & pengelolaan PIN |
 | `supabase-data-v2.js`, `supabase-data-v3.js` | dihapus (kembar dengan `supabase-data.js` dan tidak dipakai) |
 | `supabase-config.js` | komentar project ref lama diperbaiki |
 
@@ -151,6 +137,54 @@ Unggah seluruh folder seperti biasa (Vercel / hosting statis). Berkas baru:
 1. Buka halaman → catatan platform tampil di atas daftar vendor.
 2. Klik **Lihat Barang** pada vendor mana pun → daftar barang tampil (atau pesan
    "Vendor ini belum menambahkan daftar barang" bila memang kosong).
-3. Panel Admin → setujui satu vendor → PIN tampil di layar. Lalu footer → ikon toko → login pakai nama toko + PIN → tambah 1 barang → tutup modal
+3. Footer → ikon toko → login pakai nama toko + PIN → tambah 1 barang → tutup modal
    → muat ulang halaman → barang tadi tampil di kartu vendor dan di modal detail.
 4. Coba − / + pada dashboard → jumlah siap disewa berubah dan ikut tampil di katalog.
+
+---
+
+## Tambahan: PIN toko dibuat dari Panel Admin (tanpa buka Supabase)
+
+Sejak berkas `admin-pin.js` + `db/OLSHOP-04-ADMIN-PIN.sql` dipasang, admin **tidak perlu lagi** menjalankan SQL untuk membagikan PIN.
+
+### Alur pemakaian
+
+1. Vendor mendaftar sendiri lewat tombol **Pasang Iklan Rental Outdoor** di web.
+2. Admin buka **Panel Admin** (ikon koin di footer) → tab **Menunggu Persetujuan** → klik **Setujui**.
+3. Begitu disetujui, layar admin langsung menampilkan kotak **PIN Toko** berisi 6 angka, plus dua tombol:
+   - **Salin PIN**
+   - **Kirim ke Vendor** (membuka WhatsApp dengan pesan siap kirim: nama toko, PIN, dan cara masuk)
+4. PIN hanya tampil **sekali**. Yang tersimpan di database adalah hash-nya, bukan angka aslinya.
+5. Di tabel **Vendor Aktif** ada tombol **PIN** pada setiap baris:
+   - warna normal → toko sudah punya PIN
+   - warna kuning → toko belum punya PIN, klik untuk membuatkan
+   - di dalamnya tersedia **Tetapkan PIN Sendiri**, **Buka Kunci** (kalau vendor salah PIN 5x), dan **Buat PIN Baru**
+
+### Yang dilakukan vendor
+
+1. Buka web BIVAK RENTAL → klik **ikon toko hijau** di footer (atau tautan *Kelola Barang Toko (Vendor)*).
+2. Masukkan **nama toko** + **PIN 6 angka**.
+3. Kelola barang: **Tambah Barang** (nama, kategori, harga sewa/hari, jumlah unit, foto, deskripsi), **Ubah**, **Hapus**, dan atur **jumlah unit siap disewa** dengan tombol +/-.
+
+### Kalau muncul pesan error
+
+| Pesan | Artinya | Solusi |
+| --- | --- | --- |
+| "Fitur Belum Dipasang" | `db/OLSHOP-04-ADMIN-PIN.sql` belum dijalankan | Jalankan sekali di Supabase SQL Editor |
+| "Khusus admin" | Email yang dipakai login belum terdaftar sebagai admin | Jalankan `ADD-ADMIN-EMAIL.sql` (isi email Anda) |
+| "Login toko belum aktif" | `db/OLSHOP-01-VENDOR-SECURITY.sql` belum dijalankan | Jalankan SQL 01 lebih dulu |
+| "Jalankan db/OLSHOP-02..." | Tabel barang belum dibuat | Jalankan SQL 02 |
+
+### Urutan menjalankan SQL (sekali saja)
+
+```
+1. db/OLSHOP-01-VENDOR-SECURITY.sql   (login toko + PIN + sesi)
+2. db/OLSHOP-02-VENDOR-ITEMS.sql      (tabel barang + RPC kelola barang)
+3. db/OLSHOP-04-ADMIN-PIN.sql         (PIN dari Panel Admin)
+
+Opsional: db/OLSHOP-03-CEK-DAN-PIN.sql (hanya untuk mengecek isi tabel)
+```
+
+### Catatan platform (wajib, sudah tertulis di web)
+
+BIVAK RENTAL hanya mempertemukan penyewa dan pihak yang menyewakan. Setelah penyewa memilih vendor rental yang mau dipakai, seluruh transaksi dan komunikasi — harga akhir, pembayaran, jaminan, serah terima, sampai pengembalian barang — berhubungan langsung dengan pihak vendor tersebut, tanpa perantaraan BIVAK RENTAL lagi. Karena itu di web **tidak ada** fitur keranjang, pemesanan, pengiriman, maupun pembayaran.

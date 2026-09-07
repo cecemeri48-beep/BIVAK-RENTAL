@@ -77,7 +77,7 @@
 		wrap.innerHTML =
 			'<div class="modal-container">' +
 				'<div class="modal-header">' +
-					'<h3 class="modal-title"><i class="fa-solid fa-key text-emerald icon-emerald"></i> PIN Toko Vendor</h3>' +
+					'<h3 class="modal-title"><i class="fa-solid fa-key text-emerald"></i> PIN Toko Vendor</h3>' +
 					'<button class="modal-close" type="button" onclick="closeModal(\'modalVendorPin\')"><i class="fa-solid fa-xmark"></i></button>' +
 				"</div>" +
 				'<div class="modal-body" id="vendorPinBody"></div>' +
@@ -113,17 +113,18 @@
 			"Catatan: BIVAK RENTAL hanya mempertemukan penyewa dan vendor \u2014 penyewa akan menghubungi Anda langsung, " +
 			"dan seluruh transaksi diurus langsung antara Anda dan penyewa. Jangan bagikan PIN ini ke orang lain."
 
-		var html = '<div style="margin-bottom:1rem"><div style="font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:#10b981">Toko</div>' + '<div style="color:#fff;font-size:1.05rem;font-weight:700">' + name + "</div></div>"
+		var html =
+			'<div class="pin-vendor-name"><span>Toko</span><strong>' + name + "</strong></div>"
 
 		if (pin) {
 			html +=
 				'<div class="pin-reveal">' +
-					'<div class="pin-reveal-label">' + (isNew ? "PIN baru" : "PIN") + ' \u2014 tampil sekali</div>' +
+					'<div class="pin-reveal-label">' + (isNew ? "PIN baru" : "PIN") + " \u2014 tampil sekali</div>" +
 					'<div class="pin-reveal-value" id="vendorPinValue">' + esc(pin) + "</div>" +
 					'<div class="pin-reveal-actions">' +
-						'<button type="button" class="btn btn-outline btn-sm" onclick="adminCopyPin()"><i class="fa-solid fa-copy"></i> Salin PIN</button>' +
+						'<button type="button" class="btn btn-outline" onclick="adminCopyPin()"><i class="fa-solid fa-copy"></i> Salin PIN</button>' +
 						(phone
-							? '<a class="btn btn-whatsapp btn-sm" target="_blank" rel="noopener" href="https://wa.me/' + phone + "?text=" + encodeURIComponent(waMsg) + '"><i class="fa-brands fa-whatsapp"></i> Kirim ke Vendor</a>'
+							? '<a class="btn btn-whatsapp" target="_blank" rel="noopener" href="https://wa.me/' + phone + "?text=" + encodeURIComponent(waMsg) + '"><i class="fa-brands fa-whatsapp"></i> Kirim ke Vendor</a>'
 							: "") +
 					"</div>" +
 				"</div>" +
@@ -138,10 +139,10 @@
 		}
 
 		html +=
-			'<div class="flex-gap-md justify-content-end mt-md" style="flex-wrap:wrap">' +
-				'<button type="button" class="btn btn-outline btn-sm" onclick="adminVendorSetPin(\'' + dbId + '\')"><i class="fa-solid fa-pen"></i> Tetapkan PIN Sendiri</button>' +
-				'<button type="button" class="btn btn-outline btn-sm" onclick="adminVendorPinUnlock(\'' + dbId + '\')"><i class="fa-solid fa-lock-open"></i> Buka Kunci</button>' +
-				'<button type="button" class="btn btn-primary btn-sm" onclick="adminVendorPin(\'' + dbId + '\', true)"><i class="fa-solid fa-rotate"></i> Buat PIN Baru</button>' +
+			'<div class="pin-footer-actions">' +
+				'<button type="button" class="btn btn-outline" onclick="adminVendorSetPin(\'' + dbId + '\')"><i class="fa-solid fa-pen"></i> Tetapkan PIN Sendiri</button>' +
+				'<button type="button" class="btn btn-outline" onclick="adminVendorPinUnlock(\'' + dbId + '\')"><i class="fa-solid fa-lock-open"></i> Buka Kunci</button>' +
+				'<button type="button" class="btn btn-primary" onclick="adminVendorPin(\'' + dbId + '\', true)"><i class="fa-solid fa-rotate"></i> Buat PIN Baru</button>' +
 			"</div>"
 
 		return html
@@ -292,7 +293,7 @@
 			if (!btn) {
 				cell.insertAdjacentHTML(
 					"afterbegin",
-					'<button type="button" class="btn btn-outline btn-vendor-pin" onclick="adminVendorPin(\'' + esc(v.dbId) + '\')" style="padding:0.3rem 0.6rem;font-size:0.75rem;margin-right:.35rem"><i class="fa-solid fa-key"></i> PIN</button> ',
+					'<button type="button" class="btn btn-outline btn-vendor-pin" onclick="adminVendorPin(\'' + esc(v.dbId) + '\')" title="Lihat status / buat PIN toko"><i class="fa-solid fa-key"></i> PIN</button> ',
 				)
 				btn = cell.querySelector(".btn-vendor-pin")
 			}

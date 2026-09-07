@@ -97,34 +97,36 @@ ke sini.
   sebenarnya plus Row Level Security, dan sebaiknya diputuskan olehmu dulu
   karena mengubah alur login.
 
-## 2026-09-07 — Katalog Barang Vendor (sederhana)
+## 2026-09-07 — Katalog barang vendor (dipasang di versi mobile)
 
-### Ditambahkan
-- `vendor-shop.js` + `vendor-shop.css`: setiap vendor memperlihatkan barang yang dimiliki (nama, kategori, jumlah unit, jumlah siap disewa, harga sewa/hari, foto, deskripsi).
-- Dashboard vendor: login nama toko + PIN 6 digit, lalu tambah/ubah/hapus barang dan atur jumlah unit siap disewa.
-- Catatan platform di daftar vendor, detail vendor, form pendaftaran, dashboard, dan footer: BIVAK RENTAL hanya mempertemukan penyewa dan vendor; transaksi & komunikasi langsung dengan vendor tanpa perantaraan BIVAK RENTAL.
-- SQL: `db/OLSHOP-01-VENDOR-SECURITY.sql`, `db/OLSHOP-02-VENDOR-ITEMS.sql`, `db/OLSHOP-03-CEK-DAN-PIN.sql`.
-- Panduan `KATALOG-VENDOR.md`.
+Ditambahkan ke versi mobile tanpa mengubah tampilan/perbaikan yang sudah ada (adopsi pohon, tata letak vertical, `styles.css`, `supabase-data.js` tidak disentuh).
 
-### Diubah
-- Tidak ada keranjang, checkout, pengiriman, atau pembayaran. Kontak vendor lewat WhatsApp langsung.
-- Kartu vendor memakai katalog nyata dari database, bukan stok contoh (`generateDemoItems` dihapus).
-- Daftar vendor & pengajuan vendor tidak lagi disimpan di localStorage.
-- PIN toko disimpan sebagai hash bcrypt di `vendor_secrets` (kolom `vendors.edit_pin` dihapus).
-- Policy `vendor_items_all_anon` (`USING (true)`) dihapus; publik hanya boleh membaca barang vendor yang sudah disetujui admin.
+### Berkas baru
 
-### Dihapus
-- `supabase-data-v2.js` dan `supabase-data-v3.js` (kembar, tidak dipakai).
-- `alert()` debug dan seluruh `console.log("[DEBUG] ...")` pada `app.js`.
+- `vendor-shop.js` — katalog barang per vendor + dashboard kelola barang untuk vendor (login PIN).
+- `vendor-shop.css` — gaya mandiri untuk katalog (mobile-first, satu kolom di layar sempit).
+- `admin-pin.js` — PIN toko dibuat & ditampilkan langsung di Panel Admin, lengkap tombol kirim WhatsApp.
+- `db/OLSHOP-01-VENDOR-SECURITY.sql` — login toko berbasis PIN (hash bcrypt), sesi, kunci setelah 5x salah.
+- `db/OLSHOP-02-VENDOR-ITEMS.sql` — tabel `vendor_items` + RPC tambah/ubah/hapus barang & atur jumlah unit.
+- `db/OLSHOP-03-CEK-DAN-PIN.sql` — kueri pemeriksaan (opsional).
+- `db/OLSHOP-04-ADMIN-PIN.sql` — RPC PIN untuk Panel Admin.
+- `KATALOG-VENDOR.md` — panduan pemakaian.
 
-## 2026-09-07 (b) — PIN toko dari Panel Admin
+### `app.js`
 
-### Ditambahkan
-- `admin-pin.js`: saat admin menyetujui vendor baru, PIN toko 6 angka langsung tampil di Panel Admin beserta tombol Salin PIN dan Kirim ke Vendor (WhatsApp siap kirim).
-- Tombol **PIN** di tabel Vendor Aktif: Buat PIN Baru, Tetapkan PIN Sendiri, Buka Kunci. Tombol berwarna kuning bila toko belum punya PIN.
-- `db/OLSHOP-04-ADMIN-PIN.sql`: fungsi `admin_vendor_issue_pin`, `admin_vendor_pin_ensure`, `admin_vendor_pin_status`, `admin_vendor_pin_unlock` — semuanya hanya untuk sesi admin (cek `public.admins`), ditolak untuk `anon`.
-- Gaya tampilan kotak PIN di `vendor-shop.css`.
+- Daftar vendor & pengajuan tidak lagi di-cache di `localStorage` (dulu bikin data basi); hanya donasi yang masih disimpan lokal.
+- Semua `console.log('[DEBUG] ...')` dan `alert('Fungsi handleVendorSubmit TERPANGGIL!...')` dibuang.
+- Kartu vendor kini memuat penanda `data-vendor-id` dan wadah `mini-items-grid`: menampilkan barang asli (nama, harga sewa/hari, jumlah unit) sebagai ganti daftar tag.
+- Tombol kartu jadi **Barang** (ikon kotak) dan membuka daftar barang vendor.
+- `openVendorDetail` versi lama dihapus, digantikan versi `vendor-shop.js` yang menampilkan katalog nyata.
 
-### Diubah
-- Admin tidak perlu lagi membuka Supabase SQL Editor untuk membagikan PIN vendor.
-- Membuat PIN baru otomatis memutus sesi toko yang masih terbuka.
+### `index.html`
+
+- Memuat `vendor-shop.css`, `vendor-shop.js`, `admin-pin.js`.
+- Modal baru **Kelola Barang Toko**: masuk pakai nama toko + PIN 6 angka, lalu tambah/ubah/hapus barang dan atur jumlah unit siap disewa.
+- Tombol ikon toko di footer + tautan *Kelola Barang Toko (Vendor)*.
+- Catatan platform: BIVAK RENTAL hanya mempertemukan penyewa dan vendor — transaksi langsung dengan pihak vendor, tanpa perantaraan BIVAK RENTAL.
+
+### Sengaja TIDAK dibuat
+
+Keranjang, pemesanan, jadwal sewa, pengiriman, dan pembayaran. Sesuai konsep: web hanya memperlihatkan barang milik tiap vendor beserta jumlah dan harga sewanya.
