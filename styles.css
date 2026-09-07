@@ -2073,6 +2073,8 @@ canvas.cert-zoom {
 
   #vendorGridContainer .location-badge { left: .45rem; }
   #vendorGridContainer .verified-badge { right: .45rem; }
+  #vendorGridContainer .verified-badge { max-width: 34px; overflow: hidden; }
+  #vendorGridContainer .verified-badge i { margin-right: .15rem; }
   #vendorGridContainer .collage-badge { bottom: .45rem; right: .45rem; }
 
   /* Misi sosial: ringkas di mobile, detail dibuka bila dibutuhkan */
@@ -2867,6 +2869,18 @@ html {
   border-color: var(--primary-emerald);
 }
 
+/* Form Adopsi di layar sempit (portrait): grid 2 kolom collapse ke 1 kolom,
+   label pindah ke atas input — sebelumnya label+input+note diperas sejajar
+   sehingga input menyusut jadi kotak kecil dan form tidak terbaca.
+   .adopsi-packages tetap 2 kolom (sudah dipaksa !important di atas).
+   .input-group tanpa label (search/filter card) tidak terpengaruh. */
+@media (max-width: 640px) {
+  .grid-2col { grid-template-columns: 1fr; }
+  .input-group { flex-wrap: wrap; }
+  .input-group label { flex: 1 1 100%; margin-bottom: 0.4rem; }
+  .input-group .form-control { flex: 1 1 100%; }
+}
+
 /* Notification Badge */
 .badge-hidden {
   display: none;
@@ -3079,188 +3093,4 @@ html {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-/* ==========================================================================
-   Mobile UX v2: chips, nav aktif, bottom sheet, lightbox koleksi
-   ========================================================================== */
-.city-chips {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: .45rem;
-  overflow-x: auto;
-  padding: .15rem .1rem .35rem;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  scroll-snap-type: x proximity;
-}
-.city-chips::-webkit-scrollbar { display: none; }
-
-.city-chip {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  min-height: 36px;
-  padding: .4rem .85rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-glass);
-  background: rgba(255,255,255,.04);
-  color: var(--text-muted);
-  font-family: inherit;
-  font-size: .78rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background .18s ease, color .18s ease, border-color .18s ease;
-}
-.city-chip:hover { border-color: var(--primary-emerald); color: #fff; }
-.city-chip.active {
-  background: var(--primary-emerald);
-  border-color: var(--primary-emerald);
-  color: #04120d;
-}
-
-.mobile-bottom-nav a.active,
-.mobile-bottom-nav button.active {
-  background: rgba(16,185,129,.14);
-  color: #fff;
-}
-.mobile-bottom-nav a.active i,
-.mobile-bottom-nav button.active i { color: #34d399; }
-
-/* Badge Foto Koleksi sekarang tombol yang bisa diklik */
-.collage-badge-btn {
-  border: 1px solid rgba(255,255,255,.22);
-  font-family: inherit;
-  cursor: zoom-in;
-  transition: background .18s ease, transform .18s ease;
-}
-.collage-badge-btn:hover,
-.collage-badge-btn:focus-visible {
-  background: rgba(16,185,129,.9);
-  color: #04120d;
-  outline: none;
-}
-.collage-badge-btn:active { transform: scale(.96); }
-
-/* Caption di lightbox koleksi */
-.lightbox-caption {
-  position: fixed;
-  left: 50%;
-  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  max-width: calc(100vw - 2rem);
-  padding: .5rem .9rem;
-  border-radius: 999px;
-  background: rgba(0,0,0,.72);
-  border: 1px solid rgba(255,255,255,.16);
-  color: #e5e7eb;
-  font-size: .78rem;
-  text-align: center;
-  pointer-events: none;
-}
-
-@media (max-width: 640px) {
-  /* Badge Terverifikasi: lingkaran centang bersih, teks tidak lagi kepotong.
-     Teks lengkap tetap terbaca lewat title/aria-label dan muncul penuh di modal detail. */
-  #vendorGridContainer .verified-badge {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border-radius: 50%;
-    justify-content: center;
-    gap: 0;
-  }
-  #vendorGridContainer .verified-badge i { margin: 0; font-size: .68rem; }
-  #vendorGridContainer .verified-badge .verified-text { display: none; }
-
-  #modalVendorDetail.modal-overlay { align-items: flex-end; padding: 0; }
-  #modalVendorDetail .modal-container {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 22px 22px 0 0;
-    max-height: 88dvh;
-    display: flex;
-    flex-direction: column;
-  }
-  #modalVendorDetail .modal-body {
-    overflow-y: auto;
-    padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
-  }
-
-  #modalVendorDetail .vendor-detail-actions {
-    position: sticky;
-    bottom: 0;
-    margin: 1rem -0.85rem -1rem;
-    padding: .7rem .85rem calc(.7rem + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(180deg, rgba(10,17,15,0), rgba(10,17,15,.96) 28%);
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: .6rem !important;
-  }
-  #modalVendorDetail .vendor-detail-actions .btn-whatsapp {
-    width: 100%;
-    min-height: 48px;
-    border-radius: 14px;
-  }
-
-  .search-filter-card { overflow: hidden; }
-  .city-chips { margin: 0 -0.1rem; }
-
-  #vendorGridContainer .collage-badge-btn {
-    top: auto;
-    bottom: .45rem;
-    right: .45rem;
-    min-height: 30px;
-  }
-}
-
-/* ==========================================================================
-   Panel gabungan: Konservasi Gunung Bawakaraeng (Donasi + Adopsi)
-   ========================================================================== */
-.konservasi-section {
-  padding-bottom: 0;
-}
-
-.konservasi-toggle {
-  min-height: 64px;
-  font-size: 1.05rem;
-  padding: 1rem 1.2rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(6,182,212,.08));
-  border: 1px solid rgba(16,185,129,.4);
-  box-shadow: 0 10px 30px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
-}
-
-.konservasi-toggle:hover {
-  background: linear-gradient(135deg, rgba(16,185,129,.32), rgba(6,182,212,.14));
-  border-color: var(--primary-emerald);
-}
-
-.konservasi-toggle .collapse-label i { font-size: 1.15rem; }
-
-.konservasi-hint {
-  color: var(--text-muted);
-  font-size: .8rem;
-  margin: .5rem 0 0;
-  text-align: center;
-}
-
-/* Saat panel terbuka, hint disembunyikan supaya tidak mengulang info */
-#konservasiPanel.open { margin-top: 0; }
-.konservasi-toggle[aria-expanded="true"] + .konservasi-hint { display: none; }
-
-/* Section di dalam panel: padding dirapatkan supaya tidak dobel */
-#konservasiPanel > .section { padding-top: 1.5rem; }
-#konservasiPanel > .section:last-child { padding-bottom: 2rem; }
-
-@media (max-width: 640px) {
-  .konservasi-section { padding-top: 1.35rem; }
-  .konservasi-toggle {
-    min-height: 58px;
-    font-size: .94rem;
-    padding: .85rem 1rem;
-    border-radius: 18px;
-  }
-  .konservasi-hint { font-size: .74rem; }
-  #konservasiPanel > .section { padding-top: 1.1rem; }
 }
