@@ -17,5 +17,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Database SQL files (all in db/)
-*.sql
+# Database SQL: duplikat di root diabaikan, skrip resmi di db/ tetap dilacak
+/*.sql
+!db/**/*.sql
+

@@ -246,3 +246,19 @@ Sekarang tersedia di **tiga tempat**:
 1. **Menu navigasi atas** — tulisan hijau "Kelola Barang Toko" (juga muncul di menu geser HP)
 2. **Tombol di menu geser HP** — sejajar dengan "Pasang Iklan Vendor"
 3. **Footer** — tautan "Kelola Barang Toko (Vendor)" dan tombol ikon toko
+
+---
+
+## Data contoh barang (opsional, sekali saja)
+
+Agar katalog tiap vendor tidak kosong saat pertama online, jalankan di
+Supabase SQL Editor **setelah** `db/OLSHOP-02-VENDOR-ITEMS.sql`:
+
+```
+db/SEED-CONTOH-BARANG.sql
+```
+
+Isinya 31 contoh barang (tiap vendor minimal 5) lengkap dengan foto dari
+folder `assets/items/` — unggah folder itu bersama web. Aman dijalankan
+berulang: barang bernama sama pada vendor yang sama dilewati, tidak dobel.
+Vendor tetap bisa mengubah/menghapus contoh ini lewat menu **Kelola Barang Toko**.

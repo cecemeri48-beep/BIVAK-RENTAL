@@ -149,3 +149,28 @@ Keranjang, pemesanan, jadwal sewa, pengiriman, dan pembayaran. Sesuai konsep: we
 
 - `mobile-fix.css` (baru, dimuat paling akhir): `.grid-2col` di dalam kartu form jadi satu kolom; label pindah ke atas kolom isian (sebelumnya `.input-group` memakai flex baris sehingga label dan kotak isian berdesakan); tinggi isian minimal 48px dan font 16px; tombol form adopsi bertumpuk penuh; kartu paket adopsi satu per baris di bawah 420px.
 - `styles.css` sengaja TIDAK diubah - perbaikan ditumpuk lewat berkas terpisah.
+
+## 2026-09-08
+
+### Data contoh barang vendor
+
+- `db/SEED-CONTOH-BARANG.sql` (baru): 31 contoh barang rental untuk 6 vendor, tiap vendor minimal 5 barang, lengkap dengan harga sewa, stok, kategori, dan deskripsi. Idempoten (`ON CONFLICT DO NOTHING`) plus dua query verifikasi.
+- `assets/items/` (baru): 19 foto contoh barang (tenda, carrier, sleeping bag, kompor, headlamp, lampu tenda, cookset, matras, hammock, grill, life jacket, sepatu, jaket, tracking pole, GPS, botol thermal), JPEG 800px.
+- `KATALOG-VENDOR.md`: tambah bagian cara menjalankan data contoh.
+
+### Perbaikan tampilan & stabilitas daftar vendor (2026-09-08 lanjutan)
+
+- `vendor-shop.css`: tambah aturan yang hilang untuk kartu barang modal detail — `.gear-item-thumb img` dibatasi mengisi kotak 78/92px (sebelumnya foto tampil sebesar ukuran aslinya sehingga kartu "kacau"), badge stok diposisikan absolut di atas foto, dan label/nilai `.gear-item-facts` diberi gaya terpisah (sebelumnya menempel: "Jumlah5 unit").
+- `vendor-shop.js`: label stok habis di badge foto "Sedang kosong" -> "Kosong" (muat di thumbnail 78px, konsisten dengan cuplikan mini).
+- `supabase-data.js`: daftar vendor tidak lagi dikosongkan saat fetch gagal (dulu `vendorsData = []` memunculkan status "Tidak Ada Vendor" palsu di HP dengan sinyal lemah); daftar dimulai dari data statis bawaan sebagai cadangan dan hanya diganti saat fetch Supabase berhasil.
+- `index.html`: cache-bust `vendor-shop.css`, `vendor-shop.js`, `supabase-data.js` -> `?v=20260908-01`.
+
+### Repo dirapikan (2026-09-08 malam)
+
+- Hapus 24 SQL duplikat di root (semua sudah ada di `db/`), termasuk `FIX-VENDOR-ITEMS.sql` lama yang berbahaya bila dijalankan ulang.
+- Hapus `supabase-data-v2.js` dan `supabase-data-v3.js` (kembaran `supabase-data.js`, tidak dipakai).
+- Hapus `PATCH-NOTES.md` dan `PERBAIKAN-VENDOR.md` (catatan patch lama; isinya sudah tercakup di CHANGELOG ini).
+- Hapus `assets/1.jpeg` dan `assets/hero-bg.jpg` (tidak lagi dirujuk kode mana pun).
+- `db/` dipangkas dari 28 -> 12 skrip: hanya jalur resmi (FULL-SETUP, SETUP-DONASI, ADOPSI-POHON, FIX-VENDOR-APPROVAL, FIX-VENDOR-IMAGES, OLSHOP-01..05, ADD-ADMIN-EMAIL, SEED-CONTOH-BARANG).
+- `.gitignore`: `*.sql` -> `/*.sql` + `!db/**/*.sql` (duplikat root diabaikan, skrip resmi di `db/` tetap dilacak git).
+- Total file 116 -> 67.
