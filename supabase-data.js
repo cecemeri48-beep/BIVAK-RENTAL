@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    BIVAK v4 - Lapisan Data Supabase (Email-only Admin)
    --------------------------------------------------------------------------
    - Admin login pakai email + password Supabase Auth, lalu cek tabel admins
@@ -145,7 +145,10 @@
 	var seq = 1
 	function nextId() { return seq++ }
 
-	var vendorsData = []
+	// Daftar vendor dimulai dari data statis bawaan app.js supaya kalau fetch
+	// pertama gagal (sinyal HP lemah), pengunjung tetap melihat vendor, bukan
+	// status kosong palsu. Begitu fetch Supabase berhasil, daftar diganti data asli.
+	var vendorsData = (window.BIVAK && BIVAK.vendors && BIVAK.vendors.length ? BIVAK.vendors.slice() : [])
 	var pendingVendorsData = []
 
 	function mapVendor(row) {
@@ -198,7 +201,10 @@
 		// yang salah status tetapi belum pernah di-approve tampil sebagai aktif.
 		var vRes = await sb.from("vendors").select("*").eq("status", "approved").eq("is_verified", true).not("approved_at", "is", null).order("created_at", { ascending: false })
 		if (vRes.error) {
-			vendorsData = []
+			// Jaringan gagal: JANGAN kosongkan daftar (dulu vendorsData = []),
+			// karena itu memunculkan status "Tidak Ada Vendor" palsu. Pertahankan
+			// data terakhir; pengunjung bisa muat ulang halaman untuk mencoba lagi.
+			console.warn("[BIVAK] Gagal memuat vendor, data terakhir dipakai:", (vRes.error && vRes.error.message) || vRes.error)
 		} else {
 			vendorsData = (vRes.data || []).map(mapVendor)
 		}

@@ -606,3 +606,52 @@
 .shop-order-status b {
 	color: #fff;
 }
+
+/* ============================== PERBAIKAN 2026-09-08 ==============================
+   Kartu barang di modal detail tampil berantakan (foto raksasa + label menempel):
+   - .gear-item-thumb adalah DIV pembungkus <img>, tetapi tidak ada aturan untuk
+     img di dalamnya, sehingga foto tampil sebesar ukuran aslinya (ratusan piksel)
+     dan merusak kartu. object-fit pada div tidak berpengaruh ke img anak.
+   - .gear-stock-badge di dalam thumb tidak punya posisi absolut.
+   - .gear-item-facts <span>/<b> tidak punya aturan tampilan, jadi label dan nilai
+     menempel ("Jumlah5 unit").
+   ================================================================================ */
+.gear-item-thumb {
+	position: relative;
+	overflow: hidden;
+}
+.gear-item-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.gear-item-thumb .gear-stock-badge {
+	position: absolute;
+	left: 5px;
+	bottom: 5px;
+	font-size: 0.6rem;
+	padding: 2px 6px;
+	background: rgba(5, 19, 13, 0.82);
+	backdrop-filter: blur(3px);
+}
+.gear-item-facts > div {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+.gear-item-facts span {
+	font-size: 0.68rem;
+	color: #9fb3aa;
+	line-height: 1.2;
+}
+.gear-item-facts b {
+	font-size: 0.85rem;
+	color: #fff;
+	line-height: 1.3;
+}
+.gear-item-facts b small {
+	font-weight: 400;
+	color: #9fb3aa;
+}

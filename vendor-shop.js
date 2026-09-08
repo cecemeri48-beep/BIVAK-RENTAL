@@ -349,7 +349,7 @@
 			var ready = intval(it.stock_available)
 			var total = intval(it.stock_total)
 			var cls = ready <= 0 ? "empty" : (ready <= 2 ? "low" : "ready")
-			var label = ready <= 0 ? "Sedang kosong" : ("Siap " + ready + " unit")
+			var label = ready <= 0 ? "Kosong" : ("Siap " + ready + " unit")
 			var hi = highlightItemId && String(highlightItemId) === String(it.id) ? " is-highlight" : ""
 			html += '<div class="gear-item-card' + (ready <= 0 ? " is-empty" : "") + hi + '" id="gear-' + esc(it.id) + '">' +
 				'<div class="gear-item-thumb">' +
