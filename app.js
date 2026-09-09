@@ -149,6 +149,16 @@ window.filterVendors = function() {
 
   var filtered = BIVAK.vendors.filter(function(v) {
     var matchQuery = !query || v.name.toLowerCase().indexOf(query) > -1 || (v.gears || []).some(function(g) { return g.toLowerCase().indexOf(query) > -1; });
+
+    // Periksa juga daftar barang asli (vendor_items) yang dimuat oleh vendor-shop.js
+    if (!matchQuery && window.BIVAK_SHOP && BIVAK_SHOP.itemsByVendor) {
+        var realItems = BIVAK_SHOP.itemsByVendor[v.dbId] || BIVAK_SHOP.itemsByVendor[v.id] || [];
+        matchQuery = realItems.some(function(it) {
+            return (it.name && it.name.toLowerCase().indexOf(query) > -1) ||
+                   (it.category && it.category.toLowerCase().indexOf(query) > -1);
+        });
+    }
+
     var matchCity = !city || v.city === city;
     return matchQuery && matchCity;
   });

@@ -150,6 +150,7 @@
 			.order("name", { ascending: true })
 			.then(function (res) {
 				var map = {}
+				for (var i = 0; i < ids.length; i++) map[ids[i]] = []
 				if (!res.error) {
 					var rows = res.data || []
 					for (var i = 0; i < rows.length; i++) {
@@ -224,6 +225,7 @@
 		SHOP.vendor = v
 		SHOP.filterCat = null
 		var key = vendorKey(v)
+		var hasCached = key && (typeof SHOP.itemsByVendor[key] !== "undefined")
 		SHOP.items = (key && SHOP.itemsByVendor[key]) || []
 		if (window.BIVAK) { BIVAK.currentVendorId = v.id; BIVAK.vendorItems = SHOP.items }
 
@@ -233,7 +235,9 @@
 		if (body) body.innerHTML = detailShellHtml(v)
 		if (typeof window.openModal === "function") openModal("modalVendorDetail")
 
-		renderCatalog(null, highlightItemId)
+		if (hasCached) {
+			renderCatalog(null, highlightItemId)
+		}
 		loadVendorItems(function () { renderCatalog(SHOP.filterCat, highlightItemId) })
 	}
 
