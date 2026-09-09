@@ -1024,10 +1024,14 @@
 	}
 
 	window.confirmAdopsiPayment = function() {
-		var wa = document.getElementById('adopsiWA').value.trim()
+		var waInput = document.getElementById('adopsiWA')
+		var wa = waInput ? waInput.value.trim() : ''
 		if (wa.startsWith('0')) wa = '62' + wa.substring(1)
-		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + document.getElementById('adopsiNama').value + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + _selectedPackage.name + '\nTotal: Rp ' + _selectedPackage.amount.toLocaleString('id-ID') + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
-		window.open('https://wa.me/' + BIVAK.normalizePhone(wa) + '?text=' + encodeURIComponent(msg), '_blank')
+		var pkgName = _selectedPackage ? _selectedPackage.name : '-'
+		var pkgAmt = _selectedPackage ? _selectedPackage.amount.toLocaleString('id-ID') : '0'
+		var namaCert = document.getElementById('adopsiNama') ? document.getElementById('adopsiNama').value : ''
+		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + namaCert + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + pkgName + '\nTotal: Rp ' + pkgAmt + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
+		window.open('https://wa.me/6282320124040?text=' + encodeURIComponent(msg), '_blank')
 	}
 
 	window.checkAdopsiCode = function() {

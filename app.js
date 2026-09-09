@@ -111,11 +111,11 @@ window.renderVendors = function(filteredList) {
     return '<div class="vendor-card" data-vendor-id="' + BIVAK.escape(v.id) + '">' +
       '<div class="vendor-cover">' +
         (hasCollage
-          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover;cursor:zoom-in" onclick="openCollageLightbox(' + v.id + ')">'
+          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover;cursor:zoom-in" onclick="openCollageLightbox(\'' + BIVAK.escape(v.id) + '\')">'
           : '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">') +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge" title="Terverifikasi" aria-label="Vendor terverifikasi"><i class="fa-solid fa-circle-check"></i><span class="verified-text"> Terverifikasi</span></div>' : '') +
-        (hasCollage ? '<button type="button" class="collage-badge collage-badge-btn" onclick="event.stopPropagation();openCollageLightbox(' + v.id + ')" title="Ketuk untuk memperbesar foto koleksi"><i class="fa-solid fa-images"></i> Foto Koleksi</button>' : '') +
+        (hasCollage ? '<button type="button" class="collage-badge collage-badge-btn" onclick="event.stopPropagation();openCollageLightbox(\'' + BIVAK.escape(v.id) + '\')" title="Ketuk untuk memperbesar foto koleksi"><i class="fa-solid fa-images"></i> Foto Koleksi</button>' : '') +
       '</div>' +
       '<div class="vendor-body">' +
         '<div class="vendor-header">' +
@@ -182,7 +182,10 @@ window.pickCity = function(city) {
 
 // Lightbox untuk memperbesar Foto Koleksi vendor
 window.openCollageLightbox = function(id) {
-  var v = BIVAK.vendors.find(function(x) { return x.id === id; });
+  var list = (BIVAK.vendors || []).concat(BIVAK.pendingVendors || []);
+  var v = list.find(function(x) {
+    return String(x.id) === String(id) || (x.dbId && String(x.dbId) === String(id));
+  });
   var src = v && v.collage ? v.collage : '';
   if (!src) return;
   var lb = document.getElementById('collageLightbox');
