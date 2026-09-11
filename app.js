@@ -313,7 +313,7 @@ window.renderDonationList = function() {
   if (box && sorted.length === 0) {
     box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-dim);font-size:0.85rem;border:1px dashed rgba(140,150,170,.25);border-radius:12px">Belum ada donasi terverifikasi. Jadilah yang pertama mendukung konservasi Bawakaraeng.</div>';
   } else if (box) {
-    var medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
+    var medals = ['🥇', '🥈', '🥉'];
     box.innerHTML = sorted.slice(0, 15).map(function(d, i) {
       var nm = BIVAK.escape(d.nama || 'Donatur');
       var top = i < 3;
@@ -525,9 +525,9 @@ window.renderAdminTables = function() {
         var amt = BIVAK.rupiah(r.amt || 0);
         var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-';
         var st = r.astatus || 'baru';
-        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">? Diterima</span>' :
-                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">? Ditolak</span>' :
-                       '<span style="color:#f59e0b;font-weight:700">? Baru</span>';
+        var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
+                       st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+                       '<span style="color:#f59e0b;font-weight:700">○ Baru</span>';
         return '<tr>' +
           '<td>' + nm + '</td>' +
           '<td>' + amt + '</td>' +

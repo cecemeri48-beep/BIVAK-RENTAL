@@ -101,7 +101,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   2. Status admin â€” email + password
+	   2. Status admin — email + password
 	   ---------------------------------------------------------------------- */
 	var isAdmin = false
 
@@ -491,7 +491,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   7. Donasi Submit â€” ke database LAMA
+	   7. Donasi Submit — ke database LAMA
 	   ---------------------------------------------------------------------- */
 	window.handleDonasiSubmit = async function (e) {
 		e.preventDefault()
@@ -525,7 +525,7 @@
 
 			closeModal("modalDonasi")
 			if (form) form.reset()
-			toast("success", "Donasi Terkirim!", "Nama Anda akan muncul di leaderboard setelah diverifikasi admin. Terima kasih! ðŸ’š", 6000)
+			toast("success", "Donasi Terkirim!", "Nama Anda akan muncul di leaderboard setelah diverifikasi admin. Terima kasih! 💚", 6000)
 			await loadPublicData({ alsoAdminTables: isAdmin })
 			if (typeof renderDonation === 'function') renderDonation()
 		} catch (err) {
@@ -571,7 +571,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   9. Login Admin â€” EMAIL + PASSWORD
+	   9. Login Admin — EMAIL + PASSWORD
 	   ---------------------------------------------------------------------- */
 	function buildLoginModal() {
 		if (document.getElementById("modalAdminLogin")) return
@@ -746,7 +746,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   12. Donasi Admin Actions â€” dari database LAMA
+	   12. Donasi Admin Actions — dari database LAMA
 	   ---------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------
 	   11b. Aksi admin: acuan baris stabil + kunci klik-ganda
@@ -911,7 +911,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   14. Render admin tables â€” menggunakan data cloud
+	   14. Render admin tables — menggunakan data cloud
 	   ---------------------------------------------------------------------- */
 	window.renderAdminTables = function() {
 		var pendingTabBadge = document.getElementById("pendingTabBadge")
@@ -971,9 +971,9 @@
 					var amt = 'Rp ' + (Number(r.amt || 0)).toLocaleString('id-ID')
 					var when = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '-'
 					var st = r.astatus || 'baru'
-					var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">âœ“ Diterima</span>' :
-					              st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">âœ— Ditolak</span>' :
-					              '<span style="color:#f59e0b;font-weight:700">â—‹ Baru</span>'
+					var stBadge = st === 'disetujui' ? '<span style="color:#10b981;font-weight:700">✓ Diterima</span>' :
+					              st === 'ditolak' ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+					              '<span style="color:#f59e0b;font-weight:700">○ Baru</span>'
 					return '<tr>' +
 						'<td>' + nm + '</td>' +
 						'<td>' + amt + '</td>' +
@@ -1003,7 +1003,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   15. Adopsi Pohon â€” Cloned from Bawakaraeng Hub
+	   15. Adopsi Pohon — Cloned from Bawakaraeng Hub
 	   ---------------------------------------------------------------------- */
 	var _adoptionRows = []
 	var _selectedPackage = null
@@ -1212,7 +1212,7 @@
 	}
 
 	/* ----------------------------------------------------------------------
-	   16. Admin Panel â€” Adopsi Tab
+	   16. Admin Panel — Adopsi Tab
 	   ---------------------------------------------------------------------- */
 	function renderAdopsiAdmin() {
     var tbody = document.getElementById("tableAdopsiBody")
@@ -1226,9 +1226,9 @@
     var html = _adoptionRows.map(function(r, i) {
 			var isVerified = r.status === 'terverifikasi'
 			var isRejected = r.status === 'ditolak'
-			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">âœ“ Terverifikasi</span>' :
-			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">âœ— Ditolak</span>' :
-			                  '<span style="color:#f59e0b;font-weight:700">â—‹ Menunggu</span>'
+			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
+			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
+			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
 			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
 			var actions
 			if (isVerified) {

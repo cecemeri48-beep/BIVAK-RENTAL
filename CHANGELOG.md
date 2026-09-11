@@ -5,6 +5,20 @@ terpisah + 4 file catatan lepas yang saling bertentangan; semuanya digabung
 ke sini.
 
 ## 2026-09-11
+
+### Perbaikan tampilan & console (lanjutan)
+
+- **Mojibake di panel admin & toast.** File lama ternyata tersimpan
+  double-encoded (UTF-8 yang pernah terbaca sebagai CP1252), sehingga simbol
+  ✓ ✗ ○ 💚 🥇 tampil sebagai `âœ"`, `â—‹`, `ðŸ'š`, dst. 17 titik diperbaiki
+  di app.js dan supabase-data.js, plus badge status di tabel admin.
+- **401 admin_vendor_pin_status di console.** Probe status PIN berjalan 900ms
+  setelah klik ikon admin -- termasuk saat yang terbuka baru form login
+  (belum authenticated), sehingga server menjawab 401. Sekarang probe hanya
+  berjalan bila ada sesi login (admin-pin.js).
+- **Toast diagnostik login ganda:** kegagalan login database donasi dan sesi
+  donasi yang belum ada kini tampil sebagai toast, bukan cuma console.
+
 ### Optimasi mobile (tetap menarik, lebih ringan dibuka)
 
 - **Shader hero WebGL dibuat sadar-perangkat.** Di HP (layar kecil / layar
