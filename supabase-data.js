@@ -634,6 +634,7 @@
 					var dLogin = await sbd.auth.signInWithPassword({ email: email, password: password })
 					if (dLogin && dLogin.error) {
 						console.warn("[BIVAK] Login DB donasi gagal:", dLogin.error.message)
+						toast("error", "Login Donasi/Adopsi Gagal", "Akun admin belum cocok di database Pintu Angin (" + dLogin.error.message + "). Tab Donasi & Adopsi akan kosong.")
 					}
 				} catch (ignore) {}
 			}
@@ -690,6 +691,17 @@
 			renderAdminTables()
 			decorateAdminPanel()
 			openModal("modalAdmin")
+			// Sesi admin lama (dari sebelum login ganda ada) tidak punya sesi di
+			// database donasi, jadi tab Donasi/Adopsi tampak kosong. Jangan biarkan
+			// diam-diam: beri tahu cara memperbaikinya.
+			if (sbd && sbd.auth) {
+				try {
+					var dSess = await sbd.auth.getSession()
+					if (!(dSess && dSess.data && dSess.data.session)) {
+						toast("info", "Sesi Donasi/Adopsi Belum Aktif", "Klik Keluar lalu masuk lagi sebagai admin supaya tab Donasi & Adopsi terisi.", 8000)
+					}
+				} catch (ignore) {}
+			}
 		}
 	}
 
