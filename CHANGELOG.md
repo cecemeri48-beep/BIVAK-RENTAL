@@ -6,6 +6,22 @@ ke sini.
 
 ## 2026-09-11
 
+### Fitur baru (lanjutan) -- diterapkan ulang
+
+- **Kode adopsi sekali pakai, terkunci ke satu nama** via RPC
+  redeem_adoption_code (db/ADOPSI-07-KODE-SEKALI-PAKAI.sql, wajib dijalankan
+  di project donasi). Nama sama boleh unduh ulang; nama lain ditolak. Panel
+  admin menandai kode yang sudah terpakai.
+- **Panel gulung selalu tertutup saat reload / baru buka**, desktop maupun
+  HP. Klik menu navigasi tetap membuka panel terkait. Termasuk memperbaiki
+  aturan CSS yang memaksa panel Dampak selalu tampil di layar lebar.
+- **Ganti password admin dari panel** (tombol di header panel admin):
+  verifikasi password lama, ganti di project utama via auth.updateUser, dan
+  otomatis menyamakan di database Pintu Angin supaya login ganda tidak putus.
+- styles.css kini punya nomor versi (?v=) supaya perubahan CSS tidak
+  tertahan cache browser.
+
+
 ### Perbaikan tampilan & console (lanjutan)
 
 - **Mojibake di panel admin & toast.** File lama ternyata tersimpan

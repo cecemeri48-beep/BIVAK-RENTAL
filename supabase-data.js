@@ -657,6 +657,84 @@
 	/* ----------------------------------------------------------------------
 	   10. Admin panel decoration
 	   ---------------------------------------------------------------------- */
+	// Form ganti password di dalam panel admin. Mengganti di project utama
+	// SEKALIGUS menyamakan di database donasi/Pintu Angin supaya login ganda
+	// (tab Donasi & Adopsi) tidak putus.
+	function buildChangePwSection(header) {
+		if (document.getElementById("adminChangePw")) return
+		var sec = document.createElement("div")
+		sec.id = "adminChangePw"
+		sec.style.cssText = "display:none;padding:0 1.25rem 1rem;border-bottom:1px solid var(--border-glass,rgba(255,255,255,.08));"
+		sec.innerHTML = [
+			'<div class="input-group"><label>Password Saat Ini</label>',
+			'<input class="form-control" type="password" id="inputCurPw" autocomplete="current-password"></div>',
+			'<div class="input-group"><label>Password Baru</label>',
+			'<input class="form-control" type="password" id="inputNewPw" autocomplete="new-password" placeholder="Minimal 6 karakter"></div>',
+			'<div class="input-group"><label>Ulangi Password Baru</label>',
+			'<input class="form-control" type="password" id="inputNewPw2" autocomplete="new-password"></div>',
+			'<div style="display:flex;gap:.5rem;margin-top:.25rem">',
+			'<button class="btn btn-primary" type="button" id="btnDoChangePw" style="font-size:.82rem">Simpan Password</button>',
+			'<button class="btn btn-outline" type="button" id="btnCancelChangePw" style="font-size:.82rem">Batal</button>',
+			'</div>',
+		].join("")
+		header.parentNode.insertBefore(sec, header.nextSibling)
+		document.getElementById("btnCancelChangePw").addEventListener("click", function () {
+			sec.style.display = "none"
+		})
+		document.getElementById("btnDoChangePw").addEventListener("click", handleChangePassword)
+	}
+
+	async function handleChangePassword() {
+		var cur = (document.getElementById("inputCurPw") || {}).value || ""
+		var nw = (document.getElementById("inputNewPw") || {}).value || ""
+		var nw2 = (document.getElementById("inputNewPw2") || {}).value || ""
+		if (!cur || !nw || !nw2) return toast("error", "Form Belum Lengkap", "Isi password saat ini dan password baru (dua kali).")
+		if (nw.length < 6) return toast("error", "Password Terlalu Pendek", "Password baru minimal 6 karakter.")
+		if (nw !== nw2) return toast("error", "Konfirmasi Tidak Cocok", "Password baru yang diulang tidak sama.")
+		if (nw === cur) return toast("info", "Tidak Ada Perubahan", "Password baru sama dengan password saat ini.")
+
+		var btn = document.getElementById("btnDoChangePw")
+		if (btn) { btn.disabled = true; btn.textContent = "Memproses..." }
+		try {
+			var sessionRes = await sb.auth.getSession()
+			var email = sessionRes.data && sessionRes.data.session && sessionRes.data.session.user && sessionRes.data.session.user.email
+			if (!email) throw new Error("Sesi admin tidak ditemukan. Keluar lalu masuk lagi.")
+			var re = await sb.auth.signInWithPassword({ email: email, password: cur })
+			if (re.error) {
+				toast("error", "Password Lama Salah", "Password saat ini tidak cocok.")
+				return
+			}
+
+			var up = await sb.auth.updateUser({ password: nw })
+			if (up.error) throw up.error
+
+			var donasiMsg = ""
+			if (sbd && sbd.auth) {
+				try {
+					var dSess = await sbd.auth.getSession()
+					if (dSess && dSess.data && dSess.data.session) {
+						var upd = await sbd.auth.updateUser({ password: nw })
+						if (upd.error) donasiMsg = upd.error.message
+					} else {
+						donasiMsg = "belum ada sesi donasi (login ulang dulu)"
+					}
+				} catch (e2) { donasiMsg = (e2 && e2.message) || "gagal" }
+			}
+
+			var sec = document.getElementById("adminChangePw")
+			if (sec) sec.style.display = "none"
+			if (donasiMsg) {
+				toast("info", "Password Utama Terganti", "Penyamaan ke database Pintu Angin gagal (" + donasiMsg + "). Samakan manual, atau tab Donasi/Adopsi akan kosong saat login berikutnya.", 9000)
+			} else {
+				toast("success", "Password Diganti", "Password admin diperbarui di kedua database. Gunakan password baru saat login berikutnya.")
+			}
+		} catch (err) {
+			toast("error", "Gagal Mengganti", (err && err.message) || "Kesalahan tidak diketahui.")
+		} finally {
+			if (btn) { btn.disabled = false; btn.textContent = "Simpan Password" }
+		}
+	}
+
 	function decorateAdminPanel() {
 		var header = document.querySelector("#modalAdmin .modal-header")
 		if (!header || document.getElementById("btnAdminLogout")) return
@@ -678,8 +756,21 @@
 			toast("info", "Keluar", "Sesi admin diakhiri.")
 		})
 
+		var pwBtn = document.createElement("button")
+		pwBtn.id = "btnAdminChangePw"
+		pwBtn.type = "button"
+		pwBtn.className = "btn btn-outline"
+		pwBtn.style.cssText = "padding:.35rem .7rem;font-size:.78rem;margin-right:.6rem;"
+		pwBtn.textContent = "Ganti Password"
+		pwBtn.addEventListener("click", function () {
+			buildChangePwSection(header)
+			var sec = document.getElementById("adminChangePw")
+			if (sec) sec.style.display = sec.style.display === "none" ? "block" : "none"
+		})
+
 		var closeBtn = header.querySelector(".modal-close")
 		header.insertBefore(btn, closeBtn)
+		header.insertBefore(pwBtn, closeBtn)
 	}
 
 	window.openAdminPanel = async function () {
@@ -1075,7 +1166,13 @@
 		var msg = document.getElementById('certCodeMsg')
 		if (!msg) return
 		if (found) {
-			msg.textContent = '✓ Kode valid! Silakan isi nama penerima.'
+			var nameEl = document.getElementById('certAdopsiName')
+			if (found.redeemed && found.redeemed_by) {
+				msg.textContent = '✓ Kode valid — sudah terdaftar atas nama "' + found.redeemed_by + '". Sertifikat hanya bisa diterbitkan ulang untuk nama ini.'
+				if (nameEl && !nameEl.value.trim()) nameEl.value = found.redeemed_by
+			} else {
+				msg.textContent = '✓ Kode valid! Silakan isi nama penerima.'
+			}
 			msg.style.color = '#10b981'
 			window._validAdopsiCode = found
 			updateCertPreview(found)
@@ -1149,7 +1246,10 @@
 						adoption_code: d.code || code,
 						quantity: d.quantity || 1,
 						package_name: d.package_name || null,
-						status: 'terverifikasi'
+						status: 'terverifikasi',
+						redeemed: !!d.redeemed,
+						redeemed_by: d.redeemed_by || null,
+						redeemed_at: d.redeemed_at || null
 					} : null)
 					return
 				}
@@ -1204,10 +1304,32 @@
 			toast("error", "Belum Siap", "Modul sertifikat gagal dimuat. Coba muat ulang halaman.")
 			return
 		}
-		var safe = name.replace(/[^\w\- ]+/g, '').replace(/ +/g, '-')
-		BivakCert.download(_certData(name, window._validAdopsiCode), 'Sertifikat-Adopsi-' + safe + '.png', function(err) {
-			if (err) toast("error", "Gagal Mengunduh", err.message)
-			else toast("success", "Sertifikat Berhasil!", "File PNG resolusi tinggi berhasil diunduh.")
+		var validCode = window._validAdopsiCode
+		var code = validCode.adoption_code || validCode.code
+		function doDownload() {
+			var safe = name.replace(/[^\w\- ]+/g, '').replace(/ +/g, '-')
+			BivakCert.download(_certData(name, validCode), 'Sertifikat-Adopsi-' + safe + '.png', function(err) {
+				if (err) toast("error", "Gagal Mengunduh", err.message)
+				else toast("success", "Sertifikat Berhasil!", "File PNG resolusi tinggi berhasil diunduh.")
+			})
+		}
+		// Kode sekali pakai (db/ADOPSI-07-KODE-SEKALI-PAKAI.sql): klaim kode ke
+		// server dulu. Kalau SQL itu belum dijalankan (fungsi belum ada), pakai
+		// perilaku lama supaya situs tidak macet.
+		if (!(sbd && sbd.rpc)) return doDownload()
+		sbd.rpc('redeem_adoption_code', { p_code: code, p_name: name }).then(function(res) {
+			if (res.error) {
+				if (/PGRST202|not find the function|schema cache/i.test(res.error.message || '')) return doDownload()
+				return toast("error", "Kode Gagal Diproses", "Koneksi bermasalah. Coba lagi sesaat lagi.")
+			}
+			var d = res.data || {}
+			if (!d.success) {
+				return toast("error", "Kode Sudah Dipakai", d.message || "Kode ini sudah pernah digunakan untuk nama lain.")
+			}
+			if (d.fresh === false && d.message) toast("info", "Diterbitkan Ulang", d.message)
+			validCode.redeemed = true
+			validCode.redeemed_by = name
+			doDownload()
 		})
 	}
 
@@ -1229,7 +1351,7 @@
 			var statusBadge = isVerified ? '<span style="color:#10b981;font-weight:700">✓ Terverifikasi</span>' :
 			                  isRejected ? '<span style="color:#f43f5e;font-weight:700">✗ Ditolak</span>' :
 			                  '<span style="color:#f59e0b;font-weight:700">○ Menunggu</span>'
-			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' : '-'
+			var codeDisplay = r.adoption_code ? '<span style="color:#10b981;font-weight:700">' + r.adoption_code + '</span>' + (r.redeemed_at ? '<br><small style="color:var(--text-muted)">terpakai: ' + BIVAK.escape(r.redeemed_by || '-') + '</small>' : '') : '-'
 			var actions
 			if (isVerified) {
 				actions = '<button class="btn btn-outline" onclick="deleteAdopsi(\'' + r.id + '\', this)" style="padding:0.4rem 0.6rem;font-size:0.8rem;border-color:#f43f5e;color:#f43f5e;white-space:nowrap"><i class="fa-solid fa-trash"></i> Hapus</button>'

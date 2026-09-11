@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BIVAK v5 - Clean Build (ES5 Compatible)
  * Simple, reliable, no external dependencies
  */
@@ -753,11 +753,12 @@ window.openPanelFromHash = function() {
 }
 
 window.initCollapsibles = function() {
-  var hp = window.matchMedia('(max-width: 640px)').matches;
+  // Semua panel gulung SELALU tertutup setiap kali halaman dimuat atau baru
+  // dibuka -- pengunjung membuka sendiri bagian yang mau dibaca. Klik menu
+  // navigasi tetap membuka panel terkait lewat handler hashchange.
   for (var i = 0; i < BIVAK.collapsiblePanels.length; i++) {
-    window.toggleSection(BIVAK.collapsiblePanels[i], null, !hp);
+    window.toggleSection(BIVAK.collapsiblePanels[i], null, false);
   }
-  openPanelFromHash();
 }
 
 window.addEventListener('hashchange', openPanelFromHash);

@@ -1968,7 +1968,8 @@ canvas.cert-zoom {
 .impact-mobile-toggle { display: none; }
 
 @media (min-width: 641px) {
-  #impactPanel.collapse-body { display: contents; }
+  /* Panel Dampak ikut tertutup saat reload di desktop; tampil saat dibuka */
+  #impactPanel.collapse-body.open { display: contents; }
 }
 
 @media (max-width: 640px) {
