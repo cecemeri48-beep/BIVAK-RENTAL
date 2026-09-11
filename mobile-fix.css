@@ -138,3 +138,17 @@
   border-color: rgba(16, 185, 129, 0.55);
   color: var(--primary-emerald);
 }
+
+/* ======================================================================
+   Hemat render di HP: bagian berat di bawah lipatan (donasi, adopsi,
+   dampak) tidak digambar sebelum mendekati viewport. Ukuran terakhir
+   disimpan (auto) supaya scrollbar tidak melompat.
+   ====================================================================== */
+@media (max-width: 640px) {
+  #donasi,
+  #adopsi,
+  #dampak {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 480px;
+  }
+}

@@ -4,6 +4,56 @@ Satu file changelog untuk seluruh proyek. Sebelumnya ada 4 file changelog
 terpisah + 4 file catatan lepas yang saling bertentangan; semuanya digabung
 ke sini.
 
+## 2026-09-11
+### Optimasi mobile (tetap menarik, lebih ringan dibuka)
+
+- **Shader hero WebGL dibuat sadar-perangkat.** Di HP (layar kecil / layar
+  sentuh) aurora kini dirender pada 60% resolusi lalu di-upscale CSS (gradasi
+  tetap mulus), DPR dibatasi 1, dan animasi dibatasi ~30 fps — hemat GPU dan
+  baterai tanpa mengubah tampilan. Mode hemat data (Save-Data) mendapat satu
+  frame statis. Listener parallax kursor dilewati di layar sentuh. Desktop
+  tidak berubah.
+- **Section berat di bawah lipatan** (donasi, adopsi, dampak) memakai
+  `content-visibility: auto` di HP: tidak digambar sebelum hampir terlihat.
+- **`preconnect` + `dns-prefetch`** untuk CDN (cdnjs, jsdelivr) dan kedua
+  host Supabase — memangkas waktu jabat tangan jaringan seluler.
+- Foto dicek ulang: ternyata sudah terkompresi optimal (q80, varian `@600`
+  untuk HP + `loading="lazy"`), jadi tidak perlu diubah.
+
+
+### Perbaikan bug kritis (audit keamanan & fungsionalitas)
+
+- **KRITIS — eskalasi admin lewat wildcard ILIKE.** `checkAdminUser` memakai
+  email mentah sebagai pola `ilike`. Karakter `%`/`_` di email menjadi
+  wildcard sehingga akun non-admin bisa ikut cocok dengan email admin di
+  tabel `admins`. Email sekarang di-escape dulu sebelum dipakai sebagai pola.
+- **KRITIS — tabel `adoption_requests` & `donasi` terbuka untuk publik.**
+  Policy lama `FOR ALL USING (true)` berlaku juga untuk anon: siapa pun bisa
+  membaca nama + nomor WA pelanggan dan kode sertifikat, bahkan mengubah /
+  menghapus baris lewat API. Web tidak lagi mengunduh tabel adopsi untuk
+  pengunjung (hanya admin); cek kode sertifikat pindah ke RPC
+  `check_adoption_code` yang hanya menjawab valid/tidak + info paket
+  (fallback hemat-data tetap ada untuk masa transisi). Jalankan
+  `db/ADOPSI-06-AMANKAN-ADOPSI.sql` di project donasi untuk menutup celahnya
+  di sisi server — lihat prasyarat di dalam file.
+- **KRITIS — stored XSS di panel admin lewat kolom "gears".** Daftar alat
+  dari form pendaftaran vendor dirender ke tabel admin tanpa escape, jadi
+  pendaftar bisa menyimpan script yang berjalan di sesi admin. Sekarang
+  setiap item di-escape (dua lokasi render).
+- **Aksi admin donasi/adopsi dipagari `isAdmin`** di sisi klien, dan login
+  admin kini sekaligus masuk ke database donasi (logout juga membersihkan
+  sesi donasi).
+- **Badge notifikasi donasi tidak pernah diperbarui.** `syncDonasiBadge()`
+  hanya tercantol pada fungsi yang tidak pernah dipanggil; sekarang dipanggil
+  setiap data publik dimuat.
+- **Upload foto barang vendor tanpa validasi** (berbeda dengan upload
+  pengajuan vendor). Sekarang dibatasi 5 MB dan hanya JPG/PNG/WEBP/GIF.
+- **Total donasi bisa tampil NaN** bila ada baris tanpa nominal; dijaga
+  dengan fallback 0.
+- Cache-busting `?v=` untuk `app.js`, `supabase-data.js`, `vendor-shop.js`
+  dinaikkan ke `20260911-01`.
+
+
 ## 2026-08-22
 
 ### Sertifikat adopsi pohon

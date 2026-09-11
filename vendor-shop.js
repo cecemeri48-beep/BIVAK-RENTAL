@@ -150,7 +150,6 @@
 			.order("name", { ascending: true })
 			.then(function (res) {
 				var map = {}
-				for (var i = 0; i < ids.length; i++) map[ids[i]] = []
 				if (!res.error) {
 					var rows = res.data || []
 					for (var i = 0; i < rows.length; i++) {
@@ -225,7 +224,6 @@
 		SHOP.vendor = v
 		SHOP.filterCat = null
 		var key = vendorKey(v)
-		var hasCached = key && (typeof SHOP.itemsByVendor[key] !== "undefined")
 		SHOP.items = (key && SHOP.itemsByVendor[key]) || []
 		if (window.BIVAK) { BIVAK.currentVendorId = v.id; BIVAK.vendorItems = SHOP.items }
 
@@ -235,9 +233,7 @@
 		if (body) body.innerHTML = detailShellHtml(v)
 		if (typeof window.openModal === "function") openModal("modalVendorDetail")
 
-		if (hasCached) {
-			renderCatalog(null, highlightItemId)
-		}
+		renderCatalog(null, highlightItemId)
 		loadVendorItems(function () { renderCatalog(SHOP.filterCat, highlightItemId) })
 	}
 
@@ -582,6 +578,15 @@
 
 	function uploadItemPhoto(file, cb) {
 		if (!file || !sb || !sb.storage) return cb(null)
+		// Batasi sama seperti upload pengajuan vendor: maks 5 MB, gambar saja.
+		if (file.size > 5 * 1024 * 1024) {
+			toast("info", "Foto terlalu besar", "Maksimal 5 MB. Barang tetap disimpan tanpa foto.")
+			return cb(null)
+		}
+		if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type || "")) {
+			toast("info", "Format foto tidak didukung", "Pakai JPG, PNG, WEBP, atau GIF. Barang tetap disimpan tanpa foto.")
+			return cb(null)
+		}
 		var vendorId = (SHOP.shop && SHOP.shop.id) || "umum"
 		var clean = String(file.name || "foto.jpg").toLowerCase().replace(/[^a-z0-9.]+/g, "-").slice(-40)
 		var path = "items/" + vendorId + "/" + Date.now() + "-" + clean

@@ -340,8 +340,7 @@
 		var origApprove = window.approveVendor
 		if (typeof origApprove === "function" && !origApprove.__pinWrapped) {
 			var wrapped = function (id) {
-				var pending = (window.BIVAK && BIVAK.pendingVendors) || []
-				var v = pending.find(function(x) { return String(x.id) === String(id) || String(x.dbId || "") === String(id); }) || findVendor(id)
+				var v = findVendor(id)
 				var dbId = v && v.dbId ? String(v.dbId) : resolveDbId(id)
 				var name = v && v.name
 				var out = origApprove.apply(this, arguments)

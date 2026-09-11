@@ -111,11 +111,11 @@ window.renderVendors = function(filteredList) {
     return '<div class="vendor-card" data-vendor-id="' + BIVAK.escape(v.id) + '">' +
       '<div class="vendor-cover">' +
         (hasCollage
-          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover;cursor:zoom-in" onclick="openCollageLightbox(\'' + BIVAK.escape(v.id) + '\')">'
+          ? '<img src="' + BIVAK.escape(collageSrc) + '" srcset="" alt="Kolase peralatan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" style="object-fit:cover;cursor:zoom-in" onclick="openCollageLightbox(' + v.id + ')">'
           : '<img src="' + BIVAK.vendorImg(v) + '" srcset="' + BIVAK.vendorImg(v, 600) + ' 600w, ' + BIVAK.vendorImg(v) + ' 1200w" sizes="(max-width:640px) 100vw, 360px" alt="Foto perlengkapan ' + BIVAK.escape(v.name) + '" width="600" height="400" loading="lazy" decoding="async" onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + BIVAK.escape(BIVAK.photoForVendor(v.name, v.city)) + '\'">') +
         '<div class="location-badge"><i class="fa-solid fa-location-dot"></i> ' + BIVAK.escape(v.city) + '</div>' +
         (v.verified ? '<div class="verified-badge" title="Terverifikasi" aria-label="Vendor terverifikasi"><i class="fa-solid fa-circle-check"></i><span class="verified-text"> Terverifikasi</span></div>' : '') +
-        (hasCollage ? '<button type="button" class="collage-badge collage-badge-btn" onclick="event.stopPropagation();openCollageLightbox(\'' + BIVAK.escape(v.id) + '\')" title="Ketuk untuk memperbesar foto koleksi"><i class="fa-solid fa-images"></i> Foto Koleksi</button>' : '') +
+        (hasCollage ? '<button type="button" class="collage-badge collage-badge-btn" onclick="event.stopPropagation();openCollageLightbox(' + v.id + ')" title="Ketuk untuk memperbesar foto koleksi"><i class="fa-solid fa-images"></i> Foto Koleksi</button>' : '') +
       '</div>' +
       '<div class="vendor-body">' +
         '<div class="vendor-header">' +
@@ -149,16 +149,6 @@ window.filterVendors = function() {
 
   var filtered = BIVAK.vendors.filter(function(v) {
     var matchQuery = !query || v.name.toLowerCase().indexOf(query) > -1 || (v.gears || []).some(function(g) { return g.toLowerCase().indexOf(query) > -1; });
-
-    // Periksa juga daftar barang asli (vendor_items) yang dimuat oleh vendor-shop.js
-    if (!matchQuery && window.BIVAK_SHOP && BIVAK_SHOP.itemsByVendor) {
-        var realItems = BIVAK_SHOP.itemsByVendor[v.dbId] || BIVAK_SHOP.itemsByVendor[v.id] || [];
-        matchQuery = realItems.some(function(it) {
-            return (it.name && it.name.toLowerCase().indexOf(query) > -1) ||
-                   (it.category && it.category.toLowerCase().indexOf(query) > -1);
-        });
-    }
-
     var matchCity = !city || v.city === city;
     return matchQuery && matchCity;
   });
@@ -192,10 +182,7 @@ window.pickCity = function(city) {
 
 // Lightbox untuk memperbesar Foto Koleksi vendor
 window.openCollageLightbox = function(id) {
-  var list = (BIVAK.vendors || []).concat(BIVAK.pendingVendors || []);
-  var v = list.find(function(x) {
-    return String(x.id) === String(id) || (x.dbId && String(x.dbId) === String(id));
-  });
+  var v = BIVAK.vendors.find(function(x) { return x.id === id; });
   var src = v && v.collage ? v.collage : '';
   if (!src) return;
   var lb = document.getElementById('collageLightbox');
@@ -494,7 +481,7 @@ window.renderAdminTables = function() {
         return '<tr>' +
           '<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
           '<td>' + BIVAK.escape(pv.phone) + '</td>' +
-          '<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
+          '<td><small>' + (pv.gears || []).slice(0,3).map(function(g){ return BIVAK.escape(g) }).join(', ') + '</small></td>' +
           '<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
           '<td style="text-align:center">' + logoThumb + '</td>' +
           '<td>' + collageThumb + '</td>' +
@@ -623,7 +610,7 @@ window.updateBadges = function() {
 
   var statDonation = BIVAK.el('statDonationTotal');
   if (statDonation) {
-    var total = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; }).reduce(function(s, d) { return s + d.amt; }, 0);
+    var total = BIVAK.donations.filter(function(d) { return d.astatus === 'disetujui'; }).reduce(function(s, d) { return s + (d.amt || 0); }, 0);
     statDonation.textContent = total.toLocaleString('id-ID');
   }
 }

@@ -109,7 +109,11 @@
 		if (!email) return false
 		email = email.trim().toLowerCase()
 		try {
-			var q = sb.from("admins").select("email,user_id").ilike("email", email).limit(1)
+			// ILIKE memperlakukan % _ \ sebagai wildcard/escape. Tanpa escaping,
+			// email seperti "a%@gmail.com" bisa ikut cocok dengan "admin@gmail.com"
+			// sehingga akun yang salah diberi akses admin.
+			var emailPattern = email.replace(/([\\%_])/g, "\\$1")
+			var q = sb.from("admins").select("email,user_id").ilike("email", emailPattern).limit(1)
 			var res = await q
 			var data = res.data || []
 			if (res.error) {
@@ -230,7 +234,10 @@
 			_dnCloud = false
 		}
 
-		if (sbd) {
+		// Tabel adopsi berisi nama + nomor WA pelanggan dan kode sertifikat.
+		// Jangan diunduh ke browser pengunjung biasa; cukup admin. Publik
+		// mengecek kode sertifikat lewat RPC (window.checkAdopsiCode).
+		if (sbd && isAdmin) {
 			try {
 				var aRes = await sbd.from("adoption_requests").select("*").order("created_at", { ascending: false }).limit(100)
 				_adoptionRows = (aRes.data || [])
@@ -244,6 +251,7 @@
 		try { renderVendors(vendorsData); } catch(e) {}
 		try { updateBadges(); } catch(e) {}
 		if (typeof renderDonation === 'function') renderDonation()
+		syncDonasiBadge()
 		updateAdopsiBadge()
 
 		if (options.alsoAdminTables && document.getElementById("tablePendingVendorsBody")) {
@@ -617,6 +625,18 @@
 				}
 
 			isAdmin = true
+			// Login juga ke database donasi/adopsi supaya policy "authenticated"
+			// di sana mengenali admin (db/ADOPSI-06-AMANKAN-ADOPSI.sql). Kalau
+			// akunnya belum dibuat di project donasi, panel tetap jalan selama
+			// policy lama belum diganti.
+			if (sbd && sbd.auth) {
+				try {
+					var dLogin = await sbd.auth.signInWithPassword({ email: email, password: password })
+					if (dLogin && dLogin.error) {
+						console.warn("[BIVAK] Login DB donasi gagal:", dLogin.error.message)
+					}
+				} catch (ignore) {}
+			}
 			form.reset()
 			closeModal("modalAdminLogin")
 			await loadPublicData()
@@ -649,6 +669,7 @@
 		btn.addEventListener("click", async function () {
 			isAdmin = false
 			await sb.auth.signOut()
+			if (sbd && sbd.auth) { try { await sbd.auth.signOut() } catch (ignore) {} }
 			closeModal("modalAdmin")
 			await loadPublicData()
 			syncDonasiBadge()
@@ -773,6 +794,10 @@
 	}
 
 	window.donasiApprove = async function (ref, st, btn) {
+		if (!isAdmin) {
+			toast("error", "Khusus Admin", "Masuk sebagai admin dulu untuk mengubah data ini.")
+			return
+		}
 		if (!sbd) {
 			toast("error", "Database Donasi Tidak Tersedia", "")
 			return
@@ -798,6 +823,10 @@
 	}
 
 	window.donasiDelete = async function (ref, btn) {
+		if (!isAdmin) {
+			toast("error", "Khusus Admin", "Masuk sebagai admin dulu untuk mengubah data ini.")
+			return
+		}
 		if (!sbd) {
 			toast("error", "Database Donasi Tidak Tersedia", "")
 			return
@@ -889,7 +918,7 @@
 					return '<tr>' +
 						'<td><strong>' + BIVAK.escape(pv.name) + '</strong><br><small style="color:var(--text-muted)">' + BIVAK.escape(pv.city) + '</small></td>' +
 						'<td>' + BIVAK.escape(pv.phone) + '</td>' +
-						'<td><small>' + (pv.gears || []).slice(0,3).join(', ') + '</small></td>' +
+						'<td><small>' + (pv.gears || []).slice(0,3).map(function(g){ return BIVAK.escape(g) }).join(', ') + '</small></td>' +
 						'<td>' + BIVAK.rupiah(pv.minPrice) + '</td>' +
 						'<td>' + logoThumb + '</td>' +
 						'<td>' + collageThumb + '</td>' +
@@ -1024,35 +1053,17 @@
 	}
 
 	window.confirmAdopsiPayment = function() {
-		var waInput = document.getElementById('adopsiWA')
-		var wa = waInput ? waInput.value.trim() : ''
+		var wa = document.getElementById('adopsiWA').value.trim()
 		if (wa.startsWith('0')) wa = '62' + wa.substring(1)
-		var pkgName = _selectedPackage ? _selectedPackage.name : '-'
-		var pkgAmt = _selectedPackage ? _selectedPackage.amount.toLocaleString('id-ID') : '0'
-		var namaCert = document.getElementById('adopsiNama') ? document.getElementById('adopsiNama').value : ''
-		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + namaCert + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + pkgName + '\nTotal: Rp ' + pkgAmt + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
-		window.open('https://wa.me/6282320124040?text=' + encodeURIComponent(msg), '_blank')
+		var msg = 'Halo Admin RCS.CBS, saya sudah membayar adopsi pohon.\n\nNama sertifikat: ' + document.getElementById('adopsiNama').value + '\nNomor WhatsApp: +' + wa + '\nPaket: ' + _selectedPackage.name + '\nTotal: Rp ' + _selectedPackage.amount.toLocaleString('id-ID') + '\n\nSaya lampirkan bukti pembayaran. Mohon verifikasi dan kirimkan kode adopsi untuk unduh sertifikat.'
+		window.open('https://wa.me/' + BIVAK.normalizePhone(wa) + '?text=' + encodeURIComponent(msg), '_blank')
 	}
 
-	window.checkAdopsiCode = function() {
-		var code = document.getElementById('certAdopsiCode').value.trim().toUpperCase()
+	function applyCodeCheckResult(found) {
 		var msg = document.getElementById('certCodeMsg')
-		if (!code) {
-			msg.textContent = ''
-			return
-		}
-		if (!code.startsWith('POH-') || code.length < 8) {
-			msg.textContent = 'Format salah. Harap gunakan format: POH-XXXXX'
-			msg.style.color = '#f43f5e'
-			return
-		}
-		msg.textContent = 'Memeriksa kode...'
-		msg.style.color = 'var(--text-muted)'
-		var found = (_adoptionRows || []).find(function(r) {
-			return r.adoption_code === code && r.status === 'terverifikasi'
-		})
+		if (!msg) return
 		if (found) {
-			msg.textContent = 'âœ“ Kode valid! Silakan isi nama penerima.'
+			msg.textContent = '✓ Kode valid! Silakan isi nama penerima.'
 			msg.style.color = '#10b981'
 			window._validAdopsiCode = found
 			updateCertPreview(found)
@@ -1062,6 +1073,79 @@
 			window._validAdopsiCode = null
 			updateCertPreview()
 		}
+	}
+
+	var _codeRows = null // cache kode terverifikasi untuk fallback publik
+	function checkCodeLocal(code) {
+		var pools = []
+		if (_adoptionRows && _adoptionRows.length) pools.push(_adoptionRows)
+		if (_codeRows && _codeRows.length) pools.push(_codeRows)
+		for (var p = 0; p < pools.length; p++) {
+			var found = pools[p].find(function(r) {
+				return r.adoption_code === code && r.status === 'terverifikasi'
+			})
+			if (found) return found
+		}
+		return null
+	}
+
+	// Fallback masa transisi sebelum db/ADOPSI-06-AMANKAN-ADOPSI.sql dijalankan:
+	// unduh HANYA kolom non-privat milik kode terverifikasi (bukan nama/WA).
+	var _codeFallbackBusy = false
+	function fallbackCheckCode(code) {
+		if ((_adoptionRows && _adoptionRows.length) || (_codeRows && _codeRows.length) || !sbd) {
+			applyCodeCheckResult(checkCodeLocal(code))
+			return
+		}
+		if (_codeFallbackBusy) return
+		_codeFallbackBusy = true
+		sbd.from('adoption_requests')
+			.select('adoption_code,quantity,package_name,status')
+			.eq('status', 'terverifikasi')
+			.then(function(res) {
+				_codeFallbackBusy = false
+				if (!res.error && res.data) _codeRows = res.data
+				applyCodeCheckResult(checkCodeLocal(code))
+			})
+	}
+
+	window.checkAdopsiCode = function() {
+		var codeEl = document.getElementById('certAdopsiCode')
+		var msg = document.getElementById('certCodeMsg')
+		if (!codeEl || !msg) return
+		var code = codeEl.value.trim().toUpperCase()
+		if (!code) {
+			msg.textContent = ''
+			window._validAdopsiCode = null
+			return
+		}
+		if (!code.startsWith('POH-') || code.length < 8) {
+			msg.textContent = 'Format salah. Harap gunakan format: POH-XXXXX'
+			msg.style.color = '#f43f5e'
+			window._validAdopsiCode = null
+			return
+		}
+		msg.textContent = 'Memeriksa kode...'
+		msg.style.color = 'var(--text-muted)'
+		// Jalur aman: RPC check_adoption_code hanya menjawab valid/tidak + info
+		// paket, tanpa membocorkan nama & nomor WA pelanggan.
+		if (sbd && sbd.rpc) {
+			sbd.rpc('check_adoption_code', { p_code: code }).then(function(res) {
+				if (!res.error && res.data && typeof res.data === 'object' && 'success' in res.data) {
+					var d = res.data
+					applyCodeCheckResult(d.success ? {
+						adoption_code: d.code || code,
+						quantity: d.quantity || 1,
+						package_name: d.package_name || null,
+						status: 'terverifikasi'
+					} : null)
+					return
+				}
+				fallbackCheckCode(code)
+			}, function() { fallbackCheckCode(code) })
+			return
+		}
+		applyCodeCheckResult(checkCodeLocal(code))
 	}
 
 	window.updateCertPreview = function(adopsiData) {
@@ -1158,6 +1242,10 @@
 	}
 
   window.approveAdopsi = async function(ref, btn) {
+		if (!isAdmin) {
+			toast("error", "Khusus Admin", "Masuk sebagai admin dulu untuk mengubah data ini.")
+			return
+		}
     if (!sbd) {
       toast("error", "Database Tidak Tersedia", "")
       return
@@ -1189,6 +1277,10 @@
   }
 
   	window.rejectAdopsi = async function(ref, btn) {
+		if (!isAdmin) {
+			toast("error", "Khusus Admin", "Masuk sebagai admin dulu untuk mengubah data ini.")
+			return
+		}
 		if (!sbd) {
 			toast("error", "Database Tidak Tersedia", "")
 			return
@@ -1219,6 +1311,10 @@
 	}
 
 	window.deleteAdopsi = async function(ref, btn) {
+		if (!isAdmin) {
+			toast("error", "Khusus Admin", "Masuk sebagai admin dulu untuk mengubah data ini.")
+			return
+		}
 		if (!sbd) {
 			toast("error", "Database Tidak Tersedia", "")
 			return
@@ -1247,7 +1343,8 @@
 	}
 
   async function loadAdopsiData() {
-    if (!sbd) {
+    // Data pelanggan & kode sertifikat hanya boleh turun saat admin login.
+    if (!sbd || !isAdmin) {
       _adoptionRows = []
       return
     }

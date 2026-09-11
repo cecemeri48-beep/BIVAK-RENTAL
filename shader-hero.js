@@ -13,6 +13,14 @@
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Hemat di HP: resolusi render diturunkan + fps dibatasi. Aurora dan
+  // punggungan gunung adalah gradasi halus, jadi tetap mulus saat canvas
+  // di-stretch CSS ke ukuran penuh. saveData -> satu frame statis saja.
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var smallScreen = Math.min(window.screen.width || 0, window.screen.height || 0) < 768;
+  var coarsePointer = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  var MOBILE = smallScreen || coarsePointer;
+
   function mountFallback() {
     if (hero.querySelector(".m-shader-fallback")) return;
     var div = document.createElement("div");
@@ -182,14 +190,17 @@
   var mouse = { x: 0.5, y: 0.5 };
   var target = { x: 0.5, y: 0.5 };
 
-  hero.addEventListener("pointermove", function (e) {
+  // Parallax kursor hanya berguna di perangkat ber-mouse; lewati di layar sentuh.
+  if (!coarsePointer) hero.addEventListener("pointermove", function (e) {
     var r = hero.getBoundingClientRect();
     target.x = (e.clientX - r.left) / r.width;
     target.y = 1 - (e.clientY - r.top) / r.height;
   });
 
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    var dprCap = MOBILE ? 1 : 1.75;
+    var renderScale = MOBILE ? 0.6 : 1; // di HP render 60% lalu di-upscale CSS
+    var dpr = Math.min(window.devicePixelRatio || 1, dprCap) * renderScale;
     var w = Math.max(1, Math.floor(hero.clientWidth * dpr));
     var h = Math.max(1, Math.floor(hero.clientHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) {
@@ -226,13 +237,16 @@
     gl.uniform1f(uTime, (now - start) / 1000);
     gl.uniform2f(uMouse, mouse.x, mouse.y);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (!prefersReduced) loop();
+    if (!prefersReduced && !saveData) loop();
   }
+
+  var FRAME_MS = MOBILE ? 33 : 0; // ~30 fps di HP: mulus, tapi hemat GPU & baterai
 
   function loop() {
     if (frameQueued || !running) return;
     frameQueued = true;
-    requestAnimationFrame(render);
+    if (FRAME_MS) setTimeout(function () { requestAnimationFrame(render); }, FRAME_MS);
+    else requestAnimationFrame(render);
   }
 
   resize();
